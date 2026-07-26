@@ -451,8 +451,11 @@ async function generatePDF() {
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = (canvas.height * pageW) / canvas.width;
     pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
-    pdf.save('PortalSegurancaGlobal_Relatorio_' + Date.now() + '.pdf');
+    var fileName = 'PortalSegurancaGlobal_Relatorio_' + Date.now() + '.pdf';
+    var pdfBlob = pdf.output('blob');
     hideLoading();
+    // Abre modal de entrega com opcoes Email + WhatsApp + Download
+    PSG_DELIVERY.show(pdfBlob, fileName);
   } catch (err) { hideLoading(); alert('Erro ao gerar PDF: ' + err.message); }
 }
 
@@ -672,9 +675,503 @@ function switchManualLang(lang) {
     for (var i = 0; i < items.length; i++) {
       originalHTML += items[i].outerHTML;
     }
-    // Repetir as bandeiras 4 vezes para cobrir paginas longas
     for (var r = 0; r < 4; r++) {
       col.insertAdjacentHTML('beforeend', originalHTML);
     }
   });
+})();
+
+// ============================================================
+// TRADUCAO POR BANDEIRA — Clicar na bandeira traduz o site inteiro
+// ============================================================
+var PSG_LANG = (function() {
+  // Mapeamento: codigo pais -> codigo idioma
+  var countryToLang = {
+    'br':'pt','us':'en','gb':'en','fr':'fr','de':'de','it':'it','es':'es','pt':'pt',
+    'ca':'en','mx':'es','ar':'es','co':'es','cl':'es','pe':'es','uy':'es','py':'es',
+    've':'es','bo':'es','ec':'es','cu':'es','pa':'es','cr':'es','nl':'nl','be':'fr',
+    'se':'sv','dk':'da','fi':'fi','at':'de','pl':'pl','ua':'uk','gr':'el','ie':'en',
+    'cz':'cs','ro':'ro','hu':'hu','hr':'hr',
+    'jp':'ja','cn':'zh','kr':'ko','in':'hi','au':'en','ru':'ru','za':'en','ng':'en',
+    'eg':'ar','il':'he','sa':'ar','tr':'tr','ch':'de','no':'no','nz':'en','id':'id',
+    'th':'th','vn':'vi','ph':'en','my':'ms','sg':'en','pk':'ur','ae':'ar','qa':'ar',
+    'ma':'ar','ke':'en','et':'en','gh':'en','ao':'pt','mz':'pt','ir':'fa','iq':'ar',
+    'jo':'ar','bd':'bn','tz':'en','kp':'ko'
+  };
+
+  // Textos traduzidos para os elementos principais do site
+  var translations = {
+    'pt': {
+      pageTitle: 'Portal Seguranca Global',
+      emblemTitle: 'Busca em Tempo Real em Qualquer Lugar do Mundo',
+      searchTitle: 'Consulte a Seguranca de Qualquer Lugar do Mundo',
+      searchSubtitle: 'Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana — cobertura global',
+      searchPlaceholder: 'CPF, CNPJ, RG, CEP, endereco, cidade ou pais...',
+      searchBtn: 'Analisar',
+      searchHint: 'Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd>',
+      mapTitle: 'Mapa de Ocorrencias',
+      scoreTitle: 'Safety Score',
+      statsTitle: 'Estatisticas do Bairro',
+      pdfBtn: 'Gerar Relatorio PDF',
+      shareBtn: 'Compartilhar',
+      manualTitle: 'Manual de Instrucoes',
+      footerText: 'Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.',
+      copyrightText: 'Todos os direitos reservados.',
+      copyrightProhibit: 'E proibida a reproducao total ou parcial deste sistema e de seus algoritmos.',
+      occurrences: 'Ocorrencias/mes', cameras: 'Cameras', lighting: 'Iluminacao', commerce: 'Comercios',
+      crimeIndex: 'Indice Criminal', infrastructure: 'Infraestrutura', urbanMovement: 'Movimentacao Urbana',
+      chartTypes: 'Ocorrencias por Tipo', chartMonthly: 'Evolucao Mensal',
+      adTitle: 'Monitore sua Residencia 24h', adDesc: 'Cameras inteligentes com IA para deteccao de movimento.',
+      adBtnText: 'Saiba Mais', adBannerTitle: 'Proteja sua Familia com Tecnologia de Ponta',
+      lowRisk: 'Baixo Risco', mediumRisk: 'Medio Risco', highRisk: 'Alto Risco', poi: 'Ponto de Interesse',
+      termsTitle: 'Termos de Uso e Responsabilidade', termsRead: 'Leia antes de prosseguir',
+      termsAcceptBtn: 'Concordo e Desejo Prosseguir',
+      headerStatus: 'Base de dados atualizada'
+    },
+    'en': {
+      pageTitle: 'Global Security Portal',
+      emblemTitle: 'Real-Time Search Anywhere in the World',
+      searchTitle: 'Check the Safety of Any Location Worldwide',
+      searchSubtitle: 'Real-time analysis based on crime data, infrastructure and urban movement — global coverage',
+      searchPlaceholder: 'ID, Tax ID, Name, ZIP, address, city or country...',
+      searchBtn: 'Analyze',
+      searchHint: 'Examples: <kbd>10001</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd>',
+      mapTitle: 'Incidents Map',
+      scoreTitle: 'Safety Score',
+      statsTitle: 'Neighborhood Statistics',
+      pdfBtn: 'Generate PDF Report',
+      shareBtn: 'Share',
+      manualTitle: 'User Manual',
+      footerText: 'Worldwide coverage. Based on public data. Does not replace professional assessment.',
+      copyrightText: 'All rights reserved.',
+      copyrightProhibit: 'Total or partial reproduction of this system and its algorithms is prohibited.',
+      occurrences: 'Incidents/month', cameras: 'Cameras', lighting: 'Lighting', commerce: 'Businesses',
+      crimeIndex: 'Crime Index', infrastructure: 'Infrastructure', urbanMovement: 'Urban Movement',
+      chartTypes: 'Incidents by Type', chartMonthly: 'Monthly Trend',
+      adTitle: 'Monitor Your Home 24/7', adDesc: 'Smart cameras with AI for motion detection.',
+      adBtnText: 'Learn More', adBannerTitle: 'Protect Your Family with Cutting-Edge Technology',
+      lowRisk: 'Low Risk', mediumRisk: 'Medium Risk', highRisk: 'High Risk', poi: 'Point of Interest',
+      termsTitle: 'Terms of Use and Responsibility', termsRead: 'Read before proceeding',
+      termsAcceptBtn: 'I Agree and Wish to Proceed',
+      headerStatus: 'Database updated'
+    },
+    'es': {
+      pageTitle: 'Portal de Seguridad Global',
+      emblemTitle: 'Busqueda en Tiempo Real en Cualquier Lugar del Mundo',
+      searchTitle: 'Consulte la Seguridad de Cualquier Lugar del Mundo',
+      searchSubtitle: 'Analisis en tiempo real basado en datos de criminalidad, infraestructura y movimiento urbano — cobertura global',
+      searchPlaceholder: 'DNI, CUIT, Nombre, Codigo postal, direccion, ciudad o pais...',
+      searchBtn: 'Analizar',
+      searchHint: 'Ejemplos: <kbd>28001</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd>',
+      mapTitle: 'Mapa de Incidentes',
+      scoreTitle: 'Safety Score',
+      statsTitle: 'Estadisticas del Barrio',
+      pdfBtn: 'Generar Informe PDF',
+      shareBtn: 'Compartir',
+      manualTitle: 'Manual de Instrucciones',
+      footerText: 'Cobertura mundial. Basado en fuentes publicas. No sustituye evaluacion profesional.',
+      copyrightText: 'Todos los derechos reservados.',
+      copyrightProhibit: 'Se prohibe la reproduccion total o parcial de este sistema y sus algoritmos.',
+      occurrences: 'Incidentes/mes', cameras: 'Camaras', lighting: 'Iluminacion', commerce: 'Comercios',
+      crimeIndex: 'Indice Criminal', infrastructure: 'Infraestructura', urbanMovement: 'Movimiento Urbano',
+      chartTypes: 'Incidentes por Tipo', chartMonthly: 'Evolucion Mensual',
+      adTitle: 'Monitorea tu Hogar 24h', adDesc: 'Camaras inteligentes con IA para deteccion de movimiento.',
+      adBtnText: 'Saber Mas', adBannerTitle: 'Protege a tu Familia con Tecnologia de Punta',
+      lowRisk: 'Bajo Riesgo', mediumRisk: 'Riesgo Medio', highRisk: 'Alto Riesgo', poi: 'Punto de Interes',
+      termsTitle: 'Terminos de Uso y Responsabilidad', termsRead: 'Lea antes de continuar',
+      termsAcceptBtn: 'Acepto y Deseo Continuar',
+      headerStatus: 'Base de datos actualizada'
+    },
+    'fr': {
+      pageTitle: 'Portail de Securite Mondiale',
+      emblemTitle: 'Recherche en Temps Reel Partout dans le Monde',
+      searchTitle: 'Verifiez la Securite de N\'importe Quel Lieu dans le Monde',
+      searchSubtitle: 'Analyse en temps reel basee sur les donnees de criminalite, l\'infrastructure et les mouvements urbains — couverture mondiale',
+      searchPlaceholder: 'CNI, SIRET, Nom, Code postal, adresse, ville ou pays...',
+      searchBtn: 'Analyser',
+      searchHint: 'Exemples: <kbd>75001</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd>',
+      mapTitle: 'Carte des Incidents',
+      scoreTitle: 'Safety Score',
+      statsTitle: 'Statistiques du Quartier',
+      pdfBtn: 'Generer Rapport PDF',
+      shareBtn: 'Partager',
+      manualTitle: 'Manuel d\'Utilisation',
+      footerText: 'Couverture mondiale. Basee sur des sources publiques. Ne remplace pas une evaluation professionnelle.',
+      copyrightText: 'Tous droits reserves.',
+      copyrightProhibit: 'La reproduction totale ou partielle de ce systeme et de ses algorithmes est interdite.',
+      occurrences: 'Incidents/mois', cameras: 'Cameras', lighting: 'Eclairage', commerce: 'Commerces',
+      crimeIndex: 'Indice de Criminalite', infrastructure: 'Infrastructure', urbanMovement: 'Mouvement Urbain',
+      chartTypes: 'Incidents par Type', chartMonthly: 'Evolution Mensuelle',
+      adTitle: 'Surveillez Votre Maison 24h/24', adDesc: 'Cameras intelligentes avec IA pour detection de mouvement.',
+      adBtnText: 'En Savoir Plus', adBannerTitle: 'Protegez Votre Famille avec la Technologie de Pointe',
+      lowRisk: 'Risque Faible', mediumRisk: 'Risque Moyen', highRisk: 'Risque Eleve', poi: 'Point d\'Interet',
+      termsTitle: 'Conditions d\'Utilisation', termsRead: 'Lisez avant de continuer',
+      termsAcceptBtn: 'J\'Accepte et Souhaite Continuer',
+      headerStatus: 'Base de donnees mise a jour'
+    },
+    'de': {
+      pageTitle: 'Globales Sicherheitsportal',
+      emblemTitle: 'Echtzeitsuche Uberall auf der Welt',
+      searchTitle: 'Prufen Sie die Sicherheit Jedes Ortes Weltweit',
+      searchSubtitle: 'Echtzeitanalyse basierend auf Kriminalitaetsdaten, Infrastruktur und staedtischer Bewegung — globale Abdeckung',
+      searchPlaceholder: 'Ausweis, Steuernr., Name, PLZ, Adresse, Stadt oder Land...',
+      searchBtn: 'Analysieren',
+      searchHint: 'Beispiele: <kbd>10115</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd>',
+      mapTitle: 'Vorfallkarte',
+      scoreTitle: 'Safety Score',
+      statsTitle: 'Stadtteilstatistiken',
+      pdfBtn: 'PDF-Bericht Erstellen',
+      shareBtn: 'Teilen',
+      manualTitle: 'Bedienungsanleitung',
+      footerText: 'Weltweite Abdeckung. Basierend auf oeffentlichen Daten. Ersetzt keine professionelle Bewertung.',
+      copyrightText: 'Alle Rechte vorbehalten.',
+      copyrightProhibit: 'Die vollstaendige oder teilweise Reproduktion dieses Systems und seiner Algorithmen ist verboten.',
+      occurrences: 'Vorfaelle/Monat', cameras: 'Kameras', lighting: 'Beleuchtung', commerce: 'Geschaefte',
+      crimeIndex: 'Kriminalitaetsindex', infrastructure: 'Infrastruktur', urbanMovement: 'Staedtische Bewegung',
+      chartTypes: 'Vorfaelle nach Typ', chartMonthly: 'Monatliche Entwicklung',
+      adTitle: 'Ueberwachen Sie Ihr Zuhause 24/7', adDesc: 'Intelligente Kameras mit KI zur Bewegungserkennung.',
+      adBtnText: 'Mehr Erfahren', adBannerTitle: 'Schuetzen Sie Ihre Familie mit Spitzentechnologie',
+      lowRisk: 'Niedriges Risiko', mediumRisk: 'Mittleres Risiko', highRisk: 'Hohes Risiko', poi: 'Sehenswuerdigkeit',
+      termsTitle: 'Nutzungsbedingungen', termsRead: 'Lesen Sie vor dem Fortfahren',
+      termsAcceptBtn: 'Ich Stimme Zu und Moechte Fortfahren',
+      headerStatus: 'Datenbank aktualisiert'
+    },
+    'ja': {
+      pageTitle: 'Global Security Portal',
+      emblemTitle: 'Real-Time Search Anywhere in the World',
+      searchTitle: 'Check the Safety of Any Location Worldwide',
+      searchSubtitle: 'Real-time analysis based on crime data, infrastructure and urban movement',
+      searchPlaceholder: 'ID, Tax ID, Name, ZIP, address, city or country...',
+      searchBtn: 'Analyze', searchHint: 'Examples: <kbd>100-0001</kbd> | <kbd>Shibuya, Tokyo</kbd>',
+      mapTitle: 'Incidents Map', scoreTitle: 'Safety Score', statsTitle: 'Area Statistics',
+      pdfBtn: 'Generate PDF', shareBtn: 'Share', manualTitle: 'User Manual',
+      footerText: 'Worldwide coverage. Public data. Does not replace professional assessment.',
+      copyrightText: 'All rights reserved.',
+      copyrightProhibit: 'Reproduction of this system is prohibited.',
+      occurrences: 'Incidents/month', cameras: 'Cameras', lighting: 'Lighting', commerce: 'Businesses',
+      crimeIndex: 'Crime Index', infrastructure: 'Infrastructure', urbanMovement: 'Urban Movement',
+      chartTypes: 'By Type', chartMonthly: 'Monthly Trend',
+      adTitle: 'Monitor Your Home 24/7', adDesc: 'Smart cameras with AI.',
+      adBtnText: 'Learn More', adBannerTitle: 'Protect Your Family',
+      lowRisk: 'Low Risk', mediumRisk: 'Medium Risk', highRisk: 'High Risk', poi: 'POI',
+      termsTitle: 'Terms of Use', termsRead: 'Read before proceeding',
+      termsAcceptBtn: 'I Agree', headerStatus: 'Database updated'
+    },
+    'ar': {
+      pageTitle: 'Portal Seguranca Global',
+      emblemTitle: 'Real-Time Search Anywhere in the World',
+      searchTitle: 'Check Safety of Any Location',
+      searchSubtitle: 'Real-time analysis — global coverage',
+      searchPlaceholder: 'ID, Name, ZIP, address, city or country...',
+      searchBtn: 'Analyze', searchHint: 'Examples: <kbd>Times Square, New York</kbd>',
+      mapTitle: 'Incidents Map', scoreTitle: 'Safety Score', statsTitle: 'Statistics',
+      pdfBtn: 'Generate PDF', shareBtn: 'Share', manualTitle: 'User Manual',
+      footerText: 'Worldwide coverage. Public data.',
+      copyrightText: 'All rights reserved.',
+      copyrightProhibit: 'Reproduction prohibited.',
+      occurrences: 'Incidents/month', cameras: 'Cameras', lighting: 'Lighting', commerce: 'Businesses',
+      crimeIndex: 'Crime Index', infrastructure: 'Infrastructure', urbanMovement: 'Urban Movement',
+      chartTypes: 'By Type', chartMonthly: 'Monthly',
+      adTitle: 'Monitor Home 24/7', adDesc: 'Smart cameras with AI.',
+      adBtnText: 'Learn More', adBannerTitle: 'Protect Your Family',
+      lowRisk: 'Low Risk', mediumRisk: 'Medium Risk', highRisk: 'High Risk', poi: 'POI',
+      termsTitle: 'Terms of Use', termsRead: 'Read before proceeding',
+      termsAcceptBtn: 'I Agree', headerStatus: 'Database updated'
+    },
+    'ru': {
+      pageTitle: 'Portal Bezopasnosti',
+      emblemTitle: 'Poisk v Realnom Vremeni v Lyuboy Tochke Mira',
+      searchTitle: 'Proverka Bezopasnosti Lyubogo Mesta',
+      searchSubtitle: 'Analiz v realnom vremeni — globalnoe pokrytie',
+      searchPlaceholder: 'ID, nazvanie, indeks, adres, gorod ili strana...',
+      searchBtn: 'Analizirovat', searchHint: 'Primery: <kbd>Times Square, New York</kbd>',
+      mapTitle: 'Karta Intsidentov', scoreTitle: 'Safety Score', statsTitle: 'Statistika Rayona',
+      pdfBtn: 'Sozdat PDF', shareBtn: 'Podelitsia', manualTitle: 'Rukovodstvo',
+      footerText: 'Mirovoe pokrytie. Publichnye dannye.',
+      copyrightText: 'Vse prava zashchishcheny.',
+      copyrightProhibit: 'Vosproizvedenie zapreshcheno.',
+      occurrences: 'Intsidenty/mesyats', cameras: 'Kamery', lighting: 'Osveshchenie', commerce: 'Biznes',
+      crimeIndex: 'Indeks Prestupnosti', infrastructure: 'Infrastruktura', urbanMovement: 'Gorodskoe Dvizhenie',
+      chartTypes: 'Po Tipu', chartMonthly: 'Po Mesyatsam',
+      adTitle: 'Nablyudenie za Domom 24/7', adDesc: 'Umnye kamery s II.',
+      adBtnText: 'Podrobnee', adBannerTitle: 'Zashchitite Svoyu Semyu',
+      lowRisk: 'Nizkiy Risk', mediumRisk: 'Sredniy Risk', highRisk: 'Vysokiy Risk', poi: 'Tochka Interesa',
+      termsTitle: 'Usloviya Ispolzovaniya', termsRead: 'Prochitayte pered prodolzheniem',
+      termsAcceptBtn: 'Soglashaius', headerStatus: 'Baza dannykh obnovlena'
+    },
+    'zh': {
+      pageTitle: 'Global Security Portal',
+      emblemTitle: 'Real-Time Search Anywhere in the World',
+      searchTitle: 'Check Safety of Any Location',
+      searchSubtitle: 'Real-time analysis — global coverage',
+      searchPlaceholder: 'ID, Name, ZIP, address, city or country...',
+      searchBtn: 'Analyze', searchHint: 'Examples: <kbd>Times Square, New York</kbd>',
+      mapTitle: 'Incidents Map', scoreTitle: 'Safety Score', statsTitle: 'Statistics',
+      pdfBtn: 'Generate PDF', shareBtn: 'Share', manualTitle: 'User Manual',
+      footerText: 'Worldwide coverage. Public data.',
+      copyrightText: 'All rights reserved.',
+      copyrightProhibit: 'Reproduction prohibited.',
+      occurrences: 'Incidents/month', cameras: 'Cameras', lighting: 'Lighting', commerce: 'Businesses',
+      crimeIndex: 'Crime Index', infrastructure: 'Infrastructure', urbanMovement: 'Urban Movement',
+      chartTypes: 'By Type', chartMonthly: 'Monthly',
+      adTitle: 'Monitor Home 24/7', adDesc: 'Smart cameras with AI.',
+      adBtnText: 'Learn More', adBannerTitle: 'Protect Your Family',
+      lowRisk: 'Low Risk', mediumRisk: 'Medium Risk', highRisk: 'High Risk', poi: 'POI',
+      termsTitle: 'Terms of Use', termsRead: 'Read before proceeding',
+      termsAcceptBtn: 'I Agree', headerStatus: 'Database updated'
+    }
+  };
+
+  // Funcao que aplica a traducao em todos os elementos do site
+  function applyTranslation(langCode) {
+    var t = translations[langCode] || translations['en'];
+    // Titulo da pagina
+    document.title = t.pageTitle;
+    // Header
+    var statusEl = document.querySelector('.header-status span:last-child');
+    if (statusEl) statusEl.textContent = t.headerStatus;
+    // Emblem
+    var emblemTitle = document.querySelector('.emblem-title');
+    if (emblemTitle) emblemTitle.textContent = t.emblemTitle;
+    // Search section
+    var searchTitle = document.querySelector('.search-title');
+    if (searchTitle) searchTitle.textContent = t.searchTitle;
+    var searchSub = document.querySelector('.search-subtitle');
+    if (searchSub) searchSub.textContent = t.searchSubtitle;
+    var searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.placeholder = t.searchPlaceholder;
+    var searchBtn = document.getElementById('search-btn');
+    if (searchBtn) { var svg = searchBtn.querySelector('svg'); searchBtn.innerHTML = ''; if (svg) searchBtn.appendChild(svg); searchBtn.appendChild(document.createTextNode(' ' + t.searchBtn)); }
+    var searchHint = document.querySelector('.search-hint');
+    if (searchHint) searchHint.innerHTML = t.searchHint;
+    // Cards
+    var cards = document.querySelectorAll('.card-header h3');
+    cards.forEach(function(h3) {
+      var icon = h3.querySelector('.icon');
+      var iconHTML = icon ? icon.outerHTML : '';
+      if (h3.textContent.match(/Mapa|Incidents|Karta|Carte|Vorfallkarte/i)) h3.innerHTML = iconHTML + ' ' + t.mapTitle;
+      else if (h3.textContent.match(/Safety|Score/i)) h3.innerHTML = iconHTML + ' ' + t.scoreTitle;
+      else if (h3.textContent.match(/Estat|Statist|Stadtteil|Quartier|Area/i)) h3.innerHTML = iconHTML + ' ' + t.statsTitle;
+      else if (h3.textContent.match(/Tipo|Type|Typ/i)) h3.innerHTML = iconHTML + ' ' + t.chartTypes;
+      else if (h3.textContent.match(/Mensal|Monthly|Mensual|Mensuelle|Monat/i)) h3.innerHTML = iconHTML + ' ' + t.chartMonthly;
+    });
+    // Stat labels
+    var statLabels = document.querySelectorAll('.stat-label');
+    if (statLabels.length >= 4) {
+      statLabels[0].textContent = t.occurrences;
+      statLabels[1].textContent = t.cameras;
+      statLabels[2].textContent = t.lighting;
+      statLabels[3].textContent = t.commerce;
+    }
+    // Pillar names
+    var pillarNames = document.querySelectorAll('.pillar-info .name');
+    if (pillarNames.length >= 3) {
+      pillarNames[0].textContent = t.crimeIndex;
+      pillarNames[1].textContent = t.infrastructure;
+      pillarNames[2].textContent = t.urbanMovement;
+    }
+    // Map legend
+    var legendItems = document.querySelectorAll('.map-legend-item');
+    if (legendItems.length >= 4) {
+      legendItems[0].lastChild.textContent = ' ' + t.lowRisk;
+      legendItems[1].lastChild.textContent = ' ' + t.mediumRisk;
+      legendItems[2].lastChild.textContent = ' ' + t.highRisk;
+      legendItems[3].lastChild.textContent = ' ' + t.poi;
+    }
+    // Buttons PDF/Share
+    var pdfBtn = document.getElementById('btn-pdf');
+    if (pdfBtn) { var s1 = pdfBtn.querySelector('svg'); pdfBtn.innerHTML = ''; if (s1) pdfBtn.appendChild(s1); pdfBtn.appendChild(document.createTextNode(' ' + t.pdfBtn)); }
+    var shareBtn = document.getElementById('btn-share');
+    if (shareBtn) { var s2 = shareBtn.querySelector('svg'); shareBtn.innerHTML = ''; if (s2) shareBtn.appendChild(s2); shareBtn.appendChild(document.createTextNode(' ' + t.shareBtn)); }
+    // Ad
+    var adCard = document.querySelector('.ad-card');
+    if (adCard) {
+      var adH5 = adCard.querySelector('h5');
+      var adP = adCard.querySelector('p');
+      var adBtn = adCard.querySelector('.btn');
+      if (adH5) adH5.textContent = t.adTitle;
+      if (adP) adP.textContent = t.adDesc;
+      if (adBtn) adBtn.textContent = t.adBtnText;
+    }
+    // Footer
+    var footer = document.querySelector('.footer');
+    if (footer) {
+      footer.innerHTML = t.pageTitle + ' &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>' +
+        t.footerText + '<br><br>' +
+        '<strong>&copy; 2026 Portal de Seguran&ccedil;a Global. ' + t.copyrightText + '</strong><br>' +
+        t.copyrightProhibit;
+    }
+    // Terms modal
+    var termsH2 = document.querySelector('.terms-box h2');
+    if (termsH2) termsH2.textContent = t.termsTitle;
+    var termsSub = document.querySelector('.terms-sub');
+    if (termsSub) termsSub.textContent = t.termsRead;
+    var termsBtn = document.getElementById('terms-btn');
+    if (termsBtn) termsBtn.textContent = t.termsAcceptBtn;
+    // Manual
+    if (manualData[langCode]) switchManualLang(langCode);
+    else if (manualData['en']) switchManualLang('en');
+    var manualSelect = document.getElementById('manual-lang');
+    if (manualSelect) { manualSelect.value = manualData[langCode] ? langCode : 'en'; }
+    // Highlight na bandeira selecionada
+    document.querySelectorAll('.flag-item').forEach(function(fi) { fi.classList.remove('flag-active'); });
+    document.querySelectorAll('.flag-item').forEach(function(fi) {
+      var img = fi.querySelector('img');
+      if (img && img.alt) {
+        var altLower = img.src.toLowerCase();
+        for (var cc in countryToLang) {
+          if (altLower.indexOf('/' + cc + '.png') !== -1 && countryToLang[cc] === langCode) {
+            fi.classList.add('flag-active');
+          }
+        }
+      }
+    });
+    // Salva preferencia
+    try { localStorage.setItem('psg_lang', langCode); } catch(e) {}
+    window._psgCurrentLang = langCode;
+  }
+
+  // Torna bandeiras clicaveis
+  function initFlagClicks() {
+    document.querySelectorAll('.flag-item').forEach(function(fi) {
+      fi.style.cursor = 'pointer';
+      fi.addEventListener('click', function() {
+        var img = fi.querySelector('img');
+        if (!img) return;
+        var src = img.src.toLowerCase();
+        var matched = null;
+        for (var cc in countryToLang) {
+          if (src.indexOf('/' + cc + '.png') !== -1) { matched = countryToLang[cc]; break; }
+        }
+        if (matched) applyTranslation(matched);
+      });
+    });
+  }
+
+  // Inicializa: verifica preferencia salva ou idioma do navegador
+  function init() {
+    initFlagClicks();
+    var saved = null;
+    try { saved = localStorage.getItem('psg_lang'); } catch(e) {}
+    if (saved && translations[saved]) { applyTranslation(saved); }
+  }
+
+  // Roda apos DOM pronto
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
+  else { init(); }
+
+  return { apply: applyTranslation, translations: translations };
+})();
+
+// ============================================================
+// SISTEMA DE ENTREGA PDF — Email + WhatsApp
+// ============================================================
+var PSG_DELIVERY = (function() {
+  // Cria o modal de entrega (aparece apos gerar PDF)
+  function createDeliveryModal() {
+    if (document.getElementById('delivery-modal')) return;
+    var modal = document.createElement('div');
+    modal.id = 'delivery-modal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem;';
+    modal.innerHTML = '<div style="background:linear-gradient(145deg,#0f1728,#1a2438);border:1px solid rgba(0,157,255,.25);border-radius:20px;padding:2rem;max-width:500px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6);">' +
+      '<span id="delivery-close" style="position:absolute;top:12px;right:16px;font-size:1.5rem;color:#8b95a8;cursor:pointer;line-height:1;">&times;</span>' +
+      '<div style="text-align:center;font-size:2rem;margin-bottom:.5rem;">&#128232;</div>' +
+      '<h3 style="text-align:center;font-size:1.2rem;color:#e5e7eb;margin-bottom:.4rem;">Enviar Relatorio</h3>' +
+      '<p style="text-align:center;font-size:.82rem;color:#8b95a8;margin-bottom:1.2rem;">Escolha como deseja receber ou compartilhar o relatorio PDF completo.</p>' +
+      '<div style="margin-bottom:1rem;"><label style="display:block;font-size:.82rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">E-mail do destinatario</label>' +
+      '<input type="email" id="delivery-email" placeholder="exemplo@email.com" style="width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:.9rem;outline:none;box-sizing:border-box;"></div>' +
+      '<div style="margin-bottom:1.2rem;"><label style="display:block;font-size:.82rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">WhatsApp (com DDI)</label>' +
+      '<input type="tel" id="delivery-whatsapp" placeholder="+55 44 99999-9999" style="width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:.9rem;outline:none;box-sizing:border-box;"></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">' +
+      '<button id="delivery-btn-email" style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(0,157,255,.08);color:#e5e7eb;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .25s;">&#9993; Enviar por Email</button>' +
+      '<button id="delivery-btn-whatsapp" style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem;border-radius:12px;border:2px solid rgba(37,211,102,.25);background:rgba(37,211,102,.08);color:#25d366;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .25s;">&#128172; Enviar por WhatsApp</button></div>' +
+      '<button id="delivery-btn-download" style="width:100%;padding:.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:.8rem;">&#128196; Baixar PDF Agora</button>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.72rem;color:#6b7280;">&#128274; Envio seguro e criptografado</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    // Eventos
+    document.getElementById('delivery-close').addEventListener('click', function() { modal.style.display = 'none'; });
+    document.getElementById('delivery-btn-email').addEventListener('click', sendByEmail);
+    document.getElementById('delivery-btn-whatsapp').addEventListener('click', sendByWhatsApp);
+    document.getElementById('delivery-btn-download').addEventListener('click', downloadPDF);
+  }
+
+  var _lastPDFBlob = null;
+  var _lastPDFName = '';
+
+  function showDeliveryModal(pdfBlob, fileName) {
+    _lastPDFBlob = pdfBlob;
+    _lastPDFName = fileName;
+    createDeliveryModal();
+    var modal = document.getElementById('delivery-modal');
+    modal.style.display = 'flex';
+  }
+
+  function sendByEmail() {
+    var email = document.getElementById('delivery-email').value.trim();
+    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      alert('Por favor, insira um e-mail valido.');
+      return;
+    }
+    // Abre cliente de email com link para o portal
+    var subject = encodeURIComponent('Relatorio de Seguranca - Portal Seguranca Global');
+    var body = encodeURIComponent('Segue o relatorio de seguranca gerado pelo Portal Seguranca Global.\n\nAcesse: https://portalsegurancaglobal.com.br\n\nO PDF esta anexado a esta mensagem.\n\n---\nPortal Seguranca Global\nportalsegurancaglobal.com.br');
+    window.open('mailto:' + email + '?subject=' + subject + '&body=' + body);
+    // Tambem baixa o PDF para o usuario anexar
+    if (_lastPDFBlob) downloadPDF();
+    alert('O cliente de e-mail foi aberto. Anexe o PDF baixado e envie para ' + email);
+    // Registra o envio
+    registerDelivery('email', email);
+  }
+
+  function sendByWhatsApp() {
+    var phone = document.getElementById('delivery-whatsapp').value.trim().replace(/\D/g, '');
+    if (!phone || phone.length < 10) {
+      alert('Por favor, insira um numero de WhatsApp valido com DDI (ex: +55 44 99999-9999).');
+      return;
+    }
+    var text = encodeURIComponent('*Portal Seguranca Global*\n\nRelatorio de Seguranca gerado com sucesso!\n\nAcesse o portal para visualizar: https://portalsegurancaglobal.com.br\n\n_Relatorio protegido por direitos autorais © 2026_');
+    window.open('https://wa.me/' + phone + '?text=' + text, '_blank');
+    if (_lastPDFBlob) downloadPDF();
+    alert('WhatsApp aberto! O PDF foi baixado para voce compartilhar na conversa.');
+    registerDelivery('whatsapp', phone);
+  }
+
+  function downloadPDF() {
+    if (!_lastPDFBlob) {
+      alert('Nenhum PDF disponivel. Gere o relatorio primeiro.');
+      return;
+    }
+    var url = URL.createObjectURL(_lastPDFBlob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = _lastPDFName || 'PortalSegurancaGlobal_Relatorio.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function registerDelivery(method, destination) {
+    var deliveries = [];
+    try { deliveries = JSON.parse(localStorage.getItem('psg_deliveries') || '[]'); } catch(e) {}
+    deliveries.push({
+      date: new Date().toISOString(),
+      method: method,
+      destination: destination,
+      report: _lastPDFName
+    });
+    try { localStorage.setItem('psg_deliveries', JSON.stringify(deliveries)); } catch(e) {}
+    try { SH_SECURITY.logEvent('PDF_DELIVERY', method + ':' + destination); } catch(e) {}
+  }
+
+  // Retorna historico de entregas (para o proprietario consultar)
+  function getDeliveryHistory() {
+    try { return JSON.parse(localStorage.getItem('psg_deliveries') || '[]'); } catch(e) { return []; }
+  }
+
+  return {
+    show: showDeliveryModal,
+    history: getDeliveryHistory
+  };
 })();
