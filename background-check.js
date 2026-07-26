@@ -1,4 +1,4 @@
-﻿// ================================================================
+// ================================================================
 // PORTAL SEGURANCA GLOBAL — SECURITY MODULE — Protecao contra hackers
 // ================================================================
 
@@ -8,7 +8,7 @@ const SH_SECURITY = (function() {
   // ----- 1. ANTI-XSS: Sanitizacao de inputs -----
   function sanitizeHTML(str) {
     if (typeof str !== 'string') return '';
-    const map = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":"&#039;", '/':'&#x2F;', '`':'&#96;' };
+    const map = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":"&#039;", '/':"&#x2F;", '`':'&#96;' };
     return str.replace(/[&<>"'`\/]/g, function(c) { return map[c]; });
   }
 
@@ -561,7 +561,7 @@ function generateCompanyName(rng) {
 function generateProcessNumber(rng) {
   const n = () => Math.floor(rng() * 10);
   return n()+''+n()+''+n()+''+n()+''+n()+''+n()+''+n()+'-'+n()+''+n()+'.20'+
-    (20+Math.floor(rng()*6))+'.'+Math.floor(rng()*9+1)+'.'+n()+''+n()+'.'+
+    (20+Math.floor(rng()*6))+'.'+Math.floor(rng()*9+1)+'.'+n()+''+n()+'.'+ 
     n()+''+n()+''+n()+''+n();
 }
 
@@ -1145,7 +1145,7 @@ function renderAgencies(data) {
       '<div class="agency-status ' + escVal(r.status) + '">' +
         (r.status === 'clear' ? 'Nada consta' :
          r.status === 'found' ? 'Registro encontrado' :
-         r.status === 'restricted' ? 'Acesso restrito' : 'Pendente') +
+         r.status === 'restricted' ? 'Acesso restrito' : 'Pendente') + 
       '</div>' +
       '</div>';
   }).join('');
@@ -1153,7 +1153,7 @@ function renderAgencies(data) {
   // INTERPOL alert
   if (data.agencyResults.interpol && data.agencyResults.interpol.status === 'found') {
     interpolAlert.classList.add('active');
-    document.getElementById('interpol-alert-body').innerHTML =
+    document.getElementById('interpol-alert-body').innerHTML = 
       '<p><strong>' + escVal(data.agencyResults.interpol.detail) + '</strong></p>' +
       '<p>Uma difusao ou notificacao vermelha da INTERPOL foi identificada para este perfil. ' +
       'Isso indica que existe um pedido de cooperacao policial internacional ativo. ' +
@@ -1376,345 +1376,44 @@ function runFacialScan() {
 
     // Phase 1: Scanning
     status.textContent = 'Escaneando biometria facial...';
-    status.className = 'preview-status scanning';
-    scanLine.classList.add('active');
-
-    setTimeout(function() {
-      // Phase 2: Face detected — posicionar o box no centro da imagem
-      var img = document.getElementById('facial-preview-img');
-      var w = img.offsetWidth;
-      var h = img.offsetHeight;
-      faceBox.style.left = (w * 0.25) + 'px';
-      faceBox.style.top = (h * 0.1) + 'px';
-      faceBox.style.width = (w * 0.5) + 'px';
-      faceBox.style.height = (h * 0.65) + 'px';
-      faceBox.classList.add('active');
-      status.textContent = 'Rosto detectado — mapeando pontos faciais...';
-
-      setTimeout(function() {
-        // Phase 3: Facial points
-        var faceX = w * 0.25;
-        var faceY = h * 0.1;
-        var faceW = w * 0.5;
-        var faceH = h * 0.65;
-        var facialLandmarks = [
-          { x: 0.35, y: 0.28 }, { x: 0.65, y: 0.28 }, // olhos
-          { x: 0.30, y: 0.30 }, { x: 0.40, y: 0.26 }, // sobrancelha esq
-          { x: 0.60, y: 0.26 }, { x: 0.70, y: 0.30 }, // sobrancelha dir
-          { x: 0.50, y: 0.45 }, { x: 0.48, y: 0.50 }, { x: 0.52, y: 0.50 }, // nariz
-          { x: 0.38, y: 0.65 }, { x: 0.50, y: 0.68 }, { x: 0.62, y: 0.65 }, // boca
-          { x: 0.22, y: 0.45 }, { x: 0.78, y: 0.45 }, // orelhas
-          { x: 0.50, y: 0.08 }, // testa
-          { x: 0.50, y: 0.82 }, // queixo
-          { x: 0.28, y: 0.60 }, { x: 0.72, y: 0.60 }, // bochechas
-          { x: 0.35, y: 0.32 }, { x: 0.65, y: 0.32 }, // palpebras
-          { x: 0.42, y: 0.55 }, { x: 0.58, y: 0.55 }, // lados nariz
-        ];
-        var html = '';
-        facialLandmarks.forEach(function(p, i) {
-          var px = faceX + (p.x * faceW);
-          var py = faceY + (p.y * faceH);
-          html += '<div class="fp" style="left:' + px + 'px;top:' + py + 'px;animation-delay:' + (i * 0.05) + 's;"></div>';
-        });
-        points.innerHTML = html;
-        status.textContent = '22 pontos biometricos mapeados — gerando hash facial...';
-
-        setTimeout(function() {
-          // Phase 4: Hash generated
-          scanLine.classList.remove('active');
-          var hash = 'FH-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
-          status.textContent = 'Hash facial gerado: ' + hash;
-          status.className = 'preview-status';
-          resolve(hash);
-        }, 2000);
-      }, 1800);
-    }, 2500);
-  });
-}
-
-// =======================================================
-// PAYWALL — Sistema de Pagamento para PDF
-// =======================================================
-let paymentCompleted = false;
-
-function lockResult() {
-  var results = document.getElementById('results-section');
-  if (results) {
-    results.classList.add('result-protected');
-    results.classList.remove('result-unlocked');
-  }
-  var btnPdf = document.getElementById('btn-gen-pdf');
-  if (btnPdf) btnPdf.disabled = true;
-}
-
-function unlockResult() {
-  paymentCompleted = true;
-  var results = document.getElementById('results-section');
-  if (results) {
-    results.classList.remove('result-protected');
-    results.classList.add('result-unlocked');
-  }
-  var btnPdf = document.getElementById('btn-gen-pdf');
-  if (btnPdf) {
-    btnPdf.disabled = false;
-    btnPdf.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Gerar Relatorio PDF';
-  }
-}
-
-function showPaywall() {
-  var overlay = document.getElementById('paywall-overlay');
-  overlay.classList.add('active');
-  // Reset para estado inicial
-  document.getElementById('paywall-processing').style.display = 'none';
-  document.getElementById('paywall-success').style.display = 'none';
-  document.querySelector('.paywall-email').style.display = '';
-  document.querySelector('.paywall-prices').style.display = '';
-  document.querySelector('.paywall-features').style.display = '';
-  document.querySelector('.paywall-desc').style.display = '';
-  document.querySelector('.paywall-secure').style.display = '';
-}
-
-function closePaywall() {
-  document.getElementById('paywall-overlay').classList.remove('active');
-}
-
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function processPayment(currency) {
-  var emailInput = document.getElementById('paywall-email-input');
-  var email = emailInput.value.trim();
-
-  if (!email || !validateEmail(email)) {
-    emailInput.style.borderColor = '#ef4444';
-    emailInput.focus();
-    alert('Por favor, informe um e-mail valido para receber o relatorio.');
-    return;
-  }
-  emailInput.style.borderColor = '';
-
-  // Esconder formulario, mostrar processamento
-  document.querySelector('.paywall-email').style.display = 'none';
-  document.querySelector('.paywall-prices').style.display = 'none';
-  document.querySelector('.paywall-features').style.display = 'none';
-  document.querySelector('.paywall-desc').style.display = 'none';
-  document.querySelector('.paywall-secure').style.display = 'none';
-
-  var processing = document.getElementById('paywall-processing');
-  var procText = document.getElementById('paywall-proc-text');
-  processing.style.display = '';
-
-  var priceText = currency === 'BRL' ? 'R$ 10,00' : '$ 10.00 USD';
-
-  // Simulacao de processamento de pagamento
-  procText.textContent = 'Conectando ao gateway de pagamento...';
-
-  setTimeout(function() {
-    procText.textContent = 'Validando dados do cartao / PIX...';
-  }, 1200);
-
-  setTimeout(function() {
-    procText.textContent = 'Processando pagamento de ' + priceText + '...';
-  }, 2500);
-
-  setTimeout(function() {
-    procText.textContent = 'Pagamento confirmado! Gerando PDF...';
-  }, 3800);
-
-  setTimeout(function() {
-    procText.textContent = 'Enviando relatorio para ' + email + '...';
-  }, 5000);
-
-  setTimeout(function() {
-    // Pagamento concluido
-    processing.style.display = 'none';
-    var success = document.getElementById('paywall-success');
-    success.style.display = '';
-    document.getElementById('paywall-success-email').textContent = email;
-
-    // Desbloquear resultado
-    unlockResult();
-
-    SH_SECURITY.logEvent('PAYMENT_COMPLETED', 'Pagamento ' + priceText + ' | Email: ' + email);
-  }, 6200);
-}
-
-// Protecao anti-print para resultados nao pagos
-function blockPrint() {
-  if (!paymentCompleted) {
-    var style = document.createElement('style');
-    style.id = 'print-block';
-    style.textContent = '@media print { #results-section { display: none !important; } body::after { content: "Relatorio protegido — Efetue o pagamento para imprimir."; display: block; text-align: center; font-size: 24px; padding: 4rem; } }';
-    document.head.appendChild(style);
-  }
-}
-
-// Protecao anti-copia reforçada
-function blockCopyEvents() {
-  document.addEventListener('copy', function(e) {
-    if (!paymentCompleted) {
-      var results = document.getElementById('results-section');
-      if (results && results.classList.contains('active')) {
-        e.preventDefault();
-        e.clipboardData.setData('text/plain', 'Conteudo protegido — Efetue o pagamento em portalsegurancaglobal.com.br para acessar o relatorio completo.');
-        SH_SECURITY.logEvent('COPY_BLOCKED', 'Tentativa de copia bloqueada');
-      }
+    if (status) status.className = 'cam-feed-status alert';
+        }
+      });
+    } else {
+      document.getElementById('cam-alert-title-text').textContent = 'Varredura Concluida — Nenhuma Correspondencia';
+      document.getElementById('cam-alert-title-text').parentElement.querySelector('svg').setAttribute('stroke', '#22c55e');
+      html += '<p style="margin:0;font-size:.8rem;">Nenhuma correspondencia facial foi encontrada nas <strong>2.847.391</strong> cameras ativas em <strong>194 paises</strong>.</p>';
+      html += '<p style="margin:8px 0 0;font-size:.75rem;color:rgba(255,255,255,.5);">A varredura continuara em segundo plano. Voce sera notificado caso uma correspondencia seja detectada nas proximas 72 horas.</p>';
     }
-  });
 
-  document.addEventListener('selectstart', function(e) {
-    if (!paymentCompleted) {
-      var results = document.getElementById('results-section');
-      if (results && results.classList.contains('result-protected') && results.contains(e.target)) {
-        e.preventDefault();
-      }
-    }
-  });
+    alertDetails.innerHTML = html;
+    alertBanner.classList.add('active');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Iniciar Nova Varredura Facial';
 
-  // Bloquear Ctrl+P (print)
-  document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'p' && !paymentCompleted) {
-      e.preventDefault();
-      SH_SECURITY.logEvent('PRINT_BLOCKED', 'Tentativa de impressao bloqueada');
-      showPaywall();
-    }
-  });
-
-  // Bloquear arrastar texto
-  document.addEventListener('dragstart', function(e) {
-    if (!paymentCompleted) {
-      var results = document.getElementById('results-section');
-      if (results && results.contains(e.target)) {
-        e.preventDefault();
-      }
-    }
-  });
+    // Scroll para o resultado
+    alertBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, totalScanTime);
 }
 
-// =======================================================
-// INIT — All event listeners (zero inline handlers)
-// =======================================================
-document.addEventListener('DOMContentLoaded', function() {
-  // Enter key for inputs
-  document.getElementById('doc-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') runBackgroundCheck(); });
-  document.getElementById('name-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') runBackgroundCheck(); });
-
-  // Consent buttons
-  document.getElementById('btn-reject-consent').addEventListener('click', rejectConsent);
-  document.getElementById('btn-accept-consent').addEventListener('click', acceptConsent);
-
-  // Consent checkboxes — habilita botao quando AMBOS marcados
-  var check1 = document.getElementById('consent-check-1');
-  var check2 = document.getElementById('consent-check-2');
-  function updateConsentBtn() {
-    document.getElementById('btn-accept-consent').disabled = !(check1.checked && check2.checked);
+function randomTime(maxHours) {
+  var h = Math.floor(Math.random() * maxHours);
+  if (h === 0) {
+    var m = Math.floor(Math.random() * 58) + 2;
+    return 'ha ' + m + ' min';
+  } else if (h < 24) {
+    return 'ha ' + h + 'h ' + Math.floor(Math.random() * 59) + 'min';
+  } else {
+    var d = Math.floor(h / 24);
+    return 'ha ' + d + ' dia' + (d > 1 ? 's' : '');
   }
-  if (check1) check1.addEventListener('change', updateConsentBtn);
-  if (check2) check2.addEventListener('change', updateConsentBtn);
+}
 
-  // Search type tabs
-  document.querySelectorAll('.search-type-tab').forEach(function(tab) {
-    tab.addEventListener('click', function() { setSearchType(this.getAttribute('data-type')); });
-  });
-
-  // ===== FACIAL RECOGNITION EVENT LISTENERS =====
-  // File upload
-  var facialFileInput = document.getElementById('facial-file-input');
-  if (facialFileInput) {
-    facialFileInput.addEventListener('change', function() {
-      if (this.files && this.files[0]) handleFacialFile(this.files[0]);
-    });
-  }
-
-  // Upload area click (fora dos botoes)
-  var facialUploadArea = document.getElementById('facial-upload-area');
-  if (facialUploadArea) {
-    facialUploadArea.addEventListener('click', function(e) {
-      if (e.target.closest('.facial-btn')) return;
-      facialFileInput.click();
-    });
-    // Drag & drop
-    facialUploadArea.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      this.classList.add('drag-over');
-    });
-    facialUploadArea.addEventListener('dragleave', function() {
-      this.classList.remove('drag-over');
-    });
-    facialUploadArea.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.classList.remove('drag-over');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFacialFile(e.dataTransfer.files[0]);
-      }
-    });
-  }
-
-  // Camera buttons
-  var btnCamera = document.getElementById('facial-btn-camera');
-  if (btnCamera) btnCamera.addEventListener('click', startCamera);
-
-  var btnCapture = document.getElementById('camera-capture');
-  if (btnCapture) btnCapture.addEventListener('click', captureFromCamera);
-
-  var btnCameraCancel = document.getElementById('camera-cancel');
-  if (btnCameraCancel) btnCameraCancel.addEventListener('click', function() {
-    stopCamera();
-    document.getElementById('facial-upload-area').style.display = '';
-  });
-
-  // Change photo
-  var btnChange = document.getElementById('facial-btn-change');
-  if (btnChange) btnChange.addEventListener('click', function() {
-    facialImageData = null;
-    resetFacialUI();
-  });
-
-  // Search button
-  document.getElementById('btn-search').addEventListener('click', runBackgroundCheck);
-
-  // PDF and New Search (delegated)
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('#btn-gen-pdf')) {
-      if (!paymentCompleted) {
-        showPaywall();
-      } else {
-        generatePDF();
-      }
-    }
-    if (e.target.closest('#btn-new-search')) newSearch();
-  });
-
-  // ===== PAYWALL EVENT LISTENERS =====
-  // Fechar paywall
-  var paywallClose = document.getElementById('paywall-close');
-  if (paywallClose) paywallClose.addEventListener('click', closePaywall);
-
-  // Pagar BRL
-  var btnBrl = document.getElementById('paywall-btn-brl');
-  if (btnBrl) btnBrl.addEventListener('click', function() { processPayment('BRL'); });
-
-  // Pagar USD
-  var btnUsd = document.getElementById('paywall-btn-usd');
-  if (btnUsd) btnUsd.addEventListener('click', function() { processPayment('USD'); });
-
-  // Baixar PDF apos pagamento
-  var btnDownload = document.getElementById('paywall-btn-download');
-  if (btnDownload) btnDownload.addEventListener('click', function() {
-    closePaywall();
-    generatePDF();
-  });
-
-  // Fechar paywall clicando fora
-  var paywallOverlay = document.getElementById('paywall-overlay');
-  if (paywallOverlay) {
-    paywallOverlay.addEventListener('click', function(e) {
-      if (e.target === this) closePaywall();
-    });
-  }
-
-  // Iniciar protecoes anti-copia e anti-print
-  blockCopyEvents();
-  blockPrint();
-});
+// Incrementa contadores de cameras em tempo real (efeito visual)
+setInterval(function() {
+  var el = document.getElementById('cam-total');
+  if (!el) return;
+  var val = parseInt(el.textContent.replace(/\D/g, ''));
+  val += Math.floor(Math.random() * 5) - 2;
+  el.textContent = val.toLocaleString('pt-BR');
+}, 8000);
