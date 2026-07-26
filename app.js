@@ -244,6 +244,40 @@ async function handleSearch() {
     showTermsModal();
     return;
   }
+
+  // =====================================================
+  // DETECCAO AUTOMATICA DE CPF / CNPJ / RG / NOME
+  // Se parece documento, redireciona para Background Check
+  // =====================================================
+  var cleanDigits = rawQuery.replace(/\D/g, '');
+  var isCPF = /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(rawQuery.replace(/\s/g, '')) || (cleanDigits.length === 11 && !/^\d{5}-?\d{3}$/.test(rawQuery.replace(/\s/g, '')));
+  var isCNPJ = /^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/.test(rawQuery.replace(/\s/g, '')) || cleanDigits.length === 14;
+  var isRG = cleanDigits.length >= 7 && cleanDigits.length <= 10 && /^\d+$/.test(rawQuery.replace(/[\s.\-]/g, ''));
+
+  // Separa o documento do resto da entrada (cidade, estado, pais)
+  if (isCPF || isCNPJ) {
+    var docType = isCPF ? 'cpf' : 'cnpj';
+    var docValue = rawQuery;
+    // Se o usuario digitou CPF + cidade/estado, extrai so o documento
+    var parts = rawQuery.split(/[\s,]+/);
+    var docPart = '';
+    for (var i = 0; i < parts.length; i++) {
+      if (/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(parts[i]) || /^\d{11}$/.test(parts[i])) { docPart = parts[i]; break; }
+      if (/^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/.test(parts[i]) || /^\d{14}$/.test(parts[i])) { docPart = parts[i]; break; }
+    }
+    if (!docPart) docPart = cleanDigits;
+    // Redireciona para Background Check com o documento pre-preenchido
+    window.location.href = 'background-check.html?doc=' + encodeURIComponent(docPart) + '&type=' + docType;
+    return;
+  }
+
+  // Se parece um nome (so letras e espacos, 2+ palavras, sem numeros)
+  var looksLikeName = /^[A-Za-zÀ-ÿ\s]{3,}$/.test(rawQuery) && rawQuery.split(/\s+/).length >= 2;
+  if (looksLikeName) {
+    window.location.href = 'background-check.html?doc=' + encodeURIComponent(rawQuery) + '&type=nome';
+    return;
+  }
+
   // Client-side checks (primeira camada — rapido)
   if (!SH_SECURITY.checkRateLimit('search')) { alert('Limite de buscas atingido. Aguarde um momento e tente novamente.'); return; }
   if (!SH_SECURITY.throttle()) return;
@@ -500,3 +534,147 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target.closest('#btn-markers')) toggleMarkers();
   });
 });
+
+// ============================================================
+// MANUAL MULTILINGUE — detecta idioma do navegador automaticamente
+// ============================================================
+var manualData = {
+  pt: { title: 'Manual de Instrucoes', steps: [
+    { h: 'Acesse o Portal', p: 'Abra o site portalsegurancaglobal.com.br no seu navegador. O portal funciona em qualquer dispositivo (computador, tablet ou celular).' },
+    { h: 'Escolha o Tipo de Consulta', p: 'Na barra de busca, voce pode digitar: CEP, endereco, cidade ou pais para ver o Mapa de Seguranca; ou CPF, CNPJ ou nome completo para fazer um Background Check.' },
+    { h: 'Aceite os Termos de Uso', p: 'Antes de qualquer pesquisa, sera exibido um termo de uso. Leia com atencao, marque as caixas de confirmacao e clique em "Aceitar e Prosseguir".' },
+    { h: 'Analise os Resultados', p: 'Para enderecos: voce vera um mapa de calor, Safety Score (0-100), graficos de criminalidade e infraestrutura. Para CPF/CNPJ: vera o Background Check completo com consulta a orgaos internacionais.' },
+    { h: 'Gere o Relatorio em PDF', p: 'Apos a analise, clique em "Gerar Relatorio PDF" para obter um documento completo. Para o Background Check, sera necessario informar seu e-mail e efetuar o pagamento (R$10,00 ou $10 USD).' },
+    { h: 'Receba por E-mail', p: 'Apos o pagamento, o relatorio completo sera enviado para o e-mail informado. Voce tambem pode baixar imediatamente clicando em "Baixar PDF Agora".' }
+  ], note: 'Todas as consultas sao realizadas exclusivamente em fontes publicas e bases de dados autorizadas, em conformidade com a LGPD, GDPR e legislacoes internacionais de protecao de dados.' },
+  en: { title: 'User Manual', steps: [
+    { h: 'Access the Portal', p: 'Open portalsegurancaglobal.com.br in your browser. The portal works on any device (computer, tablet, or smartphone).' },
+    { h: 'Choose the Query Type', p: 'In the search bar, you can enter: ZIP code, address, city, or country to view the Security Map; or CPF, CNPJ, or full name for a Background Check.' },
+    { h: 'Accept the Terms of Use', p: 'Before any search, a terms of use dialog will appear. Read carefully, check the confirmation boxes, and click "Accept and Proceed".' },
+    { h: 'Analyze the Results', p: 'For addresses: you will see a heat map, Safety Score (0-100), crime statistics, and infrastructure charts. For CPF/CNPJ: you will see a full Background Check with international agency consultations.' },
+    { h: 'Generate the PDF Report', p: 'After the analysis, click "Generate PDF Report" for a complete document. For Background Checks, you will need to provide your email and make a payment (R$10.00 or $10 USD).' },
+    { h: 'Receive by Email', p: 'After payment, the full report will be sent to the provided email. You can also download it immediately by clicking "Download PDF Now".' }
+  ], note: 'All queries are performed exclusively on public sources and authorized databases, in compliance with LGPD, GDPR, and international data protection laws.' },
+  es: { title: 'Manual de Instrucciones', steps: [
+    { h: 'Acceda al Portal', p: 'Abra portalsegurancaglobal.com.br en su navegador. El portal funciona en cualquier dispositivo.' },
+    { h: 'Elija el Tipo de Consulta', p: 'Ingrese: codigo postal, direccion, ciudad o pais para el Mapa de Seguridad; o CPF, CNPJ o nombre completo para un Background Check.' },
+    { h: 'Acepte los Terminos de Uso', p: 'Antes de cualquier busqueda, aparecera un termino de uso. Lea con atencion, marque las casillas y haga clic en "Aceptar y Continuar".' },
+    { h: 'Analice los Resultados', p: 'Para direcciones: mapa de calor, Safety Score (0-100), graficos de criminalidad. Para CPF/CNPJ: Background Check completo con organismos internacionales.' },
+    { h: 'Genere el Informe en PDF', p: 'Haga clic en "Generar Informe PDF". Para Background Check, ingrese su correo y realice el pago (R$10,00 o $10 USD).' },
+    { h: 'Reciba por Correo', p: 'Despues del pago, el informe sera enviado a su correo. Tambien puede descargarlo inmediatamente.' }
+  ], note: 'Todas las consultas se realizan en fuentes publicas y bases autorizadas, en cumplimiento con LGPD, GDPR y legislaciones internacionales.' },
+  fr: { title: "Manuel d'Utilisation", steps: [
+    { h: 'Accedez au Portail', p: 'Ouvrez portalsegurancaglobal.com.br dans votre navigateur. Le portail fonctionne sur tout appareil.' },
+    { h: 'Choisissez le Type de Recherche', p: 'Saisissez: code postal, adresse, ville ou pays pour la Carte de Securite; ou CPF, CNPJ ou nom complet pour un Background Check.' },
+    { h: 'Acceptez les Conditions', p: "Avant toute recherche, les conditions d'utilisation s'affichent. Lisez attentivement, cochez les cases et cliquez sur Accepter." },
+    { h: 'Analysez les Resultats', p: 'Pour les adresses: carte thermique, Safety Score (0-100), graphiques de criminalite. Pour CPF/CNPJ: Background Check complet avec agences internationales.' },
+    { h: 'Generez le Rapport PDF', p: "Cliquez sur Generer Rapport PDF. Pour le Background Check, fournissez votre email et effectuez le paiement (R$10,00 ou $10 USD)." },
+    { h: 'Recevez par Email', p: "Apres le paiement, le rapport complet sera envoye a l'email indique. Vous pouvez aussi le telecharger immediatement." }
+  ], note: 'Toutes les consultations sont effectuees sur des sources publiques et bases autorisees, conformement au LGPD, RGPD et aux lois internationales.' },
+  de: { title: 'Bedienungsanleitung', steps: [
+    { h: 'Portal aufrufen', p: 'Offnen Sie portalsegurancaglobal.com.br in Ihrem Browser. Das Portal funktioniert auf jedem Gerat.' },
+    { h: 'Abfragetyp wahlen', p: 'Geben Sie ein: Postleitzahl, Adresse, Stadt oder Land fur die Sicherheitskarte; oder CPF, CNPJ oder Namen fur einen Background Check.' },
+    { h: 'Nutzungsbedingungen akzeptieren', p: 'Vor jeder Suche werden die Nutzungsbedingungen angezeigt. Lesen Sie sorgfaltig und klicken Sie auf Akzeptieren.' },
+    { h: 'Ergebnisse analysieren', p: 'Fur Adressen: Heatmap, Safety Score (0-100), Kriminalitatsstatistiken. Fur CPF/CNPJ: vollstandiger Background Check mit internationalen Behorden.' },
+    { h: 'PDF-Bericht erstellen', p: 'Klicken Sie auf PDF-Bericht erstellen. Fur den Background Check geben Sie Ihre E-Mail an und leisten die Zahlung (R$10,00 oder $10 USD).' },
+    { h: 'Per E-Mail erhalten', p: 'Nach der Zahlung wird der Bericht an Ihre E-Mail gesendet. Sie konnen ihn auch sofort herunterladen.' }
+  ], note: 'Alle Abfragen werden aus offentlichen Quellen und autorisierten Datenbanken durchgefuhrt, in Ubereinstimmung mit LGPD, DSGVO und internationalen Datenschutzgesetzen.' },
+  it: { title: 'Manuale di Istruzioni', steps: [
+    { h: 'Accedi al Portale', p: 'Apri portalsegurancaglobal.com.br nel tuo browser. Il portale funziona su qualsiasi dispositivo.' },
+    { h: 'Scegli il Tipo di Ricerca', p: 'Inserisci: CAP, indirizzo, citta o paese per la Mappa di Sicurezza; oppure CPF, CNPJ o nome completo per un Background Check.' },
+    { h: 'Accetta i Termini', p: 'Prima di ogni ricerca, verranno mostrati i termini. Leggi attentamente, seleziona le caselle e clicca su Accetta.' },
+    { h: 'Analizza i Risultati', p: 'Per indirizzi: mappa termica, Safety Score (0-100), statistiche criminalita. Per CPF/CNPJ: Background Check completo con agenzie internazionali.' },
+    { h: 'Genera il Report PDF', p: "Clicca su Genera Report PDF. Per il Background Check, fornisci la tua email ed effettua il pagamento (R$10,00 o $10 USD)." },
+    { h: 'Ricevi via Email', p: 'Dopo il pagamento, il report verra inviato alla tua email. Puoi anche scaricarlo immediatamente.' }
+  ], note: 'Tutte le consultazioni sono effettuate su fonti pubbliche e database autorizzati, in conformita con LGPD, GDPR e legislazioni internazionali.' },
+  zh: { title: 'User Manual', steps: [
+    { h: 'Access the Portal', p: 'Open portalsegurancaglobal.com.br. Works on any device (computer, tablet, smartphone).' },
+    { h: 'Choose Query Type', p: 'Enter ZIP code, address, city or country for Security Map; or CPF, CNPJ, full name for Background Check.' },
+    { h: 'Accept Terms of Use', p: 'Before any search, terms of use will appear. Read carefully, check boxes and click Accept.' },
+    { h: 'Analyze Results', p: 'Addresses: heat map, Safety Score (0-100), crime charts. CPF/CNPJ: full Background Check with international agencies.' },
+    { h: 'Generate PDF Report', p: 'Click Generate PDF Report. For Background Check, provide email and pay (R$10.00 or $10 USD).' },
+    { h: 'Receive by Email', p: 'After payment, report will be sent to your email. You can also download immediately.' }
+  ], note: 'All queries use public sources and authorized databases, compliant with LGPD, GDPR and international data protection laws.' },
+  ja: { title: 'User Manual', steps: [
+    { h: 'Access Portal', p: 'Open portalsegurancaglobal.com.br. Works on any device.' },
+    { h: 'Choose Query Type', p: 'Enter ZIP, address, city/country for Security Map; or CPF, CNPJ, name for Background Check.' },
+    { h: 'Accept Terms', p: 'Terms of use will appear before search. Read, check boxes and click Accept.' },
+    { h: 'Analyze Results', p: 'Addresses: heat map, Safety Score (0-100). CPF/CNPJ: full Background Check with international agencies.' },
+    { h: 'Generate PDF', p: 'Click Generate PDF Report. Background Check requires email and payment (R$10.00 or $10 USD).' },
+    { h: 'Receive by Email', p: 'After payment, report sent to email. Immediate download also available.' }
+  ], note: 'All queries use public sources and authorized databases, compliant with LGPD, GDPR and international laws.' },
+  ar: { title: 'Dalil al-Mustakhdam', steps: [
+    { h: 'Access Portal', p: 'Open portalsegurancaglobal.com.br. Works on any device.' },
+    { h: 'Choose Query', p: 'Enter ZIP, address, city/country for Security Map; or CPF, CNPJ, name for Background Check.' },
+    { h: 'Accept Terms', p: 'Terms appear before search. Read, check boxes and click Accept.' },
+    { h: 'Analyze Results', p: 'Addresses: heat map, Safety Score. CPF/CNPJ: full Background Check with international agencies.' },
+    { h: 'Generate PDF', p: 'Click Generate PDF. Background Check requires email and payment (R$10.00 or $10 USD).' },
+    { h: 'Receive by Email', p: 'After payment, report sent to email. Immediate download available.' }
+  ], note: 'All queries use public sources and authorized databases, compliant with LGPD, GDPR and international laws.' },
+  ru: { title: 'Rukovodstvo', steps: [
+    { h: 'Dostup k Portalu', p: 'Otkroyte portalsegurancaglobal.com.br. Rabotayet na lyubom ustroystve.' },
+    { h: 'Vybor Zaprosa', p: 'Vvedite indeks, adres, gorod ili stranu dlya Karty Bezopasnosti; ili CPF, CNPJ, imya dlya Background Check.' },
+    { h: 'Prinyat Usloviya', p: 'Pered poiskom otobrazhatsia usloviya. Prochitayte, otmet\'te i nazhmite Prinyat.' },
+    { h: 'Analiz Rezul\'tatov', p: 'Adresa: teplovaya karta, Safety Score (0-100). CPF/CNPJ: polnyy Background Check s mezhdunarodnymi organizatsiyami.' },
+    { h: 'PDF Otchyot', p: 'Nazhmite Sozdat PDF. Dlya Background Check ukazhite email i oplatite (R$10.00 ili $10 USD).' },
+    { h: 'Email', p: 'Posle oplaty otchyot otpravlen na pochtu. Mozhno skachat srazu.' }
+  ], note: 'Zaprosy vypolnyayutsia po otkrytym istochnikam, v sootvetstvii s LGPD, GDPR i mezhdunarodnymi zakonami.' },
+  ko: { title: 'User Manual', steps: [
+    { h: 'Access Portal', p: 'Open portalsegurancaglobal.com.br. Works on any device.' },
+    { h: 'Choose Query', p: 'Enter ZIP, address, city/country for Security Map; or CPF, CNPJ, name for Background Check.' },
+    { h: 'Accept Terms', p: 'Terms appear before search. Read, check and click Accept.' },
+    { h: 'Analyze Results', p: 'Addresses: heat map, Safety Score. CPF/CNPJ: full Background Check with international agencies.' },
+    { h: 'Generate PDF', p: 'Click Generate PDF. Background Check requires email and payment (R$10.00 or $10 USD).' },
+    { h: 'Receive by Email', p: 'After payment, report sent to email. Immediate download available.' }
+  ], note: 'All queries use public sources compliant with LGPD, GDPR and international laws.' },
+  hi: { title: 'Upayog Manual', steps: [
+    { h: 'Portal Kholein', p: 'Browser mein portalsegurancaglobal.com.br kholein. Kisi bhi device par kaam karta hai.' },
+    { h: 'Query Chunein', p: 'PIN code, pata, shahar ya desh dalein Suraksha Naksha ke liye; ya CPF, CNPJ, naam dalein Background Check ke liye.' },
+    { h: 'Shartein Svikaar Karein', p: 'Khoj se pehle shartein dikhayi jayeingi. Padein, tick karein aur Svikaar par click karein.' },
+    { h: 'Parinaam Dekhein', p: 'Pate: heat map, Safety Score (0-100). CPF/CNPJ: poorn Background Check antarrashtriya sangathanon ke saath.' },
+    { h: 'PDF Report', p: 'PDF Report Banaayein par click karein. Background Check ke liye email aur bhugtan (R$10.00 ya $10 USD) chahiye.' },
+    { h: 'Email se Prapt Karein', p: 'Bhugtan ke baad report email par aayega. Turant download bhi kar sakte hain.' }
+  ], note: 'Sabhi jaanch saarvajanik shroton aur adhikrit databases se, LGPD, GDPR aur antarrashtriya kaanoonon ke anusaar.' }
+};
+
+function switchManualLang(lang) {
+  var d = manualData[lang] || manualData['en'];
+  document.getElementById('manual-title').textContent = d.title;
+  var html = '';
+  for (var i = 0; i < d.steps.length; i++) {
+    html += '<div class="manual-step"><div class="manual-step-num">' + (i+1) + '</div><div class="manual-step-text"><h3>' + d.steps[i].h + '</h3><p>' + d.steps[i].p + '</p></div></div>';
+  }
+  html += '<div class="manual-note">' + d.note + '</div>';
+  document.getElementById('manual-content').innerHTML = html;
+}
+
+// Auto-detecta idioma do navegador e inicializa manual
+(function initManual() {
+  var el = document.getElementById('manual-lang');
+  if (!el) return;
+  var userLang = (navigator.language || navigator.userLanguage || 'pt').substring(0, 2).toLowerCase();
+  var supported = Object.keys(manualData);
+  var lang = supported.indexOf(userLang) !== -1 ? userLang : 'en';
+  el.value = lang;
+  switchManualLang(lang);
+})();
+
+// ============================================================
+// FLAGS — Repetir bandeiras para preencher toda a altura da pagina
+// ============================================================
+(function fillFlags() {
+  var cols = document.querySelectorAll('.flags-column');
+  if (!cols.length) return;
+  cols.forEach(function(col) {
+    var items = col.querySelectorAll('.flag-item');
+    if (!items.length) return;
+    var originalHTML = '';
+    for (var i = 0; i < items.length; i++) {
+      originalHTML += items[i].outerHTML;
+    }
+    // Repetir as bandeiras 4 vezes para cobrir paginas longas
+    for (var r = 0; r < 4; r++) {
+      col.insertAdjacentHTML('beforeend', originalHTML);
+    }
+  });
+})();
