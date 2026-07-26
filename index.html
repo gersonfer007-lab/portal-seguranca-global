@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <title>Portal Seguranca Global</title>
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -50,7 +50,7 @@
   --radius-lg: 16px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; -webkit-font-smoothing: antialiased; position: relative; }
 
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; }
@@ -98,36 +98,48 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   position: relative; overflow: hidden;
 }
 
-/* FLAGS LATERAIS */
+/* FLAGS LATERAIS — acompanham toda a altura da pagina */
 .flags-column {
-  position: absolute; top: 0; display: flex; flex-direction: column; gap: 6px;
-  padding: 10px 0; z-index: 1;
+  position: absolute; top: 0; display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 0; z-index: 900;
+  min-height: 100%;
 }
-.flags-column.left { left: 6px; }
-.flags-column.right { right: 6px; }
+.flags-column.left { left: 4px; }
+.flags-column.right { right: 4px; }
 .flag-item {
-  display: flex; align-items: center; gap: 5px;
+  display: flex; align-items: center; gap: 4px;
   cursor: default; position: relative; transition: transform .2s;
 }
-.flag-item:hover { transform: scale(1.1); z-index: 10; }
+.flag-item:hover { transform: scale(1.15); z-index: 10; }
 .flag-item img {
-  width: 28px; height: 19px; object-fit: cover; display: block;
+  width: 26px; height: 17px; object-fit: cover; display: block;
   border-radius: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.4); flex-shrink: 0;
 }
 .flag-name {
-  font-size: .5rem; color: var(--text-secondary); white-space: nowrap;
+  font-size: .45rem; color: var(--text-secondary); white-space: nowrap;
   font-weight: 500; letter-spacing: .02em; line-height: 1;
 }
 .flags-column.left .flag-name { text-align: left; }
 .flags-column.right { align-items: flex-end; }
 .flags-column.right .flag-item { flex-direction: row-reverse; }
 .flags-column.right .flag-name { text-align: right; }
+/* Logo ONU nas bandeiras */
+.flag-un-logo {
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 0; margin: 4px 0;
+}
+.flag-un-logo img {
+  width: 36px; height: 36px; object-fit: contain; display: block;
+  filter: drop-shadow(0 0 6px rgba(0,157,255,.4));
+  border-radius: 0; box-shadow: none;
+}
 @media (max-width: 420px) {
-  .flag-item img { width: 22px; height: 15px; }
-  .flag-name { font-size: .42rem; }
-  .flags-column { gap: 3px; }
-  .flags-column.left { left: 2px; }
-  .flags-column.right { right: 2px; }
+  .flag-item img { width: 20px; height: 14px; }
+  .flag-name { font-size: .38rem; }
+  .flags-column { gap: 2px; padding: 4px 0; }
+  .flags-column.left { left: 1px; }
+  .flags-column.right { right: 1px; }
+  .flag-un-logo img { width: 28px; height: 28px; }
 }
 .emblem-img {
   width: 160px; height: auto;
@@ -519,6 +531,42 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   #map { height: 320px; }
   #cesium-globe { height: 320px; }
 }
+
+/* MANUAL DE INSTRUCOES */
+.manual-section {
+  max-width: 900px; margin: 2rem auto; padding: 0 1rem;
+}
+.manual-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 2rem; box-shadow: var(--shadow);
+}
+.manual-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;
+  padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
+.manual-header h2 { font-size: 1.3rem; color: var(--text-primary); margin: 0; }
+.manual-lang-select {
+  margin-left: auto; background: var(--bg-secondary); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+  font-family: var(--font); font-size: .85rem; cursor: pointer;
+}
+.manual-lang-select:focus { outline: none; border-color: var(--accent); }
+.manual-step {
+  display: flex; gap: 14px; margin-bottom: 1.2rem; align-items: flex-start;
+}
+.manual-step-num {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--gradient-accent); color: #fff; display: flex;
+  align-items: center; justify-content: center; font-weight: 700; font-size: .9rem;
+}
+.manual-step-text { flex: 1; }
+.manual-step-text h3 { font-size: 1rem; color: var(--text-primary); margin: 0 0 4px; }
+.manual-step-text p { font-size: .85rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+.manual-note {
+  background: rgba(59,130,246,.08); border-left: 3px solid var(--accent);
+  padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 1rem;
+  font-size: .82rem; color: var(--text-secondary); line-height: 1.5;
+}
 </style>
 </head>
 <body>
@@ -587,92 +635,94 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- BRASAO -->
 <section class="emblem-section">
-
-  <!-- BANDEIRAS ESQUERDA (Americas + Europa) -->
-  <div class="flags-column left">
-    <div class="flag-item"><img src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/fr.png" alt="Franca"><span class="flag-name">Franca</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/de.png" alt="Alemanha"><span class="flag-name">Alemanha</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/it.png" alt="Italia"><span class="flag-name">Italia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/es.png" alt="Espanha"><span class="flag-name">Espanha</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/pt.png" alt="Portugal"><span class="flag-name">Portugal</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ca.png" alt="Canada"><span class="flag-name">Canada</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/mx.png" alt="Mexico"><span class="flag-name">Mexico</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ar.png" alt="Argentina"><span class="flag-name">Argentina</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/co.png" alt="Colombia"><span class="flag-name">Colombia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/cl.png" alt="Chile"><span class="flag-name">Chile</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/pe.png" alt="Peru"><span class="flag-name">Peru</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/uy.png" alt="Uruguai"><span class="flag-name">Uruguai</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/py.png" alt="Paraguai"><span class="flag-name">Paraguai</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ve.png" alt="Venezuela"><span class="flag-name">Venezuela</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/bo.png" alt="Bolivia"><span class="flag-name">Bolivia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ec.png" alt="Equador"><span class="flag-name">Equador</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/cu.png" alt="Cuba"><span class="flag-name">Cuba</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/pa.png" alt="Panama"><span class="flag-name">Panama</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/cr.png" alt="Costa Rica"><span class="flag-name">Costa Rica</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/nl.png" alt="Holanda"><span class="flag-name">Holanda</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/be.png" alt="Belgica"><span class="flag-name">Belgica</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/se.png" alt="Suecia"><span class="flag-name">Suecia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/dk.png" alt="Dinamarca"><span class="flag-name">Dinamarca</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/fi.png" alt="Finlandia"><span class="flag-name">Finlandia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/at.png" alt="Austria"><span class="flag-name">Austria</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/pl.png" alt="Polonia"><span class="flag-name">Polonia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ua.png" alt="Ucrania"><span class="flag-name">Ucrania</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/gr.png" alt="Grecia"><span class="flag-name">Grecia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ie.png" alt="Irlanda"><span class="flag-name">Irlanda</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/cz.png" alt="Rep. Tcheca"><span class="flag-name">Rep. Tcheca</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ro.png" alt="Romenia"><span class="flag-name">Romenia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/hu.png" alt="Hungria"><span class="flag-name">Hungria</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/hr.png" alt="Croacia"><span class="flag-name">Croacia</span></div>
-  </div>
-
-  <!-- BANDEIRAS DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
-  <div class="flags-column right">
-    <div class="flag-item"><img src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/in.png" alt="India"><span class="flag-name">India</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/au.png" alt="Australia"><span class="flag-name">Australia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ru.png" alt="Russia"><span class="flag-name">Russia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/za.png" alt="Africa do Sul"><span class="flag-name">Africa do Sul</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ng.png" alt="Nigeria"><span class="flag-name">Nigeria</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/eg.png" alt="Egito"><span class="flag-name">Egito</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/il.png" alt="Israel"><span class="flag-name">Israel</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/sa.png" alt="Arabia Saudita"><span class="flag-name">Arabia Saudita</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/tr.png" alt="Turquia"><span class="flag-name">Turquia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ch.png" alt="Suica"><span class="flag-name">Suica</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/no.png" alt="Noruega"><span class="flag-name">Noruega</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/nz.png" alt="Nova Zelandia"><span class="flag-name">Nova Zelandia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/id.png" alt="Indonesia"><span class="flag-name">Indonesia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/th.png" alt="Tailandia"><span class="flag-name">Tailandia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/vn.png" alt="Vietna"><span class="flag-name">Vietna</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ph.png" alt="Filipinas"><span class="flag-name">Filipinas</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/my.png" alt="Malasia"><span class="flag-name">Malasia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/sg.png" alt="Singapura"><span class="flag-name">Singapura</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/pk.png" alt="Paquistao"><span class="flag-name">Paquistao</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ae.png" alt="Emirados Arabes"><span class="flag-name">Emirados Arabes</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/qa.png" alt="Qatar"><span class="flag-name">Qatar</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ma.png" alt="Marrocos"><span class="flag-name">Marrocos</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ke.png" alt="Kenya"><span class="flag-name">Kenya</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/et.png" alt="Etiopia"><span class="flag-name">Etiopia</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/gh.png" alt="Gana"><span class="flag-name">Gana</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ao.png" alt="Angola"><span class="flag-name">Angola</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/mz.png" alt="Mocambique"><span class="flag-name">Mocambique</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/ir.png" alt="Ira"><span class="flag-name">Ira</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/iq.png" alt="Iraque"><span class="flag-name">Iraque</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/jo.png" alt="Jordania"><span class="flag-name">Jordania</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/bd.png" alt="Bangladesh"><span class="flag-name">Bangladesh</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/tz.png" alt="Tanzania"><span class="flag-name">Tanzania</span></div>
-    <div class="flag-item"><img src="https://flagcdn.com/w80/kp.png" alt="Coreia do Norte"><span class="flag-name">Coreia do Norte</span></div>
-  </div>
-
   <img src="brasao-sh.png" alt="Portal Seguranca Global" class="emblem-img">
-  <div class="emblem-title">Portal Seguranca Global</div>
+  <div class="emblem-title">Busca em Tempo Real em Qualquer Lugar do Mundo</div>
   <div class="emblem-subtitle">portalsegurancaglobal.com.br</div>
   <div class="emblem-divider"></div>
 </section>
+
+<!-- BANDEIRAS LATERAIS FIXAS (descem com a pagina toda) -->
+<!-- ESQUERDA (Americas + Europa) -->
+<div class="flags-column left">
+  <div class="flag-un-logo"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/fr.png" alt="Franca"><span class="flag-name">Franca</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/de.png" alt="Alemanha"><span class="flag-name">Alemanha</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/it.png" alt="Italia"><span class="flag-name">Italia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/es.png" alt="Espanha"><span class="flag-name">Espanha</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/pt.png" alt="Portugal"><span class="flag-name">Portugal</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ca.png" alt="Canada"><span class="flag-name">Canada</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/mx.png" alt="Mexico"><span class="flag-name">Mexico</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ar.png" alt="Argentina"><span class="flag-name">Argentina</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/co.png" alt="Colombia"><span class="flag-name">Colombia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/cl.png" alt="Chile"><span class="flag-name">Chile</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/pe.png" alt="Peru"><span class="flag-name">Peru</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/uy.png" alt="Uruguai"><span class="flag-name">Uruguai</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/py.png" alt="Paraguai"><span class="flag-name">Paraguai</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ve.png" alt="Venezuela"><span class="flag-name">Venezuela</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/bo.png" alt="Bolivia"><span class="flag-name">Bolivia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ec.png" alt="Equador"><span class="flag-name">Equador</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/cu.png" alt="Cuba"><span class="flag-name">Cuba</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/pa.png" alt="Panama"><span class="flag-name">Panama</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/cr.png" alt="Costa Rica"><span class="flag-name">Costa Rica</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/nl.png" alt="Holanda"><span class="flag-name">Holanda</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/be.png" alt="Belgica"><span class="flag-name">Belgica</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/se.png" alt="Suecia"><span class="flag-name">Suecia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/dk.png" alt="Dinamarca"><span class="flag-name">Dinamarca</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/fi.png" alt="Finlandia"><span class="flag-name">Finlandia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/at.png" alt="Austria"><span class="flag-name">Austria</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/pl.png" alt="Polonia"><span class="flag-name">Polonia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ua.png" alt="Ucrania"><span class="flag-name">Ucrania</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/gr.png" alt="Grecia"><span class="flag-name">Grecia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ie.png" alt="Irlanda"><span class="flag-name">Irlanda</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/cz.png" alt="Rep. Tcheca"><span class="flag-name">Rep. Tcheca</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ro.png" alt="Romenia"><span class="flag-name">Romenia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/hu.png" alt="Hungria"><span class="flag-name">Hungria</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/hr.png" alt="Croacia"><span class="flag-name">Croacia</span></div>
+</div>
+
+<!-- DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
+<div class="flags-column right">
+  <div class="flag-un-logo"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/in.png" alt="India"><span class="flag-name">India</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/au.png" alt="Australia"><span class="flag-name">Australia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ru.png" alt="Russia"><span class="flag-name">Russia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/za.png" alt="Africa do Sul"><span class="flag-name">Africa do Sul</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ng.png" alt="Nigeria"><span class="flag-name">Nigeria</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/eg.png" alt="Egito"><span class="flag-name">Egito</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/il.png" alt="Israel"><span class="flag-name">Israel</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/sa.png" alt="Arabia Saudita"><span class="flag-name">Arabia Saudita</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/tr.png" alt="Turquia"><span class="flag-name">Turquia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ch.png" alt="Suica"><span class="flag-name">Suica</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/no.png" alt="Noruega"><span class="flag-name">Noruega</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/nz.png" alt="Nova Zelandia"><span class="flag-name">Nova Zelandia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/id.png" alt="Indonesia"><span class="flag-name">Indonesia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/th.png" alt="Tailandia"><span class="flag-name">Tailandia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/vn.png" alt="Vietna"><span class="flag-name">Vietna</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ph.png" alt="Filipinas"><span class="flag-name">Filipinas</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/my.png" alt="Malasia"><span class="flag-name">Malasia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/sg.png" alt="Singapura"><span class="flag-name">Singapura</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/pk.png" alt="Paquistao"><span class="flag-name">Paquistao</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ae.png" alt="Emirados Arabes"><span class="flag-name">Emirados Arabes</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/qa.png" alt="Qatar"><span class="flag-name">Qatar</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ma.png" alt="Marrocos"><span class="flag-name">Marrocos</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ke.png" alt="Kenya"><span class="flag-name">Kenya</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/et.png" alt="Etiopia"><span class="flag-name">Etiopia</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/gh.png" alt="Gana"><span class="flag-name">Gana</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ao.png" alt="Angola"><span class="flag-name">Angola</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/mz.png" alt="Mocambique"><span class="flag-name">Mocambique</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/ir.png" alt="Ira"><span class="flag-name">Ira</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/iq.png" alt="Iraque"><span class="flag-name">Iraque</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/jo.png" alt="Jordania"><span class="flag-name">Jordania</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/bd.png" alt="Bangladesh"><span class="flag-name">Bangladesh</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/tz.png" alt="Tanzania"><span class="flag-name">Tanzania</span></div>
+  <div class="flag-item"><img src="https://flagcdn.com/w80/kp.png" alt="Coreia do Norte"><span class="flag-name">Coreia do Norte</span></div>
+</div>
 
 <!-- INTEGRATED AGENCIES NETWORK -->
 <section style="max-width:1200px;margin:0 auto 1.5rem;padding:0 1rem;">
@@ -682,7 +732,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- SEARCH -->
 <section class="search-section" id="search-section">
   <h1 class="search-title">Consulte a Seguranca de Qualquer Lugar do Mundo</h1>
-  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana â€” cobertura global</p>
+  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana — cobertura global</p>
   <div class="search-box">
     <input type="text" id="search-input" placeholder="CPF, CNPJ, RG, CEP, endereco, cidade ou pais..." autocomplete="off">
     <button id="search-btn">
@@ -900,10 +950,39 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 </div>
 
+<!-- MANUAL DE INSTRUCOES MULTILINGUE -->
+<section class="manual-section" id="manual-section">
+  <div class="manual-card">
+    <div class="manual-header">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <h2 id="manual-title">Manual de Instrucoes</h2>
+      <select class="manual-lang-select" id="manual-lang" onchange="switchManualLang(this.value)">
+        <option value="pt">Portugues</option>
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ar">Arabic</option>
+        <option value="ru">Russian</option>
+        <option value="ko">Korean</option>
+        <option value="hi">Hindi</option>
+      </select>
+    </div>
+    <div id="manual-content">
+      <!-- Preenchido via JS -->
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer">
   Portal Seguranca Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
-  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.
+  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.<br><br>
+  <strong>&copy; 2026 Portal de Seguran&ccedil;a Global. Todos os direitos reservados.</strong><br>
+  &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.
 </footer>
 
 <script src="app.js"></script>
