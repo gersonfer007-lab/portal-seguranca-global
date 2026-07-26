@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -108,9 +108,11 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 .flags-column.right { right: 4px; }
 .flag-item {
   display: flex; align-items: center; gap: 4px;
-  cursor: default; position: relative; transition: transform .2s;
+  cursor: pointer; position: relative; transition: transform .2s, box-shadow .25s;
+  padding: 1px 3px; border-radius: 4px;
 }
-.flag-item:hover { transform: scale(1.15); z-index: 10; }
+.flag-item:hover { transform: scale(1.15); z-index: 10; background: rgba(59,130,246,.15); }
+.flag-item.flag-active { background: rgba(59,130,246,.25); box-shadow: 0 0 8px rgba(59,130,246,.5); transform: scale(1.12); }
 .flag-item img {
   width: 26px; height: 17px; object-fit: cover; display: block;
   border-radius: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.4); flex-shrink: 0;
@@ -180,7 +182,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   max-width: 440px; width: 100%; padding: 2rem 1.5rem; text-align: center;
   box-shadow: 0 20px 60px rgba(0,0,0,.6); max-height: 90vh; overflow-y: auto;
 }
-.terms-box .terms-emblem { width: 90px; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(59,130,246,.3)); }
+.terms-box .terms-emblem { width: 90px; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(59,130,246,.3)); } 
 .terms-box h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .3rem; color: var(--text-primary); }
 .terms-box .terms-sub { font-size: .7rem; color: var(--accent); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 1.2rem; }
 .terms-box .terms-text {
@@ -275,7 +277,9 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   font-size: 1.4rem; font-weight: 700; margin-bottom: .25rem;
 }
 .result-location p { color: var(--text-secondary); font-size: .85rem; }
-.result-actions { display: flex; gap: .75rem; }
+.result-actions {
+  display: flex; gap: .75rem;
+}
 .btn {
   padding: .65rem 1.2rem; border-radius: var(--radius); font-size: .82rem;
   font-weight: 600; cursor: pointer; border: none; font-family: inherit;
@@ -394,7 +398,9 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   display: flex; align-items: center; justify-content: center;
   font-size: 1rem; flex-shrink: 0;
 }
-.pillar-info { flex: 1; }
+.pillar-info {
+  flex: 1;
+}
 .pillar-info .name { font-size: .78rem; font-weight: 500; margin-bottom: 4px; }
 .pillar-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
 .pillar-bar-fill { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
@@ -732,7 +738,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- SEARCH -->
 <section class="search-section" id="search-section">
   <h1 class="search-title">Consulte a Seguranca de Qualquer Lugar do Mundo</h1>
-  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana — cobertura global</p>
+  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana â€” cobertura global</p>
   <div class="search-box">
     <input type="text" id="search-input" placeholder="CPF, CNPJ, RG, CEP, endereco, cidade ou pais..." autocomplete="off">
     <button id="search-btn">
