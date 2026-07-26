@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <title>Portal Seguranca Global — Background Check Inteligente</title>
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -1003,6 +1003,115 @@ body {
 }
 .paywall-btn-download:hover { background: #0070cc; transform: translateY(-2px); }
 
+/* CAMERA SURVEILLANCE NETWORK */
+.cam-network-section {
+  max-width: 960px; margin: 2rem auto; padding: 0 1rem;
+}
+.cam-network-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 1.5rem; box-shadow: var(--shadow);
+}
+.cam-network-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.2rem;
+  padding-bottom: .8rem; border-bottom: 1px solid var(--border);
+}
+.cam-network-header h2 { font-size: 1.15rem; color: var(--text-primary); margin: 0; flex: 1; }
+.cam-live-badge {
+  background: #ef4444; color: #fff; font-size: .65rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
+  animation: cam-pulse 1.5s ease-in-out infinite; letter-spacing: .08em;
+}
+@keyframes cam-pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+.cam-stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.2rem;
+}
+.cam-stat {
+  background: var(--bg-secondary); border-radius: 10px; padding: 12px 10px;
+  text-align: center; border: 1px solid var(--border);
+}
+.cam-stat-num { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+.cam-stat-label { font-size: .65rem; color: var(--text-secondary); margin-top: 2px; }
+.cam-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; margin-bottom: 1rem;
+}
+.cam-feed {
+  background: #0a0f1a; border-radius: 10px; overflow: hidden; position: relative;
+  border: 1px solid rgba(0,157,255,.15); aspect-ratio: 16/10;
+}
+.cam-feed-img {
+  width: 100%; height: 100%; object-fit: cover; filter: grayscale(.3) brightness(.85);
+  transition: filter .3s;
+}
+.cam-feed:hover .cam-feed-img { filter: grayscale(0) brightness(1); }
+.cam-feed-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,.85));
+  padding: 8px 10px 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.cam-feed-city { font-size: .72rem; font-weight: 700; color: #fff; }
+.cam-feed-info { font-size: .58rem; color: rgba(255,255,255,.6); }
+.cam-feed-status {
+  position: absolute; top: 6px; right: 6px; width: 8px; height: 8px;
+  border-radius: 50%; background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,.6); animation: cam-pulse 2s infinite;
+}
+.cam-feed-status.offline { background: #6b7280; box-shadow: none; animation: none; }
+.cam-feed-status.alert { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,.7); }
+.cam-scan-line {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  animation: cam-scan 3s linear infinite; opacity: 0;
+}
+.cam-feed.scanning .cam-scan-line { opacity: 1; }
+@keyframes cam-scan { 0% { top: 0; } 100% { top: 100%; } }
+.cam-face-box {
+  position: absolute; border: 2px solid #22c55e; border-radius: 4px;
+  box-shadow: 0 0 8px rgba(34,197,94,.4); display: none;
+}
+.cam-face-box.detected { display: block; animation: cam-face-flash .6s ease 3; }
+@keyframes cam-face-flash { 0%,100% { border-color: #22c55e; } 50% { border-color: #ef4444; } }
+.cam-face-label {
+  position: absolute; top: -18px; left: 0; font-size: .55rem; color: #22c55e;
+  background: rgba(0,0,0,.8); padding: 1px 6px; border-radius: 3px; white-space: nowrap;
+}
+.cam-alert-banner {
+  background: linear-gradient(135deg, rgba(239,68,68,.12), rgba(239,68,68,.05));
+  border: 1px solid rgba(239,68,68,.3); border-radius: 10px; padding: 14px;
+  margin-top: 1rem; display: none;
+}
+.cam-alert-banner.active { display: block; animation: fadeIn .4s ease; }
+.cam-alert-title {
+  font-size: .9rem; font-weight: 700; color: #ef4444; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.cam-alert-details { font-size: .78rem; color: var(--text-secondary); line-height: 1.6; }
+.cam-alert-details strong { color: var(--text-primary); }
+.cam-sighting {
+  display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.cam-sighting-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.cam-sighting-dot.high { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.5); }
+.cam-sighting-dot.medium { background: #f59e0b; }
+.cam-sighting-dot.low { background: #6b7280; }
+.cam-sighting-text { font-size: .75rem; color: var(--text-secondary); flex: 1; }
+.cam-sighting-text strong { color: var(--text-primary); }
+.cam-sighting-time { font-size: .65rem; color: var(--text-secondary); white-space: nowrap; }
+.cam-btn-scan {
+  width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer;
+  background: var(--gradient-accent); color: #fff; font-weight: 700; font-size: .9rem;
+  margin-top: 1rem; transition: opacity .2s;
+}
+.cam-btn-scan:hover { opacity: .9; }
+.cam-btn-scan:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 600px) {
+  .cam-stats-row { grid-template-columns: repeat(2,1fr); }
+  .cam-grid { grid-template-columns: 1fr 1fr; }
+}
+
 /* FOOTER */
 .footer {
   text-align: center;
@@ -1043,8 +1152,7 @@ body {
 #pdf-report .pdf-item strong { color: #1a2235; }
 #pdf-report .pdf-summary { font-size: 13px; line-height: 1.7; color: #374151; padding: 16px; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #8b5cf6; }
 #pdf-report .pdf-footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #999; text-align: center; }
-#pdf-report .pdf-meta { display: flex; gap: 16px; margin-bottom: 16px; font-size: 12px; color: #666; }
-#pdf-report .pdf-meta span { background: #f3f4f6; padding: 4px 10px; border-radius: 4px; }
+#pdf-report .pdf-meta { display: flex; gap: 16px; margin-bottom: 16px; font-size: 12px; color: #666; }#pdf-report .pdf-meta span { background: #f3f4f6; padding: 4px 10px; border-radius: 4px; }
 
 /* LEGAL CONSENT */
 .consent-overlay {
@@ -1737,12 +1845,103 @@ body {
   </div>
 </div>
 
+<!-- REDE GLOBAL DE CAMERAS DE VIGILANCIA -->
+<section class="cam-network-section" id="cam-network-section">
+  <div class="cam-network-card">
+    <div class="cam-network-header">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <h2>Rede Global de Cameras de Vigilancia</h2>
+      <span class="cam-live-badge">LIVE</span>
+    </div>
+
+    <div class="cam-stats-row">
+      <div class="cam-stat"><div class="cam-stat-num" id="cam-total">2.847.391</div><div class="cam-stat-label">Cameras Conectadas</div></div>
+      <div class="cam-stat"><div class="cam-stat-num" id="cam-countries">194</div><div class="cam-stat-label">Paises Integrados</div></div>
+      <div class="cam-stat"><div class="cam-stat-num" id="cam-cities">12.458</div><div class="cam-stat-label">Cidades Monitoradas</div></div>
+      <div class="cam-stat"><div class="cam-stat-num" id="cam-found">34.219</div><div class="cam-stat-label">Pessoas Localizadas</div></div>
+    </div>
+
+    <div class="cam-grid" id="cam-grid">
+      <div class="cam-feed" id="cam-1">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=250&fit=crop" alt="London">
+        <div class="cam-scan-line"></div>
+        <div class="cam-face-box" style="top:30%;left:40%;width:18%;height:30%;"><span class="cam-face-label">Scanning...</span></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Londres, Reino Unido</span><span class="cam-feed-info">CAM-UK-4821 | Trafalgar Square</span></div>
+      </div>
+      <div class="cam-feed" id="cam-2">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1534430480872-3498386e7856?w=400&h=250&fit=crop" alt="New York">
+        <div class="cam-scan-line"></div>
+        <div class="cam-face-box" style="top:25%;left:55%;width:15%;height:28%;"><span class="cam-face-label">Scanning...</span></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">New York, EUA</span><span class="cam-feed-info">CAM-US-7103 | Times Square</span></div>
+      </div>
+      <div class="cam-feed" id="cam-3">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=400&h=250&fit=crop" alt="Tokyo">
+        <div class="cam-scan-line"></div>
+        <div class="cam-face-box" style="top:20%;left:35%;width:16%;height:32%;"><span class="cam-face-label">Scanning...</span></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Tokyo, Japao</span><span class="cam-feed-info">CAM-JP-2190 | Shibuya Crossing</span></div>
+      </div>
+      <div class="cam-feed" id="cam-4">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400&h=250&fit=crop" alt="Rio de Janeiro">
+        <div class="cam-scan-line"></div>
+        <div class="cam-face-box" style="top:35%;left:45%;width:14%;height:26%;"><span class="cam-face-label">Scanning...</span></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Rio de Janeiro, Brasil</span><span class="cam-feed-info">CAM-BR-0891 | Copacabana</span></div>
+      </div>
+      <div class="cam-feed" id="cam-5">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=250&fit=crop" alt="Paris">
+        <div class="cam-scan-line"></div>
+        <div class="cam-face-box" style="top:28%;left:50%;width:13%;height:25%;"><span class="cam-face-label">Scanning...</span></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Paris, Franca</span><span class="cam-feed-info">CAM-FR-3354 | Champs-Elysees</span></div>
+      </div>
+      <div class="cam-feed" id="cam-6">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=400&h=250&fit=crop" alt="Dubai">
+        <div class="cam-scan-line"></div>
+        <div class="cam-face-box" style="top:22%;left:42%;width:17%;height:30%;"><span class="cam-face-label">Scanning...</span></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Dubai, Emirados Arabes</span><span class="cam-feed-info">CAM-AE-1567 | Downtown</span></div>
+      </div>
+      <div class="cam-feed" id="cam-7">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1520986606214-8b456906c813?w=400&h=250&fit=crop" alt="Sydney">
+        <div class="cam-scan-line"></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Sydney, Australia</span><span class="cam-feed-info">CAM-AU-0445 | Harbour Bridge</span></div>
+      </div>
+      <div class="cam-feed" id="cam-8">
+        <img class="cam-feed-img" src="https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400&h=250&fit=crop" alt="Moscow">
+        <div class="cam-scan-line"></div>
+        <div class="cam-feed-status"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Moscou, Russia</span><span class="cam-feed-info">CAM-RU-9921 | Red Square</span></div>
+      </div>
+    </div>
+
+    <button class="cam-btn-scan" id="cam-btn-scan" onclick="startCameraScan()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Iniciar Varredura Facial nas Cameras Globais
+    </button>
+
+    <!-- Resultado do scan -->
+    <div class="cam-alert-banner" id="cam-alert-banner">
+      <div class="cam-alert-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span id="cam-alert-title-text">Correspondencias Faciais Detectadas</span>
+      </div>
+      <div class="cam-alert-details" id="cam-alert-details">
+        <!-- Preenchido via JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer">
   Portal Seguranca Global &copy; 2026 — portalsegurancaglobal.com.br<br>
-  Cooperacao com orgaos publicos internacionais: ONU, INTERPOL, FBI, Europol, UNODC, ACNUR, Policia Federal, Civil e Militar.<br>
-  Consulta em conformidade com LGPD, GDPR, CCPA e Declaracao Universal dos Direitos Humanos.<br>
-  Dados publicos. Respeito integral aos direitos individuais. Nao substitui avaliacao profissional.
+  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.<br><br>
+  <strong>&copy; 2026 Portal de Seguran&ccedil;a Global. Todos os direitos reservados.</strong><br>
+  &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.
 </footer>
 
 <script src="background-check.js"></script>
