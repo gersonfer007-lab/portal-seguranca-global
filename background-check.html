@@ -1,0 +1,1750 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Seguranca Global — Background Check Inteligente</title>
+
+<!-- SECURITY HEADERS -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #151c2e;
+  --bg-card-hover: #1a2340;
+  --border: #1e293b;
+  --border-active: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,.25);
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --risk-low: #22c55e;
+  --risk-medium: #f59e0b;
+  --risk-high: #ef4444;
+  --risk-critical: #dc2626;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --font: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* HEADER */
+.header {
+  background: rgba(17,24,39,.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: .02em;
+}
+.header-brand .icon {
+  width: 32px; height: 32px;
+  background: var(--gradient-accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem;
+}
+.header-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: .55rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.header-badge.ai {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+.header-nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.header-nav a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: .8rem;
+  font-weight: 500;
+  transition: color .2s;
+}
+.header-nav a:hover { color: var(--text-primary); }
+.header-status {
+  font-size: .7rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+.header-status .dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+/* SEARCH SECTION */
+.search-section {
+  text-align: center;
+  padding: 3rem 1.5rem 2rem;
+  background: linear-gradient(180deg, rgba(59,130,246,.06) 0%, transparent 100%);
+}
+.search-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  margin-bottom: .5rem;
+  background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.search-subtitle {
+  color: var(--text-secondary);
+  font-size: .9rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* SEARCH FORM */
+.search-form {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+.form-row {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: .75rem;
+}
+.form-row:last-child { margin-bottom: 0; }
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+.form-group label {
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.form-group input, .form-group select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .7rem 1rem;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: .85rem;
+  outline: none;
+  transition: border-color .2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--accent);
+}
+.form-group input::placeholder {
+  color: var(--text-muted);
+}
+.search-type-tabs {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.search-type-tab {
+  flex: 1;
+  padding: .6rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: .75rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: var(--font);
+}
+.search-type-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+.search-type-tab.active {
+  background: rgba(59,130,246,.12);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-search {
+  width: 100%;
+  padding: .8rem;
+  background: var(--gradient-accent);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font);
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  transition: opacity .2s;
+  margin-top: .5rem;
+}
+.btn-search:hover { opacity: .9; }
+.btn-search:disabled { opacity: .5; cursor: not-allowed; }
+
+.search-hint {
+  font-size: .7rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+}
+.search-hint kbd {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: .65rem;
+}
+
+/* HOMONIMOS FILTER */
+.homonimo-filter {
+  display: none;
+  margin-top: .75rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--border);
+}
+.homonimo-filter.active { display: block; }
+.homonimo-label {
+  font-size: .7rem;
+  color: var(--risk-medium);
+  font-weight: 600;
+  margin-bottom: .5rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+/* LOADING */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,14,26,.92);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+.loading-overlay.active { display: flex; }
+.loading-brain {
+  width: 80px; height: 80px;
+  position: relative;
+}
+.loading-brain .brain-icon {
+  font-size: 3rem;
+  animation: brain-pulse 1.5s ease-in-out infinite;
+}
+@keyframes brain-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: .7; }
+}
+.loading-brain .ring {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.loading-brain .ring:nth-child(2) {
+  inset: -16px;
+  border-top-color: #8b5cf6;
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+.loading-subtitle {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 400px;
+}
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  width: 100%;
+  max-width: 400px;
+}
+.loading-step {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .78rem;
+  color: var(--text-muted);
+  transition: color .3s;
+}
+.loading-step.active { color: var(--accent); }
+.loading-step.done { color: var(--risk-low); }
+.loading-step .step-icon {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem;
+  flex-shrink: 0;
+}
+.loading-step .step-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+/* RESULTS */
+.results-section {
+  display: none;
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.results-section.active { display: block; }
+
+/* RISK BANNER */
+.risk-banner {
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border: 1px solid;
+}
+.risk-banner.risk-low {
+  background: rgba(34,197,94,.06);
+  border-color: rgba(34,197,94,.2);
+}
+.risk-banner.risk-medium {
+  background: rgba(245,158,11,.06);
+  border-color: rgba(245,158,11,.2);
+}
+.risk-banner.risk-high {
+  background: rgba(239,68,68,.06);
+  border-color: rgba(239,68,68,.2);
+}
+.risk-gauge {
+  position: relative;
+  width: 100px; height: 100px;
+  flex-shrink: 0;
+}
+.risk-gauge svg { transform: rotate(-90deg); }
+.risk-gauge-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+.risk-gauge-fill {
+  fill: none; stroke-width: 6; stroke-linecap: round;
+  transition: stroke-dashoffset 1.5s ease, stroke .5s;
+}
+.risk-gauge-value {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.risk-gauge-value .risk-score {
+  font-size: 1.5rem; font-weight: 900;
+  font-family: var(--mono);
+  line-height: 1;
+}
+.risk-gauge-value .risk-label-small {
+  font-size: .5rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 600;
+  opacity: .7;
+}
+.risk-info { flex: 1; }
+.risk-info h2 {
+  font-size: 1.2rem; font-weight: 800;
+  margin-bottom: .3rem;
+}
+.risk-info .risk-classification {
+  font-size: .9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.risk-info .risk-summary {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  margin-top: .5rem;
+  line-height: 1.5;
+}
+.risk-actions {
+  display: flex;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+.btn {
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  transition: all .2s;
+  text-decoration: none;
+}
+.btn:hover { border-color: var(--accent); }
+.btn-primary {
+  background: var(--gradient-accent);
+  border: none;
+  color: #fff;
+}
+
+/* SUBJECT INFO */
+.subject-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.subject-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.subject-avatar {
+  width: 48px; height: 48px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent);
+  border: 2px solid var(--border);
+}
+.subject-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.subject-doc {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  font-family: var(--mono);
+}
+.subject-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: .5rem;
+}
+.subject-meta-item {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: .6rem .8rem;
+}
+.subject-meta-item .meta-label {
+  font-size: .6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+.subject-meta-item .meta-value {
+  font-size: .82rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* RESULTS GRID */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 768px) { .results-grid { grid-template-columns: 1fr; } }
+
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.result-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.result-card-header h3 {
+  font-size: .85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.result-card-header .count-badge {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: .65rem;
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.result-card-header .count-badge.alert {
+  background: rgba(239,68,68,.1);
+  border-color: rgba(239,68,68,.3);
+  color: var(--risk-high);
+}
+.result-card-body {
+  padding: 1rem 1.25rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.result-card-body::-webkit-scrollbar { width: 4px; }
+.result-card-body::-webkit-scrollbar-track { background: transparent; }
+.result-card-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* PROCESS ITEM */
+.process-item {
+  padding: .75rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: .5rem;
+  border-left: 3px solid var(--border);
+}
+.process-item.civil { border-left-color: var(--accent); }
+.process-item.criminal { border-left-color: var(--risk-high); }
+.process-item.trabalhista { border-left-color: var(--risk-medium); }
+.process-item.tributario { border-left-color: #a855f7; }
+.process-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: .3rem;
+}
+.process-number {
+  font-size: .7rem;
+  font-family: var(--mono);
+  color: var(--text-muted);
+}
+.process-type {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+}
+.process-type.civil { background: rgba(59,130,246,.15); color: var(--accent); }
+.process-type.criminal { background: rgba(239,68,68,.15); color: var(--risk-high); }
+.process-type.trabalhista { background: rgba(245,158,11,.15); color: var(--risk-medium); }
+.process-type.tributario { background: rgba(168,85,247,.15); color: #a855f7; }
+.process-title {
+  font-size: .8rem;
+  font-weight: 600;
+  margin-bottom: .2rem;
+}
+.process-detail {
+  font-size: .72rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.process-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .65rem;
+  font-weight: 600;
+  margin-top: .3rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-card);
+}
+.process-status.ativo { color: var(--risk-high); }
+.process-status.arquivado { color: var(--text-muted); }
+.process-status.encerrado { color: var(--risk-low); }
+
+/* GAZETTE ITEM */
+.gazette-item {
+  padding: .75rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: .5rem;
+}
+.gazette-source {
+  font-size: .65rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  margin-bottom: .2rem;
+}
+.gazette-title {
+  font-size: .8rem;
+  font-weight: 600;
+  margin-bottom: .15rem;
+}
+.gazette-excerpt {
+  font-size: .72rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.gazette-date {
+  font-size: .65rem;
+  color: var(--text-muted);
+  margin-top: .3rem;
+  font-family: var(--mono);
+}
+
+/* FINANCIAL ITEM */
+.financial-item {
+  padding: .75rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: .5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.financial-item .fi-label {
+  font-size: .78rem;
+  font-weight: 600;
+}
+.financial-item .fi-detail {
+  font-size: .68rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.financial-item .fi-value {
+  text-align: right;
+}
+.financial-item .fi-status {
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.fi-status.regular { background: rgba(34,197,94,.12); color: var(--risk-low); }
+.fi-status.pendente { background: rgba(245,158,11,.12); color: var(--risk-medium); }
+.fi-status.irregular { background: rgba(239,68,68,.12); color: var(--risk-high); }
+
+/* AI SUMMARY */
+.ai-summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(139,92,246,.05), rgba(236,72,153,.05));
+}
+.ai-summary-header h3 {
+  font-size: .85rem;
+  font-weight: 700;
+}
+.ai-summary-header .ai-badge {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  color: #fff;
+  font-size: .55rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.ai-summary-body {
+  padding: 1.25rem;
+}
+.ai-summary-text {
+  font-size: .85rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.ai-summary-text strong {
+  color: var(--text-primary);
+}
+.ai-summary-text p { margin-bottom: .75rem; }
+.ai-summary-text p:last-child { margin-bottom: 0; }
+.ai-disclaimer {
+  font-size: .65rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+}
+
+/* FULL WIDTH CARD */
+.full-width { grid-column: 1 / -1; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+.empty-state .empty-icon {
+  font-size: 2rem;
+  margin-bottom: .5rem;
+  opacity: .5;
+}
+
+/* FACIAL RECOGNITION */
+.facial-upload-area {
+  border: 2px dashed rgba(0,157,255,.3);
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  background: rgba(0,157,255,.04);
+  transition: all .3s;
+  cursor: pointer;
+}
+.facial-upload-area:hover, .facial-upload-area.drag-over {
+  border-color: var(--accent);
+  background: rgba(0,157,255,.1);
+  box-shadow: 0 0 30px rgba(0,157,255,.15);
+}
+.facial-icon { font-size: 3rem; margin-bottom: .8rem; }
+.facial-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: .4rem; }
+.facial-subtitle { font-size: .85rem; color: var(--text-secondary); margin-bottom: 1.2rem; }
+.facial-buttons { display: flex; gap: .8rem; justify-content: center; margin-bottom: 1rem; }
+.facial-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .6rem 1.2rem; border-radius: 8px;
+  background: var(--accent); color: #fff; border: none;
+  font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: all .2s;
+}
+.facial-btn:hover { background: #0070cc; transform: translateY(-1px); }
+.facial-btn.camera-btn { background: rgba(255,255,255,.1); border: 1px solid var(--border); }
+.facial-btn.camera-btn:hover { background: rgba(255,255,255,.15); border-color: var(--accent); }
+.facial-formats { font-size: .72rem; color: var(--text-muted); }
+
+/* Camera Container */
+.camera-container {
+  border-radius: 16px; overflow: hidden;
+  border: 2px solid var(--accent);
+  position: relative; background: #000;
+}
+.camera-container video { width: 100%; display: block; }
+.camera-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.camera-frame {
+  width: 200px; height: 260px;
+  border: 3px solid var(--accent);
+  border-radius: 50% 50% 45% 45%;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.5), 0 0 20px rgba(0,157,255,.4);
+  animation: pulse-frame 2s infinite;
+}
+@keyframes pulse-frame {
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(0,0,0,.5), 0 0 20px rgba(0,157,255,.3); }
+  50% { box-shadow: 0 0 0 9999px rgba(0,0,0,.5), 0 0 40px rgba(0,157,255,.6); }
+}
+.camera-controls {
+  display: flex; gap: 1rem; justify-content: center;
+  padding: 1rem; background: rgba(10,14,26,.9);
+}
+
+/* Preview with Scan Animation */
+.facial-preview { border-radius: 16px; overflow: hidden; border: 2px solid var(--accent); }
+.preview-img-container {
+  position: relative; overflow: hidden;
+  background: #000; max-height: 400px;
+}
+.preview-img-container img {
+  width: 100%; display: block;
+  object-fit: contain; max-height: 400px;
+}
+.scan-line {
+  position: absolute; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, #00ff88, var(--accent), #00ff88, transparent);
+  box-shadow: 0 0 15px #00ff88, 0 0 30px rgba(0,157,255,.5);
+  top: 0; display: none;
+  animation: scan-down 2.5s ease-in-out infinite;
+}
+.scan-line.active { display: block; }
+@keyframes scan-down {
+  0% { top: 0; }
+  50% { top: calc(100% - 3px); }
+  100% { top: 0; }
+}
+.face-detect-box {
+  position: absolute;
+  border: 2px solid #00ff88;
+  border-radius: 8px;
+  display: none;
+  box-shadow: 0 0 12px rgba(0,255,136,.4);
+  animation: detect-pulse 1.5s infinite;
+}
+.face-detect-box.active { display: block; }
+@keyframes detect-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(0,255,136,.4); }
+  50% { box-shadow: 0 0 25px rgba(0,255,136,.7), inset 0 0 10px rgba(0,255,136,.1); }
+}
+.facial-points {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.facial-points .fp {
+  position: absolute; width: 6px; height: 6px;
+  background: #00ff88; border-radius: 50%;
+  box-shadow: 0 0 6px #00ff88;
+  animation: point-blink 1s infinite alternate;
+}
+@keyframes point-blink {
+  0% { opacity: .4; transform: scale(.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+.preview-info {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .8rem 1rem; background: rgba(10,14,26,.9);
+}
+.preview-status {
+  font-size: .85rem; font-weight: 600;
+  color: #00ff88; display: flex; align-items: center; gap: .4rem;
+}
+.preview-status.scanning { color: var(--accent); }
+.preview-status.error { color: #ef4444; }
+
+/* ANTI-COPY PROTECTION — resultado bloqueado ate pagar */
+.result-protected {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: auto;
+  position: relative;
+}
+.result-protected::after {
+  content: '';
+  position: absolute; inset: 0;
+  z-index: 5;
+}
+.result-protected .risk-summary,
+.result-protected .pdf-summary,
+.result-protected .interpol-alert-body {
+  filter: blur(3px);
+  transition: filter .3s;
+}
+.result-unlocked .risk-summary,
+.result-unlocked .pdf-summary,
+.result-unlocked .interpol-alert-body {
+  filter: none !important;
+}
+.result-unlocked::after { display: none; }
+.result-unlocked { user-select: auto !important; }
+
+/* PAYWALL MODAL */
+.paywall-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(12px);
+  align-items: center; justify-content: center; padding: 1rem;
+}
+.paywall-overlay.active { display: flex; }
+.paywall-box {
+  background: linear-gradient(145deg, #0f1728, #1a2438);
+  border: 1px solid rgba(0,157,255,.25);
+  border-radius: 20px; padding: 2rem; max-width: 480px; width: 100%;
+  position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+.paywall-close {
+  position: absolute; top: 12px; right: 16px;
+  font-size: 1.5rem; color: var(--text-muted);
+  cursor: pointer; line-height: 1;
+}
+.paywall-close:hover { color: var(--text-primary); }
+.paywall-icon { text-align: center; font-size: 2.5rem; margin-bottom: .5rem; }
+.paywall-title {
+  text-align: center; font-size: 1.3rem; color: var(--text-primary);
+  margin-bottom: .5rem;
+}
+.paywall-desc {
+  text-align: center; font-size: .85rem; color: var(--text-secondary);
+  margin-bottom: 1.2rem; line-height: 1.5;
+}
+.paywall-features {
+  background: rgba(0,157,255,.06); border-radius: 12px;
+  padding: 1rem; margin-bottom: 1.2rem;
+}
+.paywall-feat {
+  font-size: .82rem; color: var(--text-secondary);
+  padding: .3rem 0; display: flex; align-items: center; gap: .5rem;
+}
+.pf-check { color: #00ff88; font-weight: 700; }
+.paywall-email { margin-bottom: 1.2rem; }
+.paywall-email label {
+  display: block; font-size: .82rem; color: var(--text-secondary);
+  margin-bottom: .4rem; font-weight: 600;
+}
+.paywall-email input {
+  width: 100%; padding: .7rem 1rem; border-radius: 10px;
+  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  color: var(--text-primary); font-size: .9rem;
+  outline: none; transition: border .2s;
+}
+.paywall-email input:focus { border-color: var(--accent); }
+.paywall-prices {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .8rem;
+  margin-bottom: 1rem;
+}
+.paywall-btn {
+  display: flex; flex-direction: column; align-items: center; gap: .2rem;
+  padding: 1rem; border-radius: 12px; border: 2px solid var(--border);
+  background: rgba(255,255,255,.03); cursor: pointer;
+  transition: all .25s; color: var(--text-primary);
+}
+.paywall-btn:hover { border-color: var(--accent); background: rgba(0,157,255,.08); transform: translateY(-2px); }
+.paywall-currency { font-size: .75rem; color: var(--text-muted); }
+.paywall-price { font-size: 1.4rem; font-weight: 800; color: #00ff88; }
+.paywall-method { font-size: .7rem; color: var(--text-muted); }
+.paywall-btn-brl:hover .paywall-price { color: #00cc6a; }
+.paywall-btn-usd:hover .paywall-price { color: #00cc6a; }
+.paywall-secure {
+  display: flex; align-items: center; justify-content: center; gap: .4rem;
+  font-size: .72rem; color: var(--text-muted); text-align: center;
+}
+/* Processing */
+.paywall-processing { text-align: center; padding: 2rem 0; }
+.paywall-spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: pw-spin 1s linear infinite; margin: 0 auto .8rem;
+}
+@keyframes pw-spin { to { transform: rotate(360deg); } }
+.paywall-proc-text { font-size: .9rem; color: var(--text-secondary); }
+/* Success */
+.paywall-success { text-align: center; padding: 1rem 0; }
+.paywall-success-icon { font-size: 3rem; margin-bottom: .5rem; }
+.paywall-success h3 { color: #00ff88; font-size: 1.2rem; margin-bottom: .5rem; }
+.paywall-success p { font-size: .85rem; color: var(--text-secondary); margin-bottom: .3rem; }
+.paywall-success-email {
+  font-size: 1rem; font-weight: 700; color: var(--accent);
+  padding: .5rem; background: rgba(0,157,255,.1); border-radius: 8px;
+  margin: .5rem 0;
+}
+.paywall-success-note { font-size: .78rem; margin-bottom: 1rem; }
+.paywall-btn-download {
+  display: inline-flex; flex-direction: row; gap: .5rem;
+  padding: .8rem 2rem; border-radius: 10px;
+  background: var(--accent); border: none;
+  color: #fff; font-size: .95rem; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+.paywall-btn-download:hover { background: #0070cc; transform: translateY(-2px); }
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  font-size: .72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+/* PDF HIDDEN REPORT */
+#pdf-report {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 800px;
+  background: #fff;
+  color: #111;
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
+}
+#pdf-report h1 { font-size: 22px; color: #1a2235; margin-bottom: 4px; }
+#pdf-report .pdf-subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+#pdf-report .pdf-risk-box {
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+#pdf-report .pdf-risk-box.low { background: #f0fdf4; border: 2px solid #22c55e; }
+#pdf-report .pdf-risk-box.medium { background: #fffbeb; border: 2px solid #f59e0b; }
+#pdf-report .pdf-risk-box.high { background: #fef2f2; border: 2px solid #ef4444; }
+#pdf-report .pdf-risk-score { font-size: 48px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+#pdf-report .pdf-risk-label { font-size: 14px; font-weight: 700; text-transform: uppercase; }
+#pdf-report .pdf-section { margin-bottom: 18px; }
+#pdf-report .pdf-section h3 { font-size: 14px; color: #1a2235; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 10px; }
+#pdf-report .pdf-item { padding: 8px 12px; background: #f9fafb; border-radius: 6px; margin-bottom: 6px; font-size: 12px; line-height: 1.5; }
+#pdf-report .pdf-item strong { color: #1a2235; }
+#pdf-report .pdf-summary { font-size: 13px; line-height: 1.7; color: #374151; padding: 16px; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #8b5cf6; }
+#pdf-report .pdf-footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #999; text-align: center; }
+#pdf-report .pdf-meta { display: flex; gap: 16px; margin-bottom: 16px; font-size: 12px; color: #666; }
+#pdf-report .pdf-meta span { background: #f3f4f6; padding: 4px 10px; border-radius: 4px; }
+
+/* LEGAL CONSENT */
+.consent-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,14,26,.95);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(12px);
+}
+.consent-overlay.active { display: flex; }
+.consent-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+}
+.consent-box h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: .3rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.consent-box .consent-sub {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+.consent-section {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+.consent-section h4 {
+  font-size: .8rem;
+  font-weight: 700;
+  margin-bottom: .4rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.consent-section p, .consent-section ul {
+  font-size: .75rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.consent-section ul { padding-left: 1.2rem; margin-top: .3rem; }
+.consent-section.rights { border-left-color: var(--risk-low); }
+.consent-section.legal { border-left-color: #a855f7; }
+.consent-section.agencies { border-left-color: var(--risk-medium); }
+.consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  margin: 1rem 0;
+  font-size: .78rem;
+  color: var(--text-secondary);
+}
+.consent-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.consent-actions {
+  display: flex;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+.consent-actions .btn { flex: 1; justify-content: center; }
+
+/* AGENCY CARDS */
+.agencies-section {
+  margin-bottom: 1.5rem;
+}
+.agencies-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.agencies-header h3 {
+  font-size: .95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.agencies-header .access-level {
+  font-size: .6rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.access-level.public { background: rgba(34,197,94,.12); color: var(--risk-low); }
+.access-level.restricted { background: rgba(245,158,11,.12); color: var(--risk-medium); }
+.access-level.classified { background: rgba(239,68,68,.12); color: var(--risk-high); }
+
+.agencies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: .5rem;
+}
+.agency-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .8rem;
+  text-align: center;
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+}
+.agency-card:hover { border-color: var(--accent); }
+.agency-card.checked { border-color: var(--risk-low); }
+.agency-card.checked::after {
+  content: '';
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--risk-low);
+  border-radius: 50%;
+}
+.agency-card.alert { border-color: var(--risk-high); }
+.agency-card.alert::after {
+  content: '';
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--risk-high);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+.agency-card .agency-flag {
+  font-size: 1.4rem;
+  margin-bottom: .3rem;
+}
+.agency-card .agency-name {
+  font-size: .7rem;
+  font-weight: 700;
+  margin-bottom: .15rem;
+}
+.agency-card .agency-country {
+  font-size: .6rem;
+  color: var(--text-muted);
+}
+.agency-card .agency-status {
+  font-size: .55rem;
+  font-weight: 600;
+  margin-top: .4rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.agency-status.clear { background: rgba(34,197,94,.12); color: var(--risk-low); }
+.agency-status.found { background: rgba(239,68,68,.12); color: var(--risk-high); }
+.agency-status.pending { background: rgba(100,116,139,.15); color: var(--text-muted); }
+.agency-status.restricted { background: rgba(245,158,11,.12); color: var(--risk-medium); }
+
+/* INTERPOL ALERT */
+.interpol-alert {
+  background: linear-gradient(135deg, rgba(239,68,68,.08), rgba(220,38,38,.04));
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: none;
+}
+.interpol-alert.active { display: block; }
+.interpol-alert-header {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .5rem;
+}
+.interpol-alert-header h4 {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--risk-high);
+}
+.interpol-alert-body {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* RIGHTS BANNER */
+.rights-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.rights-banner .rights-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.rights-banner .rights-text h4 {
+  font-size: .82rem;
+  font-weight: 700;
+  margin-bottom: .3rem;
+  color: var(--risk-low);
+}
+.rights-banner .rights-text p {
+  font-size: .72rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.rights-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .5rem;
+}
+.rights-badges .rbadge {
+  font-size: .55rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .header { padding: 0 1rem; }
+  .header-nav { display: none; }
+  .search-section { padding: 2rem 1rem 1.5rem; }
+  .search-title { font-size: 1.3rem; }
+  .form-row { flex-direction: column; gap: .5rem; }
+  .results-section { padding: 1rem; }
+  .risk-banner { flex-direction: column; text-align: center; padding: 1.25rem; }
+  .subject-meta { grid-template-columns: 1fr; }
+  .risk-actions { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="icon">&#128737;</div>
+    <span>PORTAL SEGURANCA GLOBAL</span>
+    <span class="header-badge ai">AI Check</span>
+  </div>
+  <div class="header-nav">
+    <a href="index.html">Mapa de Seguranca</a>
+    <a href="#" style="color:var(--accent);">Background Check</a>
+  </div>
+  <div class="header-status">
+    <span class="dot"></span>
+    IA Ativa — Agentes prontos
+  </div>
+</header>
+
+<!-- LEGAL CONSENT OVERLAY -->
+<div class="consent-overlay" id="consent-overlay">
+  <div class="consent-box">
+    <h2>&#9878; Termo de Uso e Consentimento Legal</h2>
+    <p class="consent-sub">Antes de prosseguir, e necessario aceitar os termos de uso do sistema de Background Check com cooperacao de orgaos publicos.</p>
+
+    <div class="consent-section rights">
+      <h4>&#128737; Garantias de Direitos Individuais</h4>
+      <p>Este sistema opera em total conformidade com os direitos fundamentais de cada pessoa:</p>
+      <ul>
+        <li><strong>Presuncao de Inocencia</strong> — Registros nao significam culpa. Todo cidadao e inocente ate prova em contrario.</li>
+        <li><strong>Direito a Privacidade</strong> — Somente dados publicos e de acesso autorizado sao consultados.</li>
+        <li><strong>Direito ao Esquecimento</strong> — Processos arquivados, absolvicoes e reabilitacoes sao tratados adequadamente.</li>
+        <li><strong>Vedacao a Discriminacao</strong> — Resultados nao podem ser utilizados para discriminacao de qualquer natureza.</li>
+        <li><strong>Due Process</strong> — O acesso a dados restritos requer autorizacao judicial ou consentimento do titular.</li>
+      </ul>
+    </div>
+
+    <div class="consent-section legal">
+      <h4>&#128220; Legislacao Aplicavel por Jurisdicao</h4>
+      <ul>
+        <li><strong>Brasil:</strong> LGPD (Lei 13.709/2018), Constituicao Federal Art. 5, Lei de Acesso a Informacao</li>
+        <li><strong>Europa:</strong> GDPR (Regulamento UE 2016/679), Convencao Europeia de Direitos Humanos</li>
+        <li><strong>EUA:</strong> CCPA (California), FCRA (Fair Credit Reporting Act), Privacy Act of 1974</li>
+        <li><strong>Internacional:</strong> Declaracao Universal dos Direitos Humanos (ONU), Convencao de Budapeste</li>
+      </ul>
+    </div>
+
+    <div class="consent-section agencies">
+      <h4>&#127963; Orgaos Consultados Mediante Cooperacao</h4>
+      <p>O sistema consulta bases de dados publicas e, mediante autorizacao, coopera com os seguintes orgaos:</p>
+      <ul>
+        <li><strong>Internacionais:</strong> INTERPOL (I-24/7), Europol (SIENA), ICC</li>
+        <li><strong>Brasil:</strong> Policia Federal (SINPI), Policia Civil, Policia Militar, Ministerio Publico</li>
+        <li><strong>EUA:</strong> FBI (NCIC/III), DEA, U.S. Marshals, ICE</li>
+        <li><strong>Europa:</strong> Scotland Yard (UK), BKA (Alemanha), DGSI (Franca), Guardia Civil (Espanha)</li>
+        <li><strong>Outros:</strong> RCMP (Canada), AFP (Australia), NPA (Japao)</li>
+      </ul>
+    </div>
+
+    <div class="consent-check">
+      <input type="checkbox" id="consent-check-1">
+      <label for="consent-check-1">Declaro que esta consulta tem finalidade legitima (contratacao, locacao, due diligence ou seguranca) e que nao utilizarei os resultados para fins discriminatorios ou ilegais.</label>
+    </div>
+
+    <div class="consent-check">
+      <input type="checkbox" id="consent-check-2">
+      <label for="consent-check-2">Compreendo que os dados sao provenientes de fontes publicas e de cooperacao institucional, e que o sistema respeita integralmente os direitos individuais e as legislacoes de protecao de dados aplicaveis.</label>
+    </div>
+
+    <div class="consent-actions">
+      <button class="btn" id="btn-reject-consent">Recusar</button>
+      <button class="btn btn-primary" id="btn-accept-consent" disabled>Aceitar e Prosseguir</button>
+    </div>
+  </div>
+</div>
+
+<!-- INTEGRATED AGENCIES NETWORK -->
+<section style="max-width:1100px;margin:0 auto 1.5rem;padding:0 1rem;">
+  <img src="agencies-network.png" alt="Portal Seguranca Global - Rede Integrada de Orgaos de Seguranca" style="width:100%;border-radius:12px;border:1px solid rgba(0,157,255,.18);box-shadow:0 4px 24px rgba(0,0,0,.45);">
+</section>
+
+<!-- SEARCH -->
+<section class="search-section" id="search-section">
+  <h1 class="search-title">Background Check Inteligente</h1>
+  <p class="search-subtitle">
+    Consulta automatizada com inteligencia artificial e cooperacao de orgaos publicos internacionais.
+    Varredura em fontes judiciais, policiais, diarios oficiais e portais de transparencia
+    com total respeito aos direitos individuais.
+  </p>
+
+  <div class="search-form" id="search-form">
+    <div class="search-type-tabs">
+      <div class="search-type-tab active" data-type="cpf">CPF</div>
+      <div class="search-type-tab" data-type="cnpj">CNPJ</div>
+      <div class="search-type-tab" data-type="nome">Nome Completo</div>
+      <div class="search-type-tab" data-type="facial">&#128247; Reconhecimento Facial</div>
+    </div>
+
+    <div class="form-row" id="doc-row">
+      <div class="form-group">
+        <label id="doc-label">CPF</label>
+        <input type="text" id="doc-input" placeholder="000.000.000-00" maxlength="14"
+               oninput="formatDocument(this)">
+      </div>
+    </div>
+
+    <div class="form-row" id="name-row" style="display:none;">
+      <div class="form-group">
+        <label>Nome Completo</label>
+        <input type="text" id="name-input" placeholder="Nome completo da pessoa ou razao social">
+      </div>
+    </div>
+
+    <!-- FACIAL RECOGNITION UPLOAD -->
+    <div class="form-row" id="facial-row" style="display:none;">
+      <div class="facial-upload-area" id="facial-upload-area">
+        <div class="facial-icon">&#128247;</div>
+        <div class="facial-title">Envie uma foto para Reconhecimento Facial</div>
+        <div class="facial-subtitle">Arraste uma imagem aqui ou clique para selecionar</div>
+        <div class="facial-buttons">
+          <label class="facial-btn" id="facial-btn-upload">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Enviar Foto
+            <input type="file" id="facial-file-input" accept="image/*" style="display:none;">
+          </label>
+          <button class="facial-btn camera-btn" id="facial-btn-camera">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Usar Camera
+          </button>
+        </div>
+        <div class="facial-formats">Formatos aceitos: JPG, PNG, WEBP (max. 10MB)</div>
+      </div>
+
+      <!-- Camera Preview -->
+      <div class="camera-container" id="camera-container" style="display:none;">
+        <video id="camera-video" autoplay playsinline></video>
+        <div class="camera-overlay">
+          <div class="camera-frame"></div>
+        </div>
+        <div class="camera-controls">
+          <button class="facial-btn" id="camera-capture">&#128248; Capturar</button>
+          <button class="facial-btn camera-btn" id="camera-cancel">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Photo Preview with Scan -->
+      <div class="facial-preview" id="facial-preview" style="display:none;">
+        <div class="preview-img-container">
+          <img id="facial-preview-img" alt="Foto enviada">
+          <div class="scan-line" id="scan-line"></div>
+          <div class="face-detect-box" id="face-detect-box"></div>
+          <div class="facial-points" id="facial-points"></div>
+        </div>
+        <div class="preview-info">
+          <div class="preview-status" id="preview-status">Foto carregada com sucesso</div>
+          <button class="facial-btn" id="facial-btn-change">Trocar Foto</button>
+        </div>
+      </div>
+
+      <canvas id="facial-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div class="homonimo-filter" id="homonimo-filter">
+      <div class="homonimo-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Filtro Anti-Homonimo (opcional — aumenta a precisao)
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" id="birth-date">
+        </div>
+        <div class="form-group">
+          <label>Cidade de Origem</label>
+          <input type="text" id="birth-city" placeholder="Ex: Sao Paulo, SP">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-search" id="btn-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Iniciar Varredura com IA
+    </button>
+  </div>
+
+  <p class="search-hint">
+    Fontes consultadas: <kbd>ONU</kbd> | <kbd>INTERPOL</kbd> | <kbd>FBI/NCIC</kbd> | <kbd>Europol</kbd> | <kbd>UNODC</kbd> | <kbd>ACNUR</kbd> | <kbd>Policia Federal</kbd> | <kbd>Policia Civil</kbd> | <kbd>Policia Militar</kbd> | <kbd>Tribunais</kbd> | <kbd>Diarios Oficiais</kbd> | <kbd>Receita Federal</kbd>
+  </p>
+</section>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-brain">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="brain-icon">&#129504;</div>
+  </div>
+  <div class="loading-title" id="loading-title">Inicializando Agentes de IA...</div>
+  <div class="loading-subtitle" id="loading-subtitle">Os agentes estao varrendo multiplas fontes simultaneamente</div>
+  <div class="loading-steps" id="loading-steps">
+    <div class="loading-step" id="step-1"><div class="step-icon">&#9675;</div> Validando documento e identidade</div>
+    <div class="loading-step" id="step-2"><div class="step-icon">&#9675;</div> Consultando INTERPOL (Red Notices / I-24/7)</div>
+    <div class="loading-step" id="step-3"><div class="step-icon">&#9675;</div> Varrendo FBI (NCIC), Europol e agencias nacionais</div>
+    <div class="loading-step" id="step-4"><div class="step-icon">&#9675;</div> Policia Federal, Civil e Militar — registros policiais</div>
+    <div class="loading-step" id="step-5"><div class="step-icon">&#9675;</div> Tribunais de Justica, Diarios Oficiais e Receita Federal</div>
+    <div class="loading-step" id="step-6"><div class="step-icon">&#9675;</div> Portal da Transparencia e bases financeiras</div>
+    <div class="loading-step" id="step-7"><div class="step-icon">&#9675;</div> Cruzando dados, filtrando homonimos, verificando direitos</div>
+    <div class="loading-step" id="step-8"><div class="step-icon">&#9675;</div> IA gerando relatorio executivo com classificacao de risco</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-section" id="results-section">
+
+  <!-- RISK BANNER -->
+  <div class="risk-banner" id="risk-banner">
+    <div class="risk-gauge">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" class="risk-gauge-bg"/>
+        <circle cx="50" cy="50" r="42" class="risk-gauge-fill" id="risk-circle"
+          stroke-dasharray="264" stroke-dashoffset="264" stroke="var(--risk-low)"/>
+      </svg>
+      <div class="risk-gauge-value">
+        <div class="risk-score" id="risk-score">--</div>
+        <div class="risk-label-small">RISCO</div>
+      </div>
+    </div>
+    <div class="risk-info">
+      <h2 id="risk-title">Analise Concluida</h2>
+      <div class="risk-classification" id="risk-class">--</div>
+      <div class="risk-summary" id="risk-summary">--</div>
+      <div class="risk-actions">
+        <button class="btn btn-primary" id="btn-gen-pdf" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          &#128274; Gerar Relatorio PDF (Pago)
+        </button>
+        <button class="btn" id="btn-new-search">Nova Consulta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBJECT -->
+  <div class="subject-card" id="subject-card">
+    <div class="subject-header">
+      <div class="subject-avatar" id="subject-avatar">--</div>
+      <div>
+        <div class="subject-name" id="subject-name">--</div>
+        <div class="subject-doc" id="subject-doc">--</div>
+      </div>
+    </div>
+    <div class="subject-meta" id="subject-meta"></div>
+  </div>
+
+  <!-- RIGHTS GUARANTEE BANNER -->
+  <div class="rights-banner" id="rights-banner">
+    <div class="rights-icon">&#128737;</div>
+    <div class="rights-text">
+      <h4>Garantias de Direitos Individuais Aplicadas</h4>
+      <p>Esta consulta foi realizada com total respeito aos direitos fundamentais. Registros nao implicam culpabilidade. Processos arquivados e absolvicoes sao sinalizados. Dados restritos so sao acessados mediante autorizacao legal.</p>
+      <div class="rights-badges">
+        <span class="rbadge">Presuncao de Inocencia</span>
+        <span class="rbadge">LGPD Compliant</span>
+        <span class="rbadge">GDPR Compliant</span>
+        <span class="rbadge">Due Process</span>
+        <span class="rbadge">Anti-Discriminacao</span>
+        <span class="rbadge">Direito ao Esquecimento</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERPOL ALERT (only shown for CRITICO) -->
+  <div class="interpol-alert" id="interpol-alert">
+    <div class="interpol-alert-header">
+      <span style="font-size:1.2rem;">&#128680;</span>
+      <h4>ALERTA INTERPOL — Red Notice Identificada</h4>
+    </div>
+    <div class="interpol-alert-body" id="interpol-alert-body">--</div>
+  </div>
+
+  <!-- AGENCIES COOPERATION PANEL -->
+  <div class="agencies-section" id="agencies-section">
+    <div class="agencies-header">
+      <h3>&#127963; Cooperacao de Orgaos — Status de Consulta</h3>
+      <span class="access-level public" id="access-level-badge">Acesso Publico</span>
+    </div>
+    <div class="agencies-grid" id="agencies-grid"></div>
+  </div>
+  <div class="results-grid">
+
+    <!-- JUDICIAL -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <h3>&#9878; Registros Judiciais</h3>
+        <span class="count-badge" id="judicial-count">0</span>
+      </div>
+      <div class="result-card-body" id="judicial-body">
+        <div class="empty-state"><div class="empty-icon">&#128269;</div>Nenhum registro encontrado</div>
+      </div>
+    </div>
+
+    <!-- GAZETTE -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <h3>&#128220; Diarios Oficiais</h3>
+        <span class="count-badge" id="gazette-count">0</span>
+      </div>
+      <div class="result-card-body" id="gazette-body">
+        <div class="empty-state"><div class="empty-icon">&#128196;</div>Nenhuma publicacao encontrada</div>
+      </div>
+    </div>
+
+    <!-- FINANCIAL -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <h3>&#128176; Situacao Financeira</h3>
+        <span class="count-badge" id="financial-count">0</span>
+      </div>
+      <div class="result-card-body" id="financial-body">
+        <div class="empty-state"><div class="empty-icon">&#128179;</div>Sem dados financeiros</div>
+      </div>
+    </div>
+
+    <!-- DEBTS -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <h3>&#128200; Dividas e Protestos</h3>
+        <span class="count-badge" id="debts-count">0</span>
+      </div>
+      <div class="result-card-body" id="debts-body">
+        <div class="empty-state"><div class="empty-icon">&#128203;</div>Nenhuma divida registrada</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI SUMMARY -->
+  <div class="ai-summary-card" id="ai-summary-card">
+    <div class="ai-summary-header">
+      <span>&#129504;</span>
+      <h3>Resumo Executivo</h3>
+      <span class="ai-badge">Gerado por IA</span>
+    </div>
+    <div class="ai-summary-body">
+      <div class="ai-summary-text" id="ai-summary-text">--</div>
+      <div class="ai-disclaimer">
+        Este relatorio foi gerado automaticamente por inteligencia artificial com base em dados publicos disponiveis.
+        Nao constitui parecer juridico e nao substitui consultoria profissional. Os dados podem conter imprecisoes
+        inerentes as fontes consultadas. Portal Seguranca Global nao se responsabiliza por decisoes tomadas com base neste documento.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF REPORT (hidden) -->
+<div id="pdf-report">
+  <h1 id="pdf-title">Relatorio de Background Check</h1>
+  <div class="pdf-subtitle" id="pdf-subtitle">SafeHaven AI — Analise Inteligente</div>
+  <div class="pdf-meta" id="pdf-meta"></div>
+  <div class="pdf-risk-box" id="pdf-risk-box">
+    <div class="pdf-risk-score" id="pdf-risk-score">--</div>
+    <div class="pdf-risk-label" id="pdf-risk-label">--</div>
+  </div>
+  <div id="pdf-sections"></div>
+  <div class="pdf-section">
+    <h3>Resumo Executivo (Gerado por IA)</h3>
+    <div class="pdf-summary" id="pdf-summary">--</div>
+  </div>
+  <div class="pdf-footer">
+    Gerado por Portal Seguranca Global — Background Check Inteligente<br>
+    Este documento e baseado em dados publicos e analise por inteligencia artificial. Nao constitui parecer juridico.
+  </div>
+</div>
+
+<!-- PAYWALL MODAL -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div class="paywall-box">
+    <div class="paywall-close" id="paywall-close">&times;</div>
+    <div class="paywall-icon">&#128274;</div>
+    <h2 class="paywall-title">Relatorio Completo em PDF</h2>
+    <p class="paywall-desc">O resumo da consulta esta visivel, mas para receber o <strong>relatorio completo em PDF</strong> com todos os detalhes, voce precisa efetuar o pagamento.</p>
+
+    <div class="paywall-features">
+      <div class="paywall-feat"><span class="pf-check">&#10003;</span> Relatorio detalhado com todas as fontes</div>
+      <div class="paywall-feat"><span class="pf-check">&#10003;</span> Historico judicial completo</div>
+      <div class="paywall-feat"><span class="pf-check">&#10003;</span> Classificacao de risco com IA</div>
+      <div class="paywall-feat"><span class="pf-check">&#10003;</span> Enviado direto para seu e-mail</div>
+      <div class="paywall-feat"><span class="pf-check">&#10003;</span> Valido como documento informativo</div>
+    </div>
+
+    <div class="paywall-email">
+      <label for="paywall-email-input">Seu e-mail para receber o relatorio:</label>
+      <input type="email" id="paywall-email-input" placeholder="seuemail@exemplo.com" required>
+    </div>
+
+    <div class="paywall-prices">
+      <button class="paywall-btn paywall-btn-brl" id="paywall-btn-brl">
+        <div class="paywall-currency">&#127463;&#127479; Brasil</div>
+        <div class="paywall-price">R$ 10,00</div>
+        <div class="paywall-method">PIX / Cartao</div>
+      </button>
+      <button class="paywall-btn paywall-btn-usd" id="paywall-btn-usd">
+        <div class="paywall-currency">&#127758; Internacional</div>
+        <div class="paywall-price">$ 10.00 USD</div>
+        <div class="paywall-method">Credit Card</div>
+      </button>
+    </div>
+
+    <div class="paywall-secure">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Pagamento seguro e criptografado — Seus dados estao protegidos
+    </div>
+
+    <!-- Payment Processing -->
+    <div class="paywall-processing" id="paywall-processing" style="display:none;">
+      <div class="paywall-spinner"></div>
+      <div class="paywall-proc-text" id="paywall-proc-text">Processando pagamento...</div>
+    </div>
+
+    <!-- Payment Success -->
+    <div class="paywall-success" id="paywall-success" style="display:none;">
+      <div class="paywall-success-icon">&#9989;</div>
+      <h3>Pagamento Confirmado!</h3>
+      <p>O relatorio completo em PDF sera enviado para:</p>
+      <div class="paywall-success-email" id="paywall-success-email">--</div>
+      <p class="paywall-success-note">Voce tambem pode baixar agora clicando no botao abaixo.</p>
+      <button class="paywall-btn paywall-btn-download" id="paywall-btn-download">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar PDF Agora
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Portal Seguranca Global &copy; 2026 — portalsegurancaglobal.com.br<br>
+  Cooperacao com orgaos publicos internacionais: ONU, INTERPOL, FBI, Europol, UNODC, ACNUR, Policia Federal, Civil e Militar.<br>
+  Consulta em conformidade com LGPD, GDPR, CCPA e Declaracao Universal dos Direitos Humanos.<br>
+  Dados publicos. Respeito integral aos direitos individuais. Nao substitui avaliacao profissional.
+</footer>
+
+<script src="background-check.js"></script>
+</body>
+</html>

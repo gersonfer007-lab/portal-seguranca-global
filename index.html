@@ -1,0 +1,911 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Seguranca Global</title>
+
+<!-- SECURITY HEADERS -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- jsPDF + html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-card-hover: #1f2a40;
+  --border: #2a3550;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8b95a8;
+  --text-muted: #5a6478;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,.25);
+  --green: #22c55e;
+  --green-glow: rgba(34,197,94,.2);
+  --yellow: #eab308;
+  --yellow-glow: rgba(234,179,8,.2);
+  --red: #ef4444;
+  --red-glow: rgba(239,68,68,.2);
+  --orange: #f97316;
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-safe: linear-gradient(135deg, #22c55e, #10b981);
+  --shadow: 0 4px 24px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+  --radius: 12px;
+  --radius-lg: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* HEADER */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.header-brand {
+  display: flex; align-items: center; gap: 12px;
+  font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em;
+}
+.header-brand .icon {
+  width: 36px; height: 36px; background: var(--gradient-accent);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 20px var(--accent-glow);
+}
+.header-badge {
+  background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em;
+}
+.header-status {
+  display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--text-secondary);
+}
+.header-status .dot {
+  width: 8px; height: 8px; background: var(--green); border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+/* BRASAO / EMBLEM */
+.emblem-section {
+  display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 0;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-secondary) 100%);
+  position: relative; overflow: hidden;
+}
+
+/* FLAGS LATERAIS */
+.flags-column {
+  position: absolute; top: 0; display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 0; z-index: 1;
+}
+.flags-column.left { left: 6px; }
+.flags-column.right { right: 6px; }
+.flag-item {
+  display: flex; align-items: center; gap: 5px;
+  cursor: default; position: relative; transition: transform .2s;
+}
+.flag-item:hover { transform: scale(1.1); z-index: 10; }
+.flag-item img {
+  width: 28px; height: 19px; object-fit: cover; display: block;
+  border-radius: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.4); flex-shrink: 0;
+}
+.flag-name {
+  font-size: .5rem; color: var(--text-secondary); white-space: nowrap;
+  font-weight: 500; letter-spacing: .02em; line-height: 1;
+}
+.flags-column.left .flag-name { text-align: left; }
+.flags-column.right { align-items: flex-end; }
+.flags-column.right .flag-item { flex-direction: row-reverse; }
+.flags-column.right .flag-name { text-align: right; }
+@media (max-width: 420px) {
+  .flag-item img { width: 22px; height: 15px; }
+  .flag-name { font-size: .42rem; }
+  .flags-column { gap: 3px; }
+  .flags-column.left { left: 2px; }
+  .flags-column.right { right: 2px; }
+}
+.emblem-img {
+  width: 160px; height: auto;
+  filter: drop-shadow(0 0 30px rgba(59,130,246,.3)) drop-shadow(0 4px 20px rgba(0,0,0,.5));
+  animation: emblem-float 4s ease-in-out infinite;
+  transition: transform .3s;
+}
+.emblem-img:hover { transform: scale(1.08); }
+@keyframes emblem-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.emblem-title {
+  font-size: 1.1rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase;
+  margin-top: .8rem; color: var(--text-primary);
+  text-shadow: 0 0 20px var(--accent-glow);
+}
+.emblem-subtitle {
+  font-size: .72rem; color: var(--text-secondary); letter-spacing: .3em; text-transform: uppercase;
+  margin-top: .3rem; font-weight: 500;
+}
+.emblem-divider {
+  width: 120px; height: 2px; margin-top: 1rem;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+/* MODAL DE TERMOS */
+.terms-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center;
+  padding: 1rem; opacity: 0; transition: opacity .4s;
+}
+.terms-overlay.active { display: flex; opacity: 1; }
+.terms-overlay.hidden { opacity: 0; pointer-events: none; }
+.terms-box {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  max-width: 440px; width: 100%; padding: 2rem 1.5rem; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6); max-height: 90vh; overflow-y: auto;
+}
+.terms-box .terms-emblem { width: 90px; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(59,130,246,.3)); }
+.terms-box h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .3rem; color: var(--text-primary); }
+.terms-box .terms-sub { font-size: .7rem; color: var(--accent); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 1.2rem; }
+.terms-box .terms-text {
+  text-align: left; font-size: .75rem; color: var(--text-secondary); line-height: 1.6;
+  background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1rem; margin-bottom: 1rem; max-height: 220px; overflow-y: auto;
+}
+.terms-box .terms-text strong { color: var(--text-primary); }
+.terms-box .terms-text ul { margin: .5rem 0; padding-left: 1.2rem; }
+.terms-box .terms-text li { margin-bottom: .4rem; }
+.terms-check {
+  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 1.2rem;
+  text-align: left; font-size: .72rem; color: var(--text-secondary); cursor: pointer;
+}
+.terms-check input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
+  accent-color: var(--accent); cursor: pointer;
+}
+.terms-btn {
+  width: 100%; padding: 12px; font-size: .85rem; font-weight: 700; border: none; border-radius: 10px;
+  cursor: pointer; transition: all .3s; text-transform: uppercase; letter-spacing: .1em;
+}
+.terms-btn.disabled {
+  background: rgba(255,255,255,.08); color: rgba(255,255,255,.25); cursor: not-allowed;
+}
+.terms-btn.enabled {
+  background: var(--accent); color: #fff; box-shadow: 0 4px 20px var(--accent-glow);
+}
+.terms-btn.enabled:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--accent-glow); }
+
+/* SEARCH SECTION */
+.search-section {
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  padding: 3rem 2rem 2rem;
+  text-align: center;
+}
+.search-title {
+  font-size: 2rem; font-weight: 800; letter-spacing: -.03em;
+  background: linear-gradient(135deg, #e8ecf4, #8b95a8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: .5rem;
+}
+.search-subtitle {
+  color: var(--text-secondary); font-size: .95rem; margin-bottom: 2rem;
+}
+.search-box {
+  max-width: 640px; margin: 0 auto;
+  display: flex; gap: 0;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow), 0 0 0 1px rgba(59,130,246,.1);
+  transition: box-shadow .3s;
+}
+.search-box:focus-within {
+  box-shadow: var(--shadow-lg), 0 0 0 2px var(--accent), 0 0 40px var(--accent-glow);
+}
+.search-box input {
+  flex: 1; padding: 1rem 1.5rem; background: none; border: none; outline: none;
+  color: var(--text-primary); font-size: 1rem; font-family: inherit;
+}
+.search-box input::placeholder { color: var(--text-muted); }
+.search-box button {
+  padding: 1rem 2rem; background: var(--gradient-accent); border: none;
+  color: #fff; font-weight: 700; font-size: .9rem; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: opacity .2s;
+  font-family: inherit;
+}
+.search-box button:hover { opacity: .9; }
+.search-box button:disabled { opacity: .5; cursor: not-allowed; }
+.search-hint {
+  margin-top: 1rem; font-size: .78rem; color: var(--text-muted);
+}
+.search-hint kbd {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem;
+}
+
+/* MAIN LAYOUT */
+.main-content {
+  display: none; /* hidden until search */
+  max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem 3rem;
+}
+.main-content.active { display: block; }
+
+/* RESULT HEADER */
+.result-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.result-location h2 {
+  font-size: 1.4rem; font-weight: 700; margin-bottom: .25rem;
+}
+.result-location p { color: var(--text-secondary); font-size: .85rem; }
+.result-actions { display: flex; gap: .75rem; }
+.btn {
+  padding: .65rem 1.2rem; border-radius: var(--radius); font-size: .82rem;
+  font-weight: 600; cursor: pointer; border: none; font-family: inherit;
+  display: flex; align-items: center; gap: 6px; transition: all .2s;
+}
+.btn-primary { background: var(--gradient-accent); color: #fff; box-shadow: 0 0 20px var(--accent-glow); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 30px var(--accent-glow); }
+.btn-outline { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--bg-card-hover); }
+
+/* GRID */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-template-rows: auto auto auto;
+  gap: 1.5rem;
+}
+@media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+/* CARDS */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.card-header {
+  padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h3 {
+  font-size: .85rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-header h3 .icon { font-size: 1rem; }
+.card-body { padding: 1.25rem; }
+
+/* MAP */
+.map-card { grid-column: 1; grid-row: 1 / 3; }
+#map { width: 100%; height: 480px; background: var(--bg-primary); border-radius: 0; }
+#cesium-globe { width: 100%; height: 480px; background: var(--bg-primary); display: none; position: relative; overflow: hidden; }
+#earth-iframe {
+  width: 100%; height: 100%; border: none;
+  filter: contrast(1.05) saturate(1.1);
+}
+.globe-loading {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-primary); color: var(--text-secondary);
+  font-size: .85rem; z-index: 2; pointer-events: none; transition: opacity .5s;
+}
+.globe-loading.hidden { opacity: 0; pointer-events: none; }
+.map-view-toggle {
+  display: flex; gap: 4px; background: var(--bg-primary); border-radius: 8px; padding: 3px;
+}
+.map-view-toggle button {
+  padding: 4px 10px; font-size: .7rem; border-radius: 6px; border: none;
+  cursor: pointer; font-weight: 600; transition: all .2s;
+  background: transparent; color: var(--text-secondary);
+}
+.map-view-toggle button.active {
+  background: var(--accent); color: #fff; box-shadow: 0 2px 8px var(--accent-glow);
+}
+.map-view-toggle button:hover:not(.active) { color: var(--text-primary); background: rgba(255,255,255,.06); }
+.globe-info-bar {
+  display: none; padding: 8px 14px; background: rgba(59,130,246,.1); border-top: 1px solid var(--border);
+  font-size: .72rem; color: var(--accent); text-align: center; gap: 8px; align-items: center; justify-content: center;
+}
+.globe-info-bar.active { display: flex; }
+.globe-coords { font-family: 'JetBrains Mono', monospace; }
+.leaflet-container { background: var(--bg-primary) !important; }
+.map-legend {
+  display: flex; gap: 1.5rem; padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border); font-size: .75rem; color: var(--text-secondary);
+}
+.map-legend-item { display: flex; align-items: center; gap: 6px; }
+.map-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* SAFETY SCORE */
+.score-card { grid-column: 2; grid-row: 1; }
+.score-display {
+  text-align: center; padding: 1.5rem 1.25rem;
+}
+.score-gauge {
+  position: relative; width: 180px; height: 180px; margin: 0 auto 1rem;
+}
+.score-gauge svg { transform: rotate(-90deg); }
+.score-gauge-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+.score-gauge-fill {
+  fill: none; stroke-width: 8; stroke-linecap: round;
+  transition: stroke-dashoffset 1.5s ease, stroke .5s;
+}
+.score-gauge-value {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-gauge-value .number {
+  font-size: 3rem; font-weight: 900; letter-spacing: -.04em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.score-gauge-value .label {
+  font-size: .75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .1em; margin-top: 2px;
+}
+.score-pillars {
+  display: flex; flex-direction: column; gap: .75rem;
+  padding: 0 1.25rem 1.25rem;
+}
+.pillar {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .75rem; background: rgba(255,255,255,.03);
+  border-radius: var(--radius); border: 1px solid rgba(255,255,255,.04);
+}
+.pillar-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.pillar-info { flex: 1; }
+.pillar-info .name { font-size: .78rem; font-weight: 500; margin-bottom: 4px; }
+.pillar-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.pillar-bar-fill { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
+.pillar-score { font-family: 'JetBrains Mono', monospace; font-size: .8rem; font-weight: 600; min-width: 28px; text-align: right; }
+
+/* STATS GRID */
+.stats-card { grid-column: 2; grid-row: 2; }
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+  padding: 1.25rem;
+}
+.stat-item {
+  padding: .85rem; background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.04); border-radius: var(--radius);
+  text-align: center;
+}
+.stat-value {
+  font-size: 1.5rem; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 2px;
+}
+.stat-label { font-size: .7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; }
+
+/* CHARTS */
+.charts-section {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+@media (max-width: 768px) { .charts-section { grid-template-columns: 1fr; } }
+.chart-container { position: relative; height: 260px; padding: 1rem 1.25rem; }
+
+/* AD BANNER */
+.ad-section {
+  grid-column: 1 / -1;
+}
+.ad-banner {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59,130,246,.08) 100%);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 2rem; display: flex; align-items: center; gap: 2rem;
+  transition: border-color .3s;
+}
+.ad-banner:hover { border-color: var(--accent); }
+.ad-banner-icon {
+  width: 64px; height: 64px; background: var(--gradient-accent);
+  border-radius: var(--radius-lg); display: flex; align-items: center;
+  justify-content: center; font-size: 1.8rem; flex-shrink: 0;
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+.ad-banner-content { flex: 1; }
+.ad-banner-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: .35rem; }
+.ad-banner-content p { font-size: .85rem; color: var(--text-secondary); line-height: 1.5; }
+.ad-banner-tag {
+  font-size: .6rem; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: .1em; margin-bottom: .5rem;
+}
+.ad-banner .btn { flex-shrink: 0; }
+
+/* AD SIDEBAR CARDS */
+.ad-sidebar {
+  display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;
+}
+.ad-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  transition: border-color .3s;
+}
+.ad-card:hover { border-color: var(--accent); }
+.ad-card-tag { font-size: .6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .75rem; }
+.ad-card h5 { font-size: .9rem; font-weight: 600; margin-bottom: .35rem; }
+.ad-card p { font-size: .78rem; color: var(--text-secondary); line-height: 1.4; }
+.ad-card .btn { margin-top: .75rem; width: 100%; justify-content: center; font-size: .78rem; }
+
+/* LOADING */
+.loading-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(10,14,26,.85);
+  z-index: 200; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1.5rem; backdrop-filter: blur(8px);
+}
+.loading-overlay.active { display: flex; }
+.loading-spinner {
+  width: 48px; height: 48px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: .9rem; color: var(--text-secondary); }
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 2rem; font-size: .75rem;
+  color: var(--text-muted); border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+/* PDF REPORT (hidden, used for generation) */
+#pdf-report {
+  position: absolute; left: -9999px; top: 0;
+  width: 800px; background: #fff; color: #111; padding: 40px;
+  font-family: 'Inter', sans-serif;
+}
+#pdf-report h1 { font-size: 24px; color: #1a2235; margin-bottom: 4px; }
+#pdf-report .pdf-subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
+#pdf-report .pdf-score-box {
+  background: linear-gradient(135deg, #1a2235, #2a3550);
+  color: #fff; padding: 24px; border-radius: 12px; text-align: center;
+  margin-bottom: 24px;
+}
+#pdf-report .pdf-score-number { font-size: 64px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+#pdf-report .pdf-score-label { font-size: 14px; opacity: .7; }
+#pdf-report .pdf-section { margin-bottom: 20px; }
+#pdf-report .pdf-section h3 { font-size: 16px; color: #1a2235; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px; }
+#pdf-report .pdf-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+#pdf-report .pdf-stat { background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; }
+#pdf-report .pdf-stat .val { font-size: 24px; font-weight: 800; color: #1a2235; }
+#pdf-report .pdf-stat .lbl { font-size: 11px; color: #666; text-transform: uppercase; }
+#pdf-report .pdf-footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #999; text-align: center; }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .map-card { grid-column: auto; grid-row: auto; }
+  .score-card { grid-column: auto; grid-row: auto; }
+  .stats-card { grid-column: auto; grid-row: auto; }
+  .ad-card { grid-column: auto; }
+}
+@media (max-width: 640px) {
+  .header { padding: 0 1rem; }
+  .search-section { padding: 2rem 1rem 1.5rem; }
+  .search-title { font-size: 1.4rem; }
+  .search-box { flex-direction: column; }
+  .search-box button { justify-content: center; }
+  .main-content { padding: 1rem; }
+  .result-header { flex-direction: column; }
+  .stats-grid { grid-template-columns: 1fr; }
+  #map { height: 320px; }
+  #cesium-globe { height: 320px; }
+}
+</style>
+</head>
+<body>
+
+<!-- MODAL DE TERMOS DE USO -->
+<div class="terms-overlay" id="terms-overlay">
+  <div class="terms-box">
+    <img src="brasao-sh.png" alt="Portal Seguranca Global" class="terms-emblem">
+    <h2>Termos de Uso e Responsabilidade</h2>
+    <div class="terms-sub">Leia antes de prosseguir</div>
+
+    <div class="terms-text">
+      <strong>1. Responsabilidade do Usuario</strong>
+      <p>Ao utilizar o Portal Seguranca Global, voce declara estar ciente de que e o unico responsavel pelas buscas realizadas e pelo uso das informacoes obtidas nesta plataforma.</p>
+
+      <strong>2. Finalidade das Consultas</strong>
+      <p>As consultas devem ser realizadas exclusivamente para fins licitos, tais como:</p>
+      <ul>
+        <li>Verificacao de seguranca de enderecos e regioes</li>
+        <li>Analise de risco para fins pessoais ou profissionais</li>
+        <li>Consultas de antecedentes dentro dos limites legais</li>
+      </ul>
+
+      <strong>3. Uso Indevido</strong>
+      <p>E expressamente proibido utilizar este sistema para:</p>
+      <ul>
+        <li>Perseguicao, assedio ou vigilancia ilegal de terceiros</li>
+        <li>Discriminacao com base em dados obtidos</li>
+        <li>Compartilhamento nao autorizado de informacoes pessoais</li>
+        <li>Qualquer atividade que viole leis locais ou internacionais</li>
+      </ul>
+
+      <strong>4. Privacidade e Protecao de Dados</strong>
+      <p>Todas as consultas sao registradas e monitoradas. O Portal Seguranca Global opera em conformidade com as leis de protecao de dados (LGPD, GDPR e equivalentes internacionais).</p>
+
+      <strong>5. Limitacao de Responsabilidade</strong>
+      <p>O Portal Seguranca Global fornece dados de fontes publicas e algoritmos estatisticos. As informacoes nao substituem consultas oficiais a orgaos competentes. O sistema nao se responsabiliza por decisoes tomadas com base nos dados apresentados.</p>
+
+      <strong>6. Consequencias Legais</strong>
+      <p>O uso indevido desta plataforma podera resultar em bloqueio permanente do acesso, notificacao as autoridades competentes e responsabilizacao civil e criminal conforme a legislacao vigente.</p>
+    </div>
+
+    <label class="terms-check" id="terms-label">
+      <input type="checkbox" id="terms-checkbox">
+      <span>Declaro que li, compreendi e aceito os Termos de Uso. Estou ciente de que sou inteiramente responsavel pelas buscas realizadas nesta plataforma.</span>
+    </label>
+
+    <button class="terms-btn disabled" id="terms-btn" disabled>
+      Concordo e Desejo Prosseguir
+    </button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <span>PORTAL SEGURANCA GLOBAL</span>
+    <span class="header-badge">Intel</span>
+  </div>
+  <div class="header-status">
+    <span class="dot"></span>
+    <span>Base de dados atualizada</span>
+  </div>
+</header>
+
+<!-- BRASAO -->
+<section class="emblem-section">
+
+  <!-- BANDEIRAS ESQUERDA (Americas + Europa) -->
+  <div class="flags-column left">
+    <div class="flag-item"><img src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/fr.png" alt="Franca"><span class="flag-name">Franca</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/de.png" alt="Alemanha"><span class="flag-name">Alemanha</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/it.png" alt="Italia"><span class="flag-name">Italia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/es.png" alt="Espanha"><span class="flag-name">Espanha</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/pt.png" alt="Portugal"><span class="flag-name">Portugal</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ca.png" alt="Canada"><span class="flag-name">Canada</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/mx.png" alt="Mexico"><span class="flag-name">Mexico</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ar.png" alt="Argentina"><span class="flag-name">Argentina</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/co.png" alt="Colombia"><span class="flag-name">Colombia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/cl.png" alt="Chile"><span class="flag-name">Chile</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/pe.png" alt="Peru"><span class="flag-name">Peru</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/uy.png" alt="Uruguai"><span class="flag-name">Uruguai</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/py.png" alt="Paraguai"><span class="flag-name">Paraguai</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ve.png" alt="Venezuela"><span class="flag-name">Venezuela</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/bo.png" alt="Bolivia"><span class="flag-name">Bolivia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ec.png" alt="Equador"><span class="flag-name">Equador</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/cu.png" alt="Cuba"><span class="flag-name">Cuba</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/pa.png" alt="Panama"><span class="flag-name">Panama</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/cr.png" alt="Costa Rica"><span class="flag-name">Costa Rica</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/nl.png" alt="Holanda"><span class="flag-name">Holanda</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/be.png" alt="Belgica"><span class="flag-name">Belgica</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/se.png" alt="Suecia"><span class="flag-name">Suecia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/dk.png" alt="Dinamarca"><span class="flag-name">Dinamarca</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/fi.png" alt="Finlandia"><span class="flag-name">Finlandia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/at.png" alt="Austria"><span class="flag-name">Austria</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/pl.png" alt="Polonia"><span class="flag-name">Polonia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ua.png" alt="Ucrania"><span class="flag-name">Ucrania</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/gr.png" alt="Grecia"><span class="flag-name">Grecia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ie.png" alt="Irlanda"><span class="flag-name">Irlanda</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/cz.png" alt="Rep. Tcheca"><span class="flag-name">Rep. Tcheca</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ro.png" alt="Romenia"><span class="flag-name">Romenia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/hu.png" alt="Hungria"><span class="flag-name">Hungria</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/hr.png" alt="Croacia"><span class="flag-name">Croacia</span></div>
+  </div>
+
+  <!-- BANDEIRAS DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
+  <div class="flags-column right">
+    <div class="flag-item"><img src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/in.png" alt="India"><span class="flag-name">India</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/au.png" alt="Australia"><span class="flag-name">Australia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ru.png" alt="Russia"><span class="flag-name">Russia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/za.png" alt="Africa do Sul"><span class="flag-name">Africa do Sul</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ng.png" alt="Nigeria"><span class="flag-name">Nigeria</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/eg.png" alt="Egito"><span class="flag-name">Egito</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/il.png" alt="Israel"><span class="flag-name">Israel</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/sa.png" alt="Arabia Saudita"><span class="flag-name">Arabia Saudita</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/tr.png" alt="Turquia"><span class="flag-name">Turquia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ch.png" alt="Suica"><span class="flag-name">Suica</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/no.png" alt="Noruega"><span class="flag-name">Noruega</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/nz.png" alt="Nova Zelandia"><span class="flag-name">Nova Zelandia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/id.png" alt="Indonesia"><span class="flag-name">Indonesia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/th.png" alt="Tailandia"><span class="flag-name">Tailandia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/vn.png" alt="Vietna"><span class="flag-name">Vietna</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ph.png" alt="Filipinas"><span class="flag-name">Filipinas</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/my.png" alt="Malasia"><span class="flag-name">Malasia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/sg.png" alt="Singapura"><span class="flag-name">Singapura</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/pk.png" alt="Paquistao"><span class="flag-name">Paquistao</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ae.png" alt="Emirados Arabes"><span class="flag-name">Emirados Arabes</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/qa.png" alt="Qatar"><span class="flag-name">Qatar</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ma.png" alt="Marrocos"><span class="flag-name">Marrocos</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ke.png" alt="Kenya"><span class="flag-name">Kenya</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/et.png" alt="Etiopia"><span class="flag-name">Etiopia</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/gh.png" alt="Gana"><span class="flag-name">Gana</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ao.png" alt="Angola"><span class="flag-name">Angola</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/mz.png" alt="Mocambique"><span class="flag-name">Mocambique</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/ir.png" alt="Ira"><span class="flag-name">Ira</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/iq.png" alt="Iraque"><span class="flag-name">Iraque</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/jo.png" alt="Jordania"><span class="flag-name">Jordania</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/bd.png" alt="Bangladesh"><span class="flag-name">Bangladesh</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/tz.png" alt="Tanzania"><span class="flag-name">Tanzania</span></div>
+    <div class="flag-item"><img src="https://flagcdn.com/w80/kp.png" alt="Coreia do Norte"><span class="flag-name">Coreia do Norte</span></div>
+  </div>
+
+  <img src="brasao-sh.png" alt="Portal Seguranca Global" class="emblem-img">
+  <div class="emblem-title">Portal Seguranca Global</div>
+  <div class="emblem-subtitle">portalsegurancaglobal.com.br</div>
+  <div class="emblem-divider"></div>
+</section>
+
+<!-- INTEGRATED AGENCIES NETWORK -->
+<section style="max-width:1200px;margin:0 auto 1.5rem;padding:0 1rem;">
+  <img src="agencies-network.png" alt="Portal Seguranca Global - Rede Integrada de Orgaos de Seguranca" style="width:100%;border-radius:12px;border:1px solid rgba(0,157,255,.18);box-shadow:0 4px 24px rgba(0,0,0,.45);">
+</section>
+
+<!-- SEARCH -->
+<section class="search-section" id="search-section">
+  <h1 class="search-title">Consulte a Seguranca de Qualquer Lugar do Mundo</h1>
+  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana â€” cobertura global</p>
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="CPF, CNPJ, RG, CEP, endereco, cidade ou pais..." autocomplete="off">
+    <button id="search-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Analisar
+    </button>
+  </div>
+  <p class="search-hint">Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd> | <kbd>Champs-Elysees, Paris</kbd></p>
+</section>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Coletando dados de inteligencia...</div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div class="main-content" id="main-content">
+
+  <!-- Result Header -->
+  <div class="result-header">
+    <div class="result-location">
+      <h2 id="result-address">--</h2>
+      <p id="result-meta">--</p>
+    </div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-pdf">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Gerar Relatorio PDF
+      </button>
+      <button class="btn btn-outline" id="btn-share">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartilhar
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard-grid">
+
+    <!-- MAP -->
+    <div class="card map-card">
+      <div class="card-header">
+        <h3><span class="icon">&#127758;</span> Mapa de Ocorrencias</h3>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div class="map-view-toggle">
+            <button id="btn-view-dark" class="active">Mapa</button>
+            <button id="btn-view-satellite">Satelite</button>
+            <button id="btn-view-3d">&#127760; 3D Globe</button>
+          </div>
+          <button class="btn btn-outline" id="btn-heatmap" style="padding:4px 10px;font-size:.72rem;">Heatmap</button>
+          <button class="btn btn-outline" id="btn-markers" style="padding:4px 10px;font-size:.72rem;">Pontos</button>
+        </div>
+      </div>
+      <div id="map"></div>
+      <div id="cesium-globe">
+        <div class="globe-loading" id="globe-loading">Carregando Google Earth 3D...</div>
+        <iframe id="earth-iframe" allow="accelerometer; gyroscope" loading="lazy"></iframe>
+      </div>
+      <div class="globe-info-bar" id="globe-info">
+        <span>&#127760; Globo 3D Interativo</span>
+        <span class="globe-coords" id="globe-coords">Lat -- | Lng -- | Alt --km</span>
+      </div>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#22c55e;"></div> Baixo Risco</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#eab308;"></div> Medio Risco</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ef4444;"></div> Alto Risco</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#7c3aed;"></div> Ponto de Interesse</div>
+      </div>
+    </div>
+
+    <!-- SAFETY SCORE -->
+    <div class="card score-card">
+      <div class="card-header">
+        <h3><span class="icon">&#128170;</span> Safety Score</h3>
+        <span style="font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;" id="score-timestamp">--</span>
+      </div>
+      <div class="score-display">
+        <div class="score-gauge">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="78" class="score-gauge-bg"/>
+            <circle cx="90" cy="90" r="78" class="score-gauge-fill" id="score-circle"
+              stroke-dasharray="490" stroke-dashoffset="490" stroke="var(--accent)"/>
+          </svg>
+          <div class="score-gauge-value">
+            <div class="number" id="score-number">--</div>
+            <div class="label" id="score-label" style="color:var(--text-muted);">AGUARDANDO</div>
+          </div>
+        </div>
+      </div>
+      <div class="score-pillars">
+        <div class="pillar">
+          <div class="pillar-icon" style="background:var(--red-glow);color:var(--red);">&#128680;</div>
+          <div class="pillar-info">
+            <div class="name">Indice Criminal</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-crime" style="width:0%;background:var(--red);"></div></div>
+          </div>
+          <div class="pillar-score" id="pillar-crime-val">--</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon" style="background:var(--yellow-glow);color:var(--yellow);">&#128161;</div>
+          <div class="pillar-info">
+            <div class="name">Infraestrutura</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-infra" style="width:0%;background:var(--yellow);"></div></div>
+          </div>
+          <div class="pillar-score" id="pillar-infra-val">--</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon" style="background:var(--green-glow);color:var(--green);">&#128694;</div>
+          <div class="pillar-info">
+            <div class="name">Movimentacao Urbana</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-movement" style="width:0%;background:var(--green);"></div></div>
+          </div>
+          <div class="pillar-score" id="pillar-movement-val">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card stats-card">
+      <div class="card-header">
+        <h3><span class="icon">&#128202;</span> Estatisticas do Bairro</h3>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-occurrences" style="color:var(--red);">--</div>
+          <div class="stat-label">Ocorrencias/mes</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-cameras" style="color:var(--accent);">--</div>
+          <div class="stat-label">Cameras</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-lights" style="color:var(--yellow);">--</div>
+          <div class="stat-label">Iluminacao</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-commerce" style="color:var(--green);">--</div>
+          <div class="stat-label">Comercios</div>
+        </div>
+      </div>
+      <!-- Ad Cards -->
+      <div class="ad-sidebar" style="padding: 0 1.25rem 1.25rem;">
+        <div class="ad-card">
+          <div class="ad-card-tag">&#128226; Patrocinado</div>
+          <h5>Monitore sua Residencia 24h</h5>
+          <p>Cameras inteligentes com IA para deteccao de movimento. A partir de R$ 89/mes.</p>
+          <button class="btn btn-outline">Saiba Mais</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-section">
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="icon">&#128200;</span> Ocorrencias por Tipo</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-types"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="icon">&#128197;</span> Evolucao Mensal</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-monthly"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD BANNER -->
+    <div class="ad-section">
+      <div class="ad-banner">
+        <div class="ad-banner-icon">&#128274;</div>
+        <div class="ad-banner-content">
+          <div class="ad-banner-tag">&#128226; Espaco Publicitario</div>
+          <h4>Proteja sua Familia com Tecnologia de Ponta</h4>
+          <p>Alarmes monitorados, cercas eletricas e cameras com reconhecimento facial. Orcamento gratis para moradores da regiao analisada.</p>
+        </div>
+        <button class="btn btn-primary">Solicitar Orcamento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Report Template (hidden) -->
+<div id="pdf-report">
+  <h1 id="pdf-title">Relatorio de Seguranca</h1>
+  <div class="pdf-subtitle" id="pdf-address">--</div>
+  <div class="pdf-score-box">
+    <div class="pdf-score-number" id="pdf-score">--</div>
+    <div class="pdf-score-label" id="pdf-score-label">Safety Score</div>
+  </div>
+  <div class="pdf-section">
+    <h3>Indicadores Principais</h3>
+    <div class="pdf-stat-grid">
+      <div class="pdf-stat"><div class="val" id="pdf-crime">--</div><div class="lbl">Indice Criminal</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-infra">--</div><div class="lbl">Infraestrutura</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-movement">--</div><div class="lbl">Movimentacao</div></div>
+    </div>
+  </div>
+  <div class="pdf-section">
+    <h3>Estatisticas do Bairro</h3>
+    <div class="pdf-stat-grid">
+      <div class="pdf-stat"><div class="val" id="pdf-occ">--</div><div class="lbl">Ocorrencias/mes</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-cam">--</div><div class="lbl">Cameras</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-com">--</div><div class="lbl">Comercios</div></div>
+    </div>
+  </div>
+  <div class="pdf-footer">
+    Gerado por Portal Seguranca Global &mdash; portalsegurancaglobal.com.br<br>
+    Cobertura mundial. Este relatorio e baseado em dados publicos e estimativas estatisticas. Nao substitui consultoria profissional.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Portal Seguranca Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
+  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
