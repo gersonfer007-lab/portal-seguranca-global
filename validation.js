@@ -160,7 +160,7 @@ function getLog() {
 // ============================================================
 // EXPORTS
 // ============================================================
-module.exports = {
+module.exports = { 
   sanitizeInput: sanitizeInput,
   sanitizeHTML: sanitizeHTML,
   detectInjection: detectInjection,
