@@ -1,0 +1,22 @@
+name: Update Files
+on: workflow_dispatch
+jobs:
+  update-files:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download files
+        run: |
+          curl -L "https://customer-assets-m6fa6gv7.imergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/9585d0e15add418a849cc6fcea5264e8_index.html" -o index.html
+          curl -L "https://customer-assets-m6fa6gv7.imergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/ecf0baad24b2495391f026e2743f5435_app.js" -o app.js
+          curl -L "https://customer-assets-m6fa6gv7.imergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/74ae5b551371481b933216542ddd1bcb_background-check.html" -o background-check.html
+          curl -L "https://customer-assets-m6fa6gv7.imergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/e4b44f3fb2c849568a6c46c163bb410a_server.js" -o server.js
+      - name: Commit and push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html app.js background-check.html server.js
+          git commit -m "fix: final CSP, GPS and map search features (13:00 update)" || echo "No changes to commit"
+          git push
