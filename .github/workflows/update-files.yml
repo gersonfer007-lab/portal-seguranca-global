@@ -1,0 +1,24 @@
+name: Update Files
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download Files
+        run: |
+          curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/f0fe2b40dab24fc8b205e7216b5dff7a_index.html" -o index.html
+          curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/66aaf33753c445e49089758d6c429d17_app.js" -o app.js
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html app.js
+          git commit -m "feat: add emblem-tagline and translations to index.html and app.js"
+          git push
