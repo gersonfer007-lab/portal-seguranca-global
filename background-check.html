@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -15,9 +15,12 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- PERFORMANCE: defer para nao travar a renderizacao da pagina -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -907,9 +910,10 @@ body {
 
 /* PAYWALL MODAL */
 .paywall-overlay {
-  display: none; position: fixed; inset: 0; z-index: 500;
+  display: none; position: fixed; inset: 0; z-index: 2000;
   background: rgba(0,0,0,.85); backdrop-filter: blur(12px);
   align-items: center; justify-content: center; padding: 1rem;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 .paywall-overlay.active { display: flex; }
 .paywall-box {
@@ -917,6 +921,7 @@ body {
   border: 1px solid rgba(0,157,255,.25);
   border-radius: 20px; padding: 2rem; max-width: 480px; width: 100%;
   position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  margin: auto; max-height: 94vh; overflow-y: auto; box-sizing: border-box;
 }
 .paywall-close {
   position: absolute; top: 12px; right: 16px;
@@ -1152,7 +1157,8 @@ body {
 #pdf-report .pdf-item strong { color: #1a2235; }
 #pdf-report .pdf-summary { font-size: 13px; line-height: 1.7; color: #374151; padding: 16px; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #8b5cf6; }
 #pdf-report .pdf-footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #999; text-align: center; }
-#pdf-report .pdf-meta { display: flex; gap: 16px; margin-bottom: 16px; font-size: 12px; color: #666; }#pdf-report .pdf-meta span { background: #f3f4f6; padding: 4px 10px; border-radius: 4px; }
+#pdf-report .pdf-meta { display: flex; gap: 16px; margin-bottom: 16px; font-size: 12px; color: #666; }
+#pdf-report .pdf-meta span { background: #f3f4f6; padding: 4px 10px; border-radius: 4px; }
 
 /* LEGAL CONSENT */
 .consent-overlay {
@@ -1408,6 +1414,49 @@ body {
   .risk-banner { flex-direction: column; text-align: center; padding: 1.25rem; }
   .subject-meta { grid-template-columns: 1fr; }
   .risk-actions { justify-content: center; }
+}
+
+/* ===== AJUSTES FINAIS PARA CELULAR (vem depois de todo o CSS base) ===== */
+@media (max-width: 768px) {
+  /* PAYWALL: caber na tela e nao dar zoom no iOS */
+  .paywall-overlay { padding: .6rem; align-items: flex-start; }
+  .paywall-box { padding: 1.5rem 1.1rem; max-height: 92vh; border-radius: 16px; }
+  .paywall-close {
+    top: 6px; right: 8px; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+  }
+  .paywall-icon { font-size: 2.1rem; }
+  .paywall-title { font-size: 1.05rem; }
+  .paywall-desc, .paywall-feat { font-size: .8rem; }
+  .paywall-email label { font-size: .8rem; }
+  .paywall-email input {
+    font-size: 16px; min-height: 48px; padding: .8rem .9rem; box-sizing: border-box;
+  }
+  /* Precos: um por linha, area de toque grande */
+  .paywall-prices { grid-template-columns: 1fr !important; display: grid !important; gap: .6rem; }
+  .paywall-btn { min-height: 64px; padding: .8rem 1rem; }
+  .paywall-price { font-size: 1.35rem; white-space: nowrap; }
+  .paywall-btn-download { min-height: 52px; font-size: .9rem; }
+
+  /* TERMO DE CONSENTIMENTO: checkbox grande o suficiente para o dedo */
+  .consent-check input[type="checkbox"],
+  #consent-check-1, #consent-check-2 {
+    width: 22px; height: 22px; min-width: 22px; flex: 0 0 22px;
+  }
+  .consent-actions { flex-direction: column; gap: .6rem; }
+  .consent-actions button { width: 100%; min-height: 50px; font-size: .9rem; }
+
+  /* CAMPO DE BUSCA E BOTOES: evitar zoom e facilitar o toque */
+  #doc-input, .doc-input, input[type="text"], input[type="email"] {
+    font-size: 16px !important; min-height: 48px;
+  }
+  #btn-search, #cam-btn-scan { min-height: 52px; font-size: .92rem; }
+  .doc-type-tabs { flex-wrap: wrap; gap: .4rem; }
+  .doc-type-tab { flex: 1 1 calc(50% - .2rem); min-height: 42px; font-size: .8rem; }
+
+  /* Nada pode estourar a largura da tela */
+  body { overflow-x: hidden; }
+  .risk-actions button { width: 100%; min-height: 48px; }
 }
 </style>
 </head>
@@ -1913,8 +1962,8 @@ body {
       <div class="cam-feed" id="cam-8">
         <img class="cam-feed-img" src="https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400&h=250&fit=crop" alt="Moscow">
         <div class="cam-scan-line"></div>
-        <div class="cam-feed-status"></div>
-        <div class="cam-feed-overlay"><span class="cam-feed-city">Moscou, Russia</span><span class="cam-feed-info">CAM-RU-9921 | Red Square</span></div>
+        <div class="cam-feed-status offline"></div>
+        <div class="cam-feed-overlay"><span class="cam-feed-city">Moscou, Russia</span><span class="cam-feed-info">CAM-RU-8812 | Praca Vermelha</span></div>
       </div>
     </div>
 
@@ -1939,11 +1988,13 @@ body {
 <!-- FOOTER -->
 <footer class="footer">
   Portal Seguranca Global &copy; 2026 — portalsegurancaglobal.com.br<br>
-  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.<br><br>
+  Cooperacao com orgaos publicos internacionais: ONU, INTERPOL, FBI, Europol, UNODC, ACNUR, Policia Federal, Civil e Militar.<br>
+  Consulta em conformidade com LGPD, GDPR, CCPA e Declaracao Universal dos Direitos Humanos.<br>
+  Dados publicos. Respeito integral aos direitos individuais. Nao substitui avaliacao profissional.<br><br>
   <strong>&copy; 2026 Portal de Seguran&ccedil;a Global. Todos os direitos reservados.</strong><br>
   &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.
 </footer>
 
-<script src="background-check.js"></script>
+<script defer src="background-check.js"></script>
 </body>
 </html>

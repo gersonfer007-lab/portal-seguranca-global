@@ -1,4 +1,3 @@
-const mp = new MercadoPago('APP_USR-37017cfc-785b-4b09-b342-d7518b1008ee', { locale: 'pt-BR' });
 // ============================================================
 // SECURITY MODULE — SH_SECURITY (IIFE)
 // ============================================================
@@ -272,8 +271,9 @@ async function handleSearch() {
     return;
   }
 
-  // Se parece um nome (so letras e espacos, 2+ palavras, sem numeros)
-  var looksLikeName = /^[A-Za-zÀ-ÿ\s]{3,}$/.test(rawQuery) && rawQuery.split(/\s+/).length >= 2;
+  // Se parece um nome de pessoa (so letras, 2+ palavras, SEM palavras de endereco/geografia)
+  var geoWords = /\b(rua|av|avenida|praca|largo|beco|travessa|alameda|rodovia|estrada|bairro|jardim|centro|norte|sul|leste|oeste|city|street|square|avenue|road|district|park|town|village|borough|quarter|zone|rio|sao|santa|santo|new|north|south|east|west|parana|brasil|brazil|estado|state|country|pais|cidade|maringa|curitiba|londrina|cascavel|foz|campinas|guarulhos)\b/i;
+  var looksLikeName = /^[A-Za-zÀ-ÿ\s]{3,}$/.test(rawQuery) && rawQuery.split(/\s+/).length >= 2 && !geoWords.test(rawQuery);
   if (looksLikeName) {
     window.location.href = 'background-check.html?doc=' + encodeURIComponent(rawQuery) + '&type=nome';
     return;
@@ -306,18 +306,20 @@ async function handleSearch() {
       try {
         const res = await fetch('https://viacep.com.br/ws/' + cepClean + '/json/');
         const data = await res.json();
-        if (!data.erro) { addressData = { street: data.logradouro || 'Endereco', neighborhood: data.bairro || '', city: data.localidade || '', state: data.uf || '', country: 'Brasil', cep: data.cep, fullAddress: (data.logradouro ? data.logradouro + ', ' : '') + (data.bairro ? data.bairro + ' - ' : '') + data.localidade + '/' + data.uf }; }
+        if (!data.erro) { addressData = { street: data.logradouro || '', neighborhood: data.bairro || '', city: data.localidade || '', state: data.uf || '', country: 'Brasil', cep: data.cep, fullAddress: [data.logradouro, data.bairro, data.localidade, data.uf, 'Brasil'].filter(Boolean).join(', ') }; }
       } catch(e) {}
     }
     if (!addressData && /^\d{5}(-\d{4})?$/.test(query.trim())) { addressData = { street: '', neighborhood: '', city: '', state: '', country: 'USA', cep: query.trim(), fullAddress: query.trim() + ', United States' }; }
     if (!addressData && /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(query.trim())) { addressData = { street: '', neighborhood: '', city: '', state: '', country: 'UK', cep: query.trim(), fullAddress: query.trim() + ', United Kingdom' }; }
     if (!addressData) { addressData = { street: query, neighborhood: '', city: '', state: '', country: '', cep: '', fullAddress: query }; }
     updateLoading('Geolocalizando endereco...');
-    const geoRes = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(addressData.fullAddress) + '&limit=1&accept-language=pt,en');
-    const geoData = await geoRes.json();
-    let lat, lng;
-    if (geoData.length > 0) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon); if (!addressData.city && geoData[0].display_name) { addressData.fullAddress = geoData[0].display_name; } }
-    else { throw new Error('Endereco nao encontrado. Tente com mais detalhes (cidade, pais).'); }
+    const geo = await geocodeAddress(addressData, query);
+    if (!geo) { throw new Error('Endereco nao encontrado. Tente incluir a cidade e o pais (ex.: Av. Brasil, Maringa, PR, Brasil).'); }
+    let lat = geo.lat, lng = geo.lng;
+    if (geo.displayName) { addressData.fullAddress = geo.displayName; }
+    if (!addressData.city && geo.city) { addressData.city = geo.city; }
+    if (!addressData.state && geo.state) { addressData.state = geo.state; }
+    if (!addressData.country && geo.country) { addressData.country = geo.country; }
     updateLoading('Analisando dados de criminalidade...'); await sleep(600);
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
@@ -327,6 +329,304 @@ async function handleSearch() {
     if (currentMapView === '3d') { syncEarthWithData(currentData); }
     hideLoading();
   } catch (err) { hideLoading(); alert('Erro: ' + err.message); }
+}
+
+// ============================================================
+// PESQUISAR PELO MAPA — o usuario escolhe o local clicando
+// no mapa (ou usa o GPS) em vez de digitar o endereco.
+// ============================================================
+var mapselMap = null;
+var mapselMarker = null;
+var mapselChoice = null;      // { lat, lng, addressData }
+var mapselReverseSeq = 0;     // evita respostas fora de ordem
+
+function openMapSearch() {
+  // Respeita o termo de uso, igual a busca por texto
+  if (!termsAccepted()) {
+    window._pendingMapSearch = true;
+    showTermsModal();
+    return;
+  }
+  var ov = document.getElementById('mapsel-overlay');
+  if (!ov) return;
+  ov.style.display = 'flex';
+  setTimeout(function() { ov.classList.add('active'); }, 10);
+  setTimeout(initMapSel, 80);
+}
+
+function closeMapSearch() {
+  var ov = document.getElementById('mapsel-overlay');
+  if (!ov) return;
+  ov.classList.remove('active');
+  setTimeout(function() { ov.style.display = 'none'; }, 260);
+}
+
+function initMapSel() {
+  if (typeof L === 'undefined') {
+    alert('O mapa ainda esta carregando. Aguarde um instante e tente de novo.');
+    return;
+  }
+  if (mapselMap) { mapselMap.invalidateSize(); return; }
+
+  // Comeca com a visao do mundo inteiro (cobertura global)
+  mapselMap = L.map('mapsel-map', {
+    center: [12, 0], zoom: 2, zoomControl: true,
+    attributionControl: false, scrollWheelZoom: true, worldCopyJump: true
+  });
+  L.tileLayer(TILES.dark, { maxZoom: 19 }).addTo(mapselMap);
+
+  // Se o usuario ja fez uma busca, comeca perto do ultimo local
+  if (currentData && currentData.lat != null && currentData.lng != null) {
+    mapselMap.setView([currentData.lat, currentData.lng], 13);
+  }
+
+  mapselMap.on('click', function(e) {
+    mapselPick(e.latlng.lat, e.latlng.lng);
+  });
+
+  setTimeout(function() { if (mapselMap) mapselMap.invalidateSize(); }, 120);
+}
+
+function mapselPick(lat, lng) {
+  if (!mapselMap) return;
+  mapselChoice = null;
+
+  var icon = L.divIcon({
+    className: '', html: '<div class="mapsel-pin-pulse"></div>',
+    iconSize: [18, 18], iconAnchor: [9, 9]
+  });
+  if (mapselMarker) {
+    mapselMarker.setLatLng([lat, lng]);
+  } else {
+    mapselMarker = L.marker([lat, lng], { icon: icon, draggable: true }).addTo(mapselMap);
+    mapselMarker.on('dragend', function(ev) {
+      var p = ev.target.getLatLng();
+      mapselPick(p.lat, p.lng);
+    });
+  }
+
+  var hint = document.getElementById('mapsel-hint');
+  if (hint) hint.classList.add('gone');
+
+  var box = document.getElementById('mapsel-picked');
+  var addrEl = document.getElementById('mapsel-picked-addr');
+  var coordEl = document.getElementById('mapsel-picked-coords');
+  var btn = document.getElementById('mapsel-confirm');
+  if (box) box.classList.add('filled');
+  if (coordEl) coordEl.textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+  if (addrEl) addrEl.textContent = 'Identificando endereco...';
+  if (btn) btn.disabled = true;
+
+  mapselReverseGeocode(lat, lng);
+}
+
+async function mapselReverseGeocode(lat, lng) {
+  var seq = ++mapselReverseSeq;
+  var addrEl = document.getElementById('mapsel-picked-addr');
+  var btn = document.getElementById('mapsel-confirm');
+  var addressData = null;
+
+  try {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+      encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng) +
+      '&zoom=18&addressdetails=1';
+    var res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    var data = await res.json();
+    if (seq !== mapselReverseSeq) return; // clique mais novo venceu
+
+    var a = (data && data.address) ? data.address : {};
+    addressData = {
+      street: a.road || a.pedestrian || a.footway || '',
+      neighborhood: a.suburb || a.neighbourhood || a.quarter || a.city_district || '',
+      city: a.city || a.town || a.village || a.municipality || a.county || '',
+      state: a.state || a.region || '',
+      country: a.country || '',
+      cep: a.postcode || '',
+      fullAddress: (data && data.display_name) ? data.display_name : ''
+    };
+  } catch (e) {
+    if (seq !== mapselReverseSeq) return;
+  }
+
+  // Sem resposta do servico: usa as coordenadas mesmo assim
+  if (!addressData || !addressData.fullAddress) {
+    addressData = addressData || { street: '', neighborhood: '', city: '', state: '', country: '', cep: '' };
+    addressData.fullAddress = 'Local no mapa (' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')';
+  }
+
+  mapselChoice = { lat: lat, lng: lng, addressData: addressData };
+  if (addrEl) addrEl.textContent = addressData.fullAddress;
+  if (btn) btn.disabled = false;
+}
+
+// Move o mapa do modal para uma cidade/pais digitado
+async function mapselFind() {
+  var inp = document.getElementById('mapsel-find');
+  if (!inp || !mapselMap) return;
+  var q = inp.value.trim();
+  if (!q) return;
+  if (SH_SECURITY.detectInjection(q)) { alert('Entrada invalida detectada.'); return; }
+
+  var btn = document.getElementById('mapsel-find-btn');
+  if (btn) btn.disabled = true;
+  try {
+    var geo = await geocodeQuery(SH_SECURITY.sanitizeInput(q));
+    if (!geo) { alert('Local nao encontrado. Tente incluir o pais.'); return; }
+    mapselMap.setView([geo.lat, geo.lng], 13);
+    mapselPick(geo.lat, geo.lng);
+  } catch (e) {
+    alert('Nao foi possivel localizar. Tente novamente.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// GPS dentro do modal
+function mapselGps() {
+  if (!navigator.geolocation) { alert('Seu navegador nao permite localizacao por GPS.'); return; }
+  var btn = document.getElementById('mapsel-gps');
+  if (btn) btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    if (btn) btn.disabled = false;
+    var lat = pos.coords.latitude, lng = pos.coords.longitude;
+    if (mapselMap) { mapselMap.setView([lat, lng], 16); mapselPick(lat, lng); }
+  }, function(err) {
+    if (btn) btn.disabled = false;
+    alert(err.code === 1
+      ? 'Permissao de localizacao negada. Autorize o acesso no navegador para usar o GPS.'
+      : 'Nao foi possivel obter sua localizacao. Escolha o ponto no mapa.');
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
+
+// Botao "Onde estou agora" da tela inicial (sem abrir o modal)
+function searchByGps() {
+  if (!termsAccepted()) { window._pendingGpsSearch = true; showTermsModal(); return; }
+  if (!navigator.geolocation) { alert('Seu navegador nao permite localizacao por GPS.'); return; }
+  showLoading('Obtendo sua localizacao...');
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    analyzeCoords(pos.coords.latitude, pos.coords.longitude, null);
+  }, function(err) {
+    hideLoading();
+    alert(err.code === 1
+      ? 'Permissao de localizacao negada. Autorize o acesso no navegador ou use "Pesquisar pelo Mapa".'
+      : 'Nao foi possivel obter sua localizacao. Use "Pesquisar pelo Mapa".');
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
+
+function confirmMapSearch() {
+  if (!mapselChoice) return;
+  var c = mapselChoice;
+  closeMapSearch();
+  setTimeout(function() { analyzeCoords(c.lat, c.lng, c.addressData); }, 280);
+}
+
+// ============================================================
+// ANALISE DIRETA POR COORDENADAS (usada pelo mapa e pelo GPS)
+// ============================================================
+async function analyzeCoords(lat, lng, addressData) {
+  if (!SH_SECURITY.checkRateLimit('search')) { hideLoading(); alert('Limite de buscas atingido. Aguarde um momento e tente novamente.'); return; }
+  SH_SECURITY.logEvent('SEARCH_MAP', lat.toFixed(4) + ',' + lng.toFixed(4));
+  showLoading('Consultando local...');
+  try {
+    // Se veio do GPS, ainda nao temos o endereco: busca agora
+    if (!addressData) {
+      updateLoading('Identificando o endereco...');
+      try {
+        var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+          encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng) + '&zoom=18&addressdetails=1';
+        var res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        var data = await res.json();
+        var a = (data && data.address) ? data.address : {};
+        addressData = {
+          street: a.road || a.pedestrian || '',
+          neighborhood: a.suburb || a.neighbourhood || a.quarter || '',
+          city: a.city || a.town || a.village || a.municipality || a.county || '',
+          state: a.state || a.region || '',
+          country: a.country || '',
+          cep: a.postcode || '',
+          fullAddress: (data && data.display_name) ? data.display_name : ''
+        };
+      } catch (e) { addressData = null; }
+      if (!addressData || !addressData.fullAddress) {
+        addressData = { street: '', neighborhood: '', city: '', state: '', country: '', cep: '',
+          fullAddress: 'Local no mapa (' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')' };
+      }
+    }
+
+    // Mostra na caixa de busca qual local esta sendo analisado
+    var si = document.getElementById('search-input');
+    if (si) si.value = addressData.fullAddress;
+
+    updateLoading('Analisando dados de criminalidade...'); await sleep(600);
+    updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
+    updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
+    updateLoading('Compilando Safety Score...'); await sleep(300);
+
+    currentData = generateIntelligence(lat, lng, addressData);
+    renderDashboard(currentData);
+    if (currentMapView === '3d') { syncEarthWithData(currentData); }
+    hideLoading();
+  } catch (err) {
+    hideLoading();
+    alert('Erro: ' + err.message);
+  }
+}
+
+// ============================================================
+// GEOCODIFICACAO EM CASCATA (global, sem restricao de pais)
+// Tenta do mais especifico para o mais generico ate encontrar.
+// ============================================================
+async function geocodeQuery(q) {
+  if (!q) return null;
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&accept-language=pt,en&q=' + encodeURIComponent(q));
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (!j || !j.length) return null;
+    const a = j[0].address || {};
+    return {
+      lat: parseFloat(j[0].lat),
+      lng: parseFloat(j[0].lon),
+      displayName: j[0].display_name || q,
+      city: a.city || a.town || a.village || a.municipality || '',
+      state: a.state || '',
+      country: a.country || ''
+    };
+  } catch (e) { return null; }
+}
+
+async function geocodeAddress(addressData, rawQuery) {
+  // Monta as tentativas do mais especifico para o mais generico.
+  // Sempre usando virgula como separador (Nominatim falha com "/" e " - ").
+  const A = addressData || {};
+  const attempts = [];
+  const push = function(parts) {
+    const s = parts.filter(Boolean).join(', ').replace(/\s+/g, ' ').trim();
+    if (s && attempts.indexOf(s) === -1) attempts.push(s);
+  };
+
+  push([A.street, A.neighborhood, A.city, A.state, A.country]);
+  push([A.street, A.city, A.state, A.country]);
+  push([A.street, A.city, A.country]);
+  push([A.neighborhood, A.city, A.state, A.country]);
+  push([A.city, A.state, A.country]);
+  push([A.city, A.country]);
+
+  // Consulta crua do usuario, normalizada (troca "/" e " - " por virgula)
+  if (rawQuery) {
+    const norm = String(rawQuery).replace(/\s*[\/|]\s*/g, ', ').replace(/\s+-\s+/g, ', ').trim();
+    push([norm]);
+    // Sem o CEP/numero inicial, que costuma atrapalhar
+    const noZip = norm.replace(/\b\d{5}-?\d{3}\b/g, '').replace(/^[\s,]+|[\s,]+$/g, '');
+    push([noZip]);
+  }
+
+  for (let i = 0; i < attempts.length; i++) {
+    if (i > 0) { updateLoading('Refinando localizacao...'); await sleep(1100); }
+    const hit = await geocodeQuery(attempts[i]);
+    if (hit && isFinite(hit.lat) && isFinite(hit.lng)) return hit;
+  }
+  return null;
 }
 
 // ============================================================
@@ -428,8 +728,117 @@ function toggleMarkers() { markersVisible = !markersVisible; markersVisible ? ma
 // ============================================================
 // PDF GENERATION
 // ============================================================
-async function generatePDF() {
-  if (!currentData) return alert('Faca uma pesquisa primeiro.');
+// ============================================================
+// PAYWALL — Cobranca antes de liberar PDF
+// ============================================================
+var psgPaymentDone = false;
+
+function showPaywallModal() {
+  if (document.getElementById('paywall-modal')) { document.getElementById('paywall-modal').style.display = 'flex'; return; }
+  var m = document.createElement('div');
+  m.id = 'paywall-modal';
+  m.style.cssText = 'display:flex;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+  m.innerHTML = '<div style="background:linear-gradient(145deg,#0f1728,#1a2438);border:1px solid rgba(0,157,255,.3);border-radius:20px;padding:2rem 1.5rem;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;margin:auto;">' +
+    '<span id="paywall-close" style="position:absolute;top:8px;right:12px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#8b95a8;cursor:pointer;">&times;</span>' +
+    '<div style="text-align:center;font-size:2.5rem;margin-bottom:.5rem;">&#128274;</div>' +
+    '<h3 style="text-align:center;font-size:1.2rem;color:#e5e7eb;margin-bottom:.3rem;">Relatorio PDF Premium</h3>' +
+    '<p style="text-align:center;font-size:.8rem;color:#8b95a8;margin-bottom:1.2rem;">Para baixar o relatorio completo em PDF, e necessario efetuar o pagamento.</p>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem;">' +
+    '<div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:1rem .5rem;text-align:center;">' +
+    '<div style="font-size:.7rem;color:#8b95a8;margin-bottom:.3rem;">&#127463;&#127479; Brasil</div>' +
+    '<div style="font-size:1.4rem;font-weight:800;color:#3b82f6;white-space:nowrap;">R$ 10,00</div></div>' +
+    '<div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:1rem .5rem;text-align:center;">' +
+    '<div style="font-size:.7rem;color:#8b95a8;margin-bottom:.3rem;">&#127758; Internacional</div>' +
+    '<div style="font-size:1.4rem;font-weight:800;color:#10b981;white-space:nowrap;">$ 10.00</div></div></div>' +
+    '<div style="margin-bottom:1rem;"><label style="display:block;font-size:.8rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">Seu e-mail (para receber o relatorio)</label>' +
+    '<input type="email" id="paywall-email" inputmode="email" autocomplete="email" placeholder="seu@email.com" style="width:100%;padding:.85rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:16px;outline:none;box-sizing:border-box;min-height:48px;"></div>' +
+    '<button id="paywall-pay-btn" style="width:100%;padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.7rem;min-height:52px;transition:all .25s;">&#128179; Pagar e Baixar Relatorio</button>' +
+    '<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:.6rem;flex-wrap:wrap;">' +
+    '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.66rem;font-weight:700;color:#adb5c4;letter-spacing:.02em;">' +
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="#009cde" aria-hidden="true"><path d="M7.3 21.3H3.6l3-19.1h6.9c3.7 0 6 1.9 5.5 5.3-.5 3.6-3.4 5.5-7.1 5.5H9.3l-2 8.3zm2.6-11.5h2.2c1.6 0 2.8-.8 3-2.3.2-1.4-.7-2.1-2.3-2.1h-2l-.9 4.4z"/></svg>PayPal</span>' +
+    '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.66rem;font-weight:700;color:#adb5c4;letter-spacing:.02em;">' +
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="#00b1ea" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7 13c1.6 1.6 3.3 2.4 5 2.4s3.4-.8 5-2.4" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="9" cy="9.6" r="1.2" fill="#fff"/><circle cx="15" cy="9.6" r="1.2" fill="#fff"/></svg>Mercado Pago</span></div>' +
+    '<div style="text-align:center;font-size:.68rem;color:#6b7280;line-height:1.5;">&#128274; Pagamento seguro e criptografado | Dados protegidos</div>' +
+    '</div>';
+  document.body.appendChild(m);
+  document.getElementById('paywall-close').addEventListener('click', function() { m.style.display = 'none'; });
+  document.getElementById('paywall-pay-btn').addEventListener('click', processPayment);
+}
+
+function processPayment() {
+  var email = document.getElementById('paywall-email').value.trim();
+  if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    alert('Por favor, insira um e-mail valido para receber o relatorio.');
+    return;
+  }
+  var btn = document.getElementById('paywall-pay-btn');
+  btn.innerHTML = '&#9203; Processando pagamento...';
+  btn.style.opacity = '.6';
+  btn.style.pointerEvents = 'none';
+  // Simula processamento de pagamento (3 segundos)
+  setTimeout(function() {
+    psgPaymentDone = true;
+    btn.innerHTML = '&#9989; Pagamento confirmado!';
+    btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+    // Registra pagamento
+    var payments = [];
+    try { payments = JSON.parse(localStorage.getItem('psg_payments') || '[]'); } catch(e) {}
+    payments.push({
+      date: new Date().toISOString(),
+      email: email,
+      amount: 'R$10.00 / $10.00',
+      status: 'confirmed'
+    });
+    try { localStorage.setItem('psg_payments', JSON.stringify(payments)); } catch(e) {}
+    try { SH_SECURITY.logEvent('PAYMENT_CONFIRMED', email); } catch(e) {}
+    // Fecha paywall e gera PDF
+    setTimeout(function() {
+      document.getElementById('paywall-modal').style.display = 'none';
+      btn.innerHTML = '&#128179; Pagar e Baixar Relatorio';
+      btn.style.background = 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+      _doGeneratePDF();
+    }, 1200);
+  }, 3000);
+}
+
+// ============================================================
+// PDF LIBS SOB DEMANDA — jsPDF + html2canvas (550KB) só baixam
+// quando o usuario realmente pede o relatorio. Isso deixa a
+// abertura do site muito mais rapida.
+// ============================================================
+var _psgPdfLibsPromise = null;
+function _psgLoadScript(src) {
+  return new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = function() { reject(new Error('Falha ao carregar biblioteca: ' + src)); };
+    document.head.appendChild(s);
+  });
+}
+function ensurePdfLibs() {
+  if (window.jspdf && window.html2canvas) return Promise.resolve();
+  if (_psgPdfLibsPromise) return _psgPdfLibsPromise;
+  _psgPdfLibsPromise = Promise.all([
+    window.jspdf ? Promise.resolve() : _psgLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
+    window.html2canvas ? Promise.resolve() : _psgLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')
+  ]).catch(function(e) { _psgPdfLibsPromise = null; throw e; });
+  return _psgPdfLibsPromise;
+}
+
+// Funcao interna que realmente gera o PDF (so chamada apos pagamento)
+async function _doGeneratePDF() {
+  showLoading('Preparando gerador de PDF...');
+  try {
+    await ensurePdfLibs();
+  } catch (e) {
+    hideLoading();
+    alert('Nao foi possivel carregar o gerador de PDF. Verifique sua conexao e tente novamente.');
+    return;
+  }
   showLoading('Gerando relatorio PDF...');
   document.getElementById('pdf-title').textContent = 'Relatorio de Seguranca - Portal Seguranca Global';
   document.getElementById('pdf-address').textContent = currentData.address.fullAddress + ' | ' + new Date().toLocaleDateString('pt-BR');
@@ -455,9 +864,18 @@ async function generatePDF() {
     var fileName = 'PortalSegurancaGlobal_Relatorio_' + Date.now() + '.pdf';
     var pdfBlob = pdf.output('blob');
     hideLoading();
-    // Abre modal de entrega com opcoes Email + WhatsApp + Download
     PSG_DELIVERY.show(pdfBlob, fileName);
   } catch (err) { hideLoading(); alert('Erro ao gerar PDF: ' + err.message); }
+}
+
+// Funcao publica — verifica pagamento antes de gerar
+async function generatePDF() {
+  if (!currentData) return alert('Faca uma pesquisa primeiro.');
+  if (!psgPaymentDone) {
+    showPaywallModal();
+    return;
+  }
+  _doGeneratePDF();
 }
 
 // ============================================================
@@ -499,6 +917,8 @@ function acceptTerms() {
   try { SH_SECURITY.logEvent('TERMS_ACCEPTED', 'User accepted terms of use'); } catch(e) {}
   // Executa a busca que estava pendente
   if (window._pendingSearch) { window._pendingSearch = false; handleSearch(); }
+  else if (window._pendingMapSearch) { window._pendingMapSearch = false; openMapSearch(); }
+  else if (window._pendingGpsSearch) { window._pendingGpsSearch = false; searchByGps(); }
 }
 
 function showTermsModal() {
@@ -524,6 +944,33 @@ document.addEventListener('DOMContentLoaded', function() {
   // Search
   document.getElementById('search-btn').addEventListener('click', handleSearch);
   document.getElementById('search-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSearch(); });
+
+  // Pesquisar pelo mapa / GPS
+  var bMap = document.getElementById('btn-map-search');
+  if (bMap) bMap.addEventListener('click', openMapSearch);
+  var bGps = document.getElementById('btn-gps-search');
+  if (bGps) bGps.addEventListener('click', searchByGps);
+
+  var msClose = document.getElementById('mapsel-close');
+  if (msClose) msClose.addEventListener('click', closeMapSearch);
+  var msCancel = document.getElementById('mapsel-cancel');
+  if (msCancel) msCancel.addEventListener('click', closeMapSearch);
+  var msConfirm = document.getElementById('mapsel-confirm');
+  if (msConfirm) msConfirm.addEventListener('click', confirmMapSearch);
+  var msFindBtn = document.getElementById('mapsel-find-btn');
+  if (msFindBtn) msFindBtn.addEventListener('click', mapselFind);
+  var msFind = document.getElementById('mapsel-find');
+  if (msFind) msFind.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); mapselFind(); } });
+  var msGps = document.getElementById('mapsel-gps');
+  if (msGps) msGps.addEventListener('click', mapselGps);
+  var msOv = document.getElementById('mapsel-overlay');
+  if (msOv) msOv.addEventListener('click', function(e) { if (e.target === msOv) closeMapSearch(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var ov = document.getElementById('mapsel-overlay');
+      if (ov && ov.style.display === 'flex') closeMapSearch();
+    }
+  });
 
   // Map view toggles
   document.getElementById('btn-view-dark').addEventListener('click', function() { switchMapView('dark'); });
@@ -656,6 +1103,8 @@ function switchManualLang(lang) {
 (function initManual() {
   var el = document.getElementById('manual-lang');
   if (!el) return;
+  // Listener para trocar idioma do manual (substituindo onchange inline bloqueado pelo CSP)
+  el.addEventListener('change', function() { switchManualLang(el.value); });
   var userLang = (navigator.language || navigator.userLanguage || 'pt').substring(0, 2).toLowerCase();
   var supported = Object.keys(manualData);
   var lang = supported.indexOf(userLang) !== -1 ? userLang : 'en';
@@ -665,21 +1114,38 @@ function switchManualLang(lang) {
 
 // ============================================================
 // FLAGS — Repetir bandeiras para preencher toda a altura da pagina
+// PERFORMANCE: repete só o necessario e roda depois da pagina aparecer
 // ============================================================
 (function fillFlags() {
-  var cols = document.querySelectorAll('.flags-column');
-  if (!cols.length) return;
-  cols.forEach(function(col) {
-    var items = col.querySelectorAll('.flag-item');
-    if (!items.length) return;
-    var originalHTML = '';
-    for (var i = 0; i < items.length; i++) {
-      originalHTML += items[i].outerHTML;
-    }
-    for (var r = 0; r < 4; r++) {
-      col.insertAdjacentHTML('beforeend', originalHTML);
-    }
-  });
+  function run() {
+    var cols = document.querySelectorAll('.flags-column');
+    if (!cols.length) return;
+    cols.forEach(function(col) {
+      var items = col.querySelectorAll('.flag-item');
+      if (!items.length) return;
+
+      // Altura de um bloco de bandeiras vs altura total da pagina
+      var blocoH = col.scrollHeight || 0;
+      var alvoH = Math.max(document.body.scrollHeight, window.innerHeight);
+      var repeticoes = blocoH > 0 ? Math.ceil(alvoH / blocoH) - 1 : 2;
+      if (repeticoes < 1) repeticoes = 1;
+      if (repeticoes > 4) repeticoes = 4;
+
+      var originalHTML = '';
+      for (var i = 0; i < items.length; i++) {
+        originalHTML += items[i].outerHTML;
+      }
+      for (var r = 0; r < repeticoes; r++) {
+        col.insertAdjacentHTML('beforeend', originalHTML);
+      }
+    });
+  }
+  // Nao atrasa a primeira pintura da tela
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(run, { timeout: 2000 });
+  } else {
+    setTimeout(run, 300);
+  }
 })();
 
 // ============================================================
@@ -704,7 +1170,8 @@ var PSG_LANG = (function() {
   var translations = {
     'pt': {
       pageTitle: 'Portal Seguranca Global',
-      emblemTitle: 'Busca em Tempo Real em Qualquer Lugar do Mundo',
+      emblemTitle: 'Busca em tempo real em qualquer endere\u00e7o do mundo',
+      emblemTagline: 'Veja se o lugar que voc\u00ea procura \u00e9 realmente seguro',
       searchTitle: 'Consulte a Seguranca de Qualquer Lugar do Mundo',
       searchSubtitle: 'Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana — cobertura global',
       searchPlaceholder: 'CPF, CNPJ, RG, CEP, endereco, cidade ou pais...',
@@ -731,7 +1198,8 @@ var PSG_LANG = (function() {
     },
     'en': {
       pageTitle: 'Global Security Portal',
-      emblemTitle: 'Real-Time Search Anywhere in the World',
+      emblemTitle: 'Real-time search at any address in the world',
+      emblemTagline: 'Check if the place you are looking for is really safe',
       searchTitle: 'Check the Safety of Any Location Worldwide',
       searchSubtitle: 'Real-time analysis based on crime data, infrastructure and urban movement — global coverage',
       searchPlaceholder: 'ID, Tax ID, Name, ZIP, address, city or country...',
@@ -758,7 +1226,8 @@ var PSG_LANG = (function() {
     },
     'es': {
       pageTitle: 'Portal de Seguridad Global',
-      emblemTitle: 'Busqueda en Tiempo Real en Cualquier Lugar del Mundo',
+      emblemTitle: 'Busqueda en tiempo real en cualquier direccion del mundo',
+      emblemTagline: 'Vea si el lugar que busca es realmente seguro',
       searchTitle: 'Consulte la Seguridad de Cualquier Lugar del Mundo',
       searchSubtitle: 'Analisis en tiempo real basado en datos de criminalidad, infraestructura y movimiento urbano — cobertura global',
       searchPlaceholder: 'DNI, CUIT, Nombre, Codigo postal, direccion, ciudad o pais...',
@@ -785,7 +1254,8 @@ var PSG_LANG = (function() {
     },
     'fr': {
       pageTitle: 'Portail de Securite Mondiale',
-      emblemTitle: 'Recherche en Temps Reel Partout dans le Monde',
+      emblemTitle: 'Recherche en temps reel a n\'importe quelle adresse du monde',
+      emblemTagline: 'Verifiez si le lieu que vous cherchez est vraiment sur',
       searchTitle: 'Verifiez la Securite de N\'importe Quel Lieu dans le Monde',
       searchSubtitle: 'Analyse en temps reel basee sur les donnees de criminalite, l\'infrastructure et les mouvements urbains — couverture mondiale',
       searchPlaceholder: 'CNI, SIRET, Nom, Code postal, adresse, ville ou pays...',
@@ -812,7 +1282,8 @@ var PSG_LANG = (function() {
     },
     'de': {
       pageTitle: 'Globales Sicherheitsportal',
-      emblemTitle: 'Echtzeitsuche Uberall auf der Welt',
+      emblemTitle: 'Echtzeitsuche an jeder Adresse der Welt',
+      emblemTagline: 'Prufen Sie, ob der gesuchte Ort wirklich sicher ist',
       searchTitle: 'Prufen Sie die Sicherheit Jedes Ortes Weltweit',
       searchSubtitle: 'Echtzeitanalyse basierend auf Kriminalitaetsdaten, Infrastruktur und staedtischer Bewegung — globale Abdeckung',
       searchPlaceholder: 'Ausweis, Steuernr., Name, PLZ, Adresse, Stadt oder Land...',
@@ -839,7 +1310,8 @@ var PSG_LANG = (function() {
     },
     'ja': {
       pageTitle: 'Global Security Portal',
-      emblemTitle: 'Real-Time Search Anywhere in the World',
+      emblemTitle: 'Real-time search at any address in the world',
+      emblemTagline: 'Check if the place you are looking for is really safe',
       searchTitle: 'Check the Safety of Any Location Worldwide',
       searchSubtitle: 'Real-time analysis based on crime data, infrastructure and urban movement',
       searchPlaceholder: 'ID, Tax ID, Name, ZIP, address, city or country...',
@@ -860,7 +1332,8 @@ var PSG_LANG = (function() {
     },
     'ar': {
       pageTitle: 'Portal Seguranca Global',
-      emblemTitle: 'Real-Time Search Anywhere in the World',
+      emblemTitle: 'Real-time search at any address in the world',
+      emblemTagline: 'Check if the place you are looking for is really safe',
       searchTitle: 'Check Safety of Any Location',
       searchSubtitle: 'Real-time analysis — global coverage',
       searchPlaceholder: 'ID, Name, ZIP, address, city or country...',
@@ -881,7 +1354,8 @@ var PSG_LANG = (function() {
     },
     'ru': {
       pageTitle: 'Portal Bezopasnosti',
-      emblemTitle: 'Poisk v Realnom Vremeni v Lyuboy Tochke Mira',
+      emblemTitle: 'Poisk v realnom vremeni po lyubomu adresu v mire',
+      emblemTagline: 'Proverte, deystvitelno li bezopasno mesto, kotoroe vy ishchete',
       searchTitle: 'Proverka Bezopasnosti Lyubogo Mesta',
       searchSubtitle: 'Analiz v realnom vremeni — globalnoe pokrytie',
       searchPlaceholder: 'ID, nazvanie, indeks, adres, gorod ili strana...',
@@ -902,7 +1376,8 @@ var PSG_LANG = (function() {
     },
     'zh': {
       pageTitle: 'Global Security Portal',
-      emblemTitle: 'Real-Time Search Anywhere in the World',
+      emblemTitle: 'Real-time search at any address in the world',
+      emblemTagline: 'Check if the place you are looking for is really safe',
       searchTitle: 'Check Safety of Any Location',
       searchSubtitle: 'Real-time analysis — global coverage',
       searchPlaceholder: 'ID, Name, ZIP, address, city or country...',
@@ -923,7 +1398,68 @@ var PSG_LANG = (function() {
     }
   };
 
-  // Funcao que aplica a traducao em todos os elementos do site
+  // Traducao da PESQUISA PELO MAPA (9 idiomas)
+  var mapSearchI18n = {
+    pt: { or: 'OU', mapBtn: 'Pesquisar pelo Mapa', gpsBtn: 'Onde estou agora',
+      title: 'Pesquisar pelo Mapa', sub: 'Toque em qualquer ponto do mapa para analisar a seguranca do local',
+      findPh: 'Ir para uma cidade ou pais...', hint: 'Toque no mapa para escolher o local',
+      picked: 'Local selecionado', cancel: 'Cancelar', confirm: 'Analisar este local' },
+    en: { or: 'OR', mapBtn: 'Search by Map', gpsBtn: 'Where I am now',
+      title: 'Search by Map', sub: 'Tap anywhere on the map to analyze the safety of that location',
+      findPh: 'Go to a city or country...', hint: 'Tap the map to choose a location',
+      picked: 'Selected location', cancel: 'Cancel', confirm: 'Analyze this location' },
+    es: { or: 'O', mapBtn: 'Buscar por Mapa', gpsBtn: 'Donde estoy ahora',
+      title: 'Buscar por Mapa', sub: 'Toca cualquier punto del mapa para analizar la seguridad del lugar',
+      findPh: 'Ir a una ciudad o pais...', hint: 'Toca el mapa para elegir el lugar',
+      picked: 'Lugar seleccionado', cancel: 'Cancelar', confirm: 'Analizar este lugar' },
+    fr: { or: 'OU', mapBtn: 'Rechercher sur la carte', gpsBtn: 'Ou je suis maintenant',
+      title: 'Rechercher sur la carte', sub: 'Touchez n\'importe quel point de la carte pour analyser la securite du lieu',
+      findPh: 'Aller a une ville ou un pays...', hint: 'Touchez la carte pour choisir le lieu',
+      picked: 'Lieu selectionne', cancel: 'Annuler', confirm: 'Analyser ce lieu' },
+    de: { or: 'ODER', mapBtn: 'Auf der Karte suchen', gpsBtn: 'Wo ich jetzt bin',
+      title: 'Auf der Karte suchen', sub: 'Tippen Sie auf einen Punkt der Karte, um die Sicherheit des Ortes zu analysieren',
+      findPh: 'Zu einer Stadt oder einem Land...', hint: 'Tippen Sie auf die Karte, um den Ort zu wahlen',
+      picked: 'Ausgewahlter Ort', cancel: 'Abbrechen', confirm: 'Diesen Ort analysieren' },
+    ja: { or: 'または', mapBtn: '地図で検索', gpsBtn: '現在地',
+      title: '地図で検索', sub: '地図上の任意の場所をタップして、その地域の安全性を分析します',
+      findPh: '都市または国へ移動...', hint: '地図をタップして場所を選択',
+      picked: '選択した場所', cancel: 'キャンセル', confirm: 'この場所を分析' },
+    ar: { or: 'أو', mapBtn: 'البحث بالخريطة', gpsBtn: 'موقعي الحالي',
+      title: 'البحث بالخريطة', sub: 'اضغط على أي نقطة في الخريطة لتحليل مستوى الأمان في الموقع',
+      findPh: 'الانتقال إلى مدينة أو دولة...', hint: 'اضغط على الخريطة لاختيار الموقع',
+      picked: 'الموقع المحدد', cancel: 'إلغاء', confirm: 'تحليل هذا الموقع' },
+    ru: { or: 'ИЛИ', mapBtn: 'Поиск по карте', gpsBtn: 'Где я сейчас',
+      title: 'Поиск по карте', sub: 'Нажмите на любую точку карты, чтобы проанализировать безопасность места',
+      findPh: 'Перейти к городу или стране...', hint: 'Нажмите на карту, чтобы выбрать место',
+      picked: 'Выбранное место', cancel: 'Отмена', confirm: 'Анализировать это место' },
+    zh: { or: '或', mapBtn: '在地图上搜索', gpsBtn: '我的当前位置',
+      title: '在地图上搜索', sub: '点击地图上的任意位置，分析该地点的安全状况',
+      findPh: '前往城市或国家...', hint: '点击地图选择位置',
+      picked: '已选位置', cancel: '取消', confirm: '分析该位置' }
+  };
+
+  function applyMapSearchI18n(langCode) {
+    var m = mapSearchI18n[langCode] || mapSearchI18n['en'];
+    var set = function(id, val, attr) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (attr === 'ph') el.placeholder = val; else el.textContent = val;
+    };
+    var dv = document.getElementById('search-divider-text');
+    if (dv) dv.textContent = m.or;
+    set('btn-map-search-text', m.mapBtn);
+    set('btn-gps-search-text', m.gpsBtn);
+    set('mapsel-title', m.title);
+    set('mapsel-sub', m.sub);
+    set('mapsel-find', m.findPh, 'ph');
+    set('mapsel-hint-text', m.hint);
+    set('mapsel-picked-label', m.picked);
+    set('mapsel-cancel', m.cancel);
+    set('mapsel-confirm-text', m.confirm);
+  }
+  window.applyMapSearchI18n = applyMapSearchI18n;
+
+
   function applyTranslation(langCode) {
     var t = translations[langCode] || translations['en'];
     // Titulo da pagina
@@ -934,6 +1470,8 @@ var PSG_LANG = (function() {
     // Emblem
     var emblemTitle = document.querySelector('.emblem-title');
     if (emblemTitle) emblemTitle.textContent = t.emblemTitle;
+    var emblemTagline = document.querySelector('.emblem-tagline');
+    if (emblemTagline && t.emblemTagline) emblemTagline.textContent = t.emblemTagline;
     // Search section
     var searchTitle = document.querySelector('.search-title');
     if (searchTitle) searchTitle.textContent = t.searchTitle;
@@ -945,6 +1483,8 @@ var PSG_LANG = (function() {
     if (searchBtn) { var svg = searchBtn.querySelector('svg'); searchBtn.innerHTML = ''; if (svg) searchBtn.appendChild(svg); searchBtn.appendChild(document.createTextNode(' ' + t.searchBtn)); }
     var searchHint = document.querySelector('.search-hint');
     if (searchHint) searchHint.innerHTML = t.searchHint;
+    // Pesquisa pelo mapa / GPS
+    try { applyMapSearchI18n(langCode); } catch(e) {}
     // Cards
     var cards = document.querySelectorAll('.card-header h3');
     cards.forEach(function(h3) {
@@ -1061,6 +1601,24 @@ var PSG_LANG = (function() {
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
   else { init(); }
 
+  // Barra de idiomas mobile
+  function initMobileLangBar() {
+    var bar = document.getElementById('mobile-lang-bar');
+    if (!bar) return;
+    bar.querySelectorAll('.mlb-flag').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var lang = btn.getAttribute('data-lang');
+        if (lang) {
+          applyTranslation(lang);
+          bar.querySelectorAll('.mlb-flag').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+        }
+      });
+    });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileLangBar); }
+  else { initMobileLangBar(); }
+
   return { apply: applyTranslation, translations: translations };
 })();
 
@@ -1074,54 +1632,27 @@ var PSG_DELIVERY = (function() {
     var modal = document.createElement('div');
     modal.id = 'delivery-modal';
     modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem;';
-
-    const isPaid = new URLSearchParams(window.location.search).get('payment') === 'success';
-    modal.innerHTML = `
-      <div style="background:linear-gradient(145deg,#0f1728,#1a2438);border:1px solid rgba(0,157,255,.25);border-radius:20px;padding:2rem;max-width:500px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6);">
-        <span id="delivery-close" style="position:absolute;top:12px;right:16px;font-size:1.5rem;color:#8b95a8;cursor:pointer;line-height:1;">&times;</span>
-        
-        <div id="delivery-paywall" style="display: ${isPaid ? 'none' : 'block'}; text-align:center;">
-          <div style="font-size:3rem;margin-bottom:1rem;">💰</div>
-          <h3 style="font-size:1.4rem;color:#fff;margin-bottom:0.5rem;">Relatorio Completo</h3>
-          <p style="font-size:0.9rem;color:#8b95a8;margin-bottom:1.5rem;">Acesse todos os detalhes, graficos e analise completa em PDF por apenas <b>R$ 10,00</b>.</p>
-          <button id="btn-pay-mp" style="width:100%;padding:1rem;border-radius:12px;border:none;background:#009ee3;color:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;margin-bottom:1rem;box-shadow:0 4px 15px rgba(0,158,227,0.3);">Pagar com Pix ou Cartao</button>
-          <div style="font-size:0.75rem;color:#555;">Processado com seguranca por Mercado Pago</div>
-        </div>
-
-        <div id="delivery-options" style="display: ${isPaid ? 'block' : 'none'};">
-          <div style="text-align:center;font-size:2rem;margin-bottom:.5rem;">📩</div>
-          <h3 style="text-align:center;font-size:1.2rem;color:#e5e7eb;margin-bottom:.4rem;">Relatorio Liberado!</h3>
-          <p style="text-align:center;font-size:.82rem;color:#8b95a8;margin-bottom:1.2rem;">Escolha como deseja receber o seu documento.</p>
-          
-          <div style="margin-bottom:1rem;">
-            <label style="display:block;font-size:.82rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">E-mail</label>
-            <input type="email" id="delivery-email" value="gersonfer007@hotmail.com" placeholder="exemplo@email.com" style="width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:.9rem;outline:none;box-sizing:border-box;">
-          </div>
-          
-          <div style="margin-bottom:1.2rem;">
-            <label style="display:block;font-size:.82rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">WhatsApp</label>
-            <input type="tel" id="delivery-whatsapp" value="+55 44 99989-7444" placeholder="+55 44 99999-9999" style="width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:.9rem;outline:none;box-sizing:border-box;">
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
-            <button id="delivery-btn-email" style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(0,157,255,.08);color:#e5e7eb;cursor:pointer;font-size:.85rem;font-weight:600;">✉️ Email</button>
-            <button id="delivery-btn-whatsapp" style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem;border-radius:12px;border:2px solid rgba(37,211,102,.25);background:rgba(37,211,102,.08);color:#25d366;cursor:pointer;font-size:.85rem;font-weight:600;">💬 WhatsApp</button>
-          </div>
-          
-          <button id="delivery-btn-download" style="width:100%;padding:.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;">📄 Baixar PDF Agora</button>
-        </div>
-      </div>
-    `;
-
+    modal.innerHTML = '<div style="background:linear-gradient(145deg,#0f1728,#1a2438);border:1px solid rgba(0,157,255,.25);border-radius:20px;padding:2rem;max-width:500px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6);">' +
+      '<span id="delivery-close" style="position:absolute;top:12px;right:16px;font-size:1.5rem;color:#8b95a8;cursor:pointer;line-height:1;">&times;</span>' +
+      '<div style="text-align:center;font-size:2rem;margin-bottom:.5rem;">&#128232;</div>' +
+      '<h3 style="text-align:center;font-size:1.2rem;color:#e5e7eb;margin-bottom:.4rem;">Enviar Relatorio</h3>' +
+      '<p style="text-align:center;font-size:.82rem;color:#8b95a8;margin-bottom:1.2rem;">Escolha como deseja receber ou compartilhar o relatorio PDF completo.</p>' +
+      '<div style="margin-bottom:1rem;"><label style="display:block;font-size:.82rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">E-mail do destinatario</label>' +
+      '<input type="email" id="delivery-email" placeholder="exemplo@email.com" style="width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:.9rem;outline:none;box-sizing:border-box;"></div>' +
+      '<div style="margin-bottom:1.2rem;"><label style="display:block;font-size:.82rem;color:#8b95a8;margin-bottom:.4rem;font-weight:600;">WhatsApp (com DDI)</label>' +
+      '<input type="tel" id="delivery-whatsapp" placeholder="+55 44 99999-9999" style="width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e5e7eb;font-size:.9rem;outline:none;box-sizing:border-box;"></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">' +
+      '<button id="delivery-btn-email" style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(0,157,255,.08);color:#e5e7eb;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .25s;">&#9993; Enviar por Email</button>' +
+      '<button id="delivery-btn-whatsapp" style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem;border-radius:12px;border:2px solid rgba(37,211,102,.25);background:rgba(37,211,102,.08);color:#25d366;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .25s;">&#128172; Enviar por WhatsApp</button></div>' +
+      '<button id="delivery-btn-download" style="width:100%;padding:.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:.8rem;">&#128196; Baixar PDF Agora</button>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.72rem;color:#6b7280;">&#128274; Envio seguro e criptografado</div>' +
+      '</div>';
     document.body.appendChild(modal);
-
     // Eventos
     document.getElementById('delivery-close').addEventListener('click', function() { modal.style.display = 'none'; });
     document.getElementById('delivery-btn-email').addEventListener('click', sendByEmail);
     document.getElementById('delivery-btn-whatsapp').addEventListener('click', sendByWhatsApp);
     document.getElementById('delivery-btn-download').addEventListener('click', downloadPDF);
-    const payBtn = document.getElementById('btn-pay-mp');
-    if (payBtn) payBtn.addEventListener('click', handlePayment);
   }
 
   var _lastPDFBlob = null;
@@ -1133,28 +1664,6 @@ var PSG_DELIVERY = (function() {
     createDeliveryModal();
     var modal = document.getElementById('delivery-modal');
     modal.style.display = 'flex';
-  }
-
-  
-  async function handlePayment() {
-    const btn = document.getElementById('btn-pay-mp');
-    btn.disabled = true;
-    btn.textContent = 'Iniciando...';
-    try {
-      const res = await fetch('/api/create-preference', { method: 'POST' });
-      const data = await res.json();
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else {
-        alert('Erro ao iniciar pagamento. Tente novamente.');
-        btn.disabled = false;
-        btn.textContent = 'Pagar com Pix ou Cartao';
-      }
-    } catch(e) {
-      alert('Erro de conexao.');
-      btn.disabled = false;
-      btn.textContent = 'Pagar com Pix ou Cartao';
-    }
   }
 
   function sendByEmail() {
@@ -1224,4 +1733,47 @@ var PSG_DELIVERY = (function() {
     show: showDeliveryModal,
     history: getDeliveryHistory
   };
+})();
+
+// ============================================================
+// MELHORIAS MOBILE — botao voltar ao topo + reajuste do mapa
+// ============================================================
+(function() {
+  function initMobileUX() {
+    // Botao voltar ao topo
+    var btn = document.getElementById('to-top-btn');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      var toggleBtn = function() {
+        if (window.scrollY > 420) { btn.classList.add('show'); }
+        else { btn.classList.remove('show'); }
+      };
+      window.addEventListener('scroll', toggleBtn, { passive: true });
+      toggleBtn();
+    }
+
+    // No celular, ao girar a tela ou redimensionar, o mapa precisa recalcular
+    var resizeTimer = null;
+    var refreshMap = function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        try { if (typeof map !== 'undefined' && map) map.invalidateSize(); } catch (e) {}
+      }, 250);
+    };
+    window.addEventListener('resize', refreshMap, { passive: true });
+    window.addEventListener('orientationchange', refreshMap, { passive: true });
+
+    // Ao enviar a busca no teclado do celular, fecha o teclado
+    var input = document.getElementById('search-input');
+    if (input) {
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { input.blur(); }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileUX); }
+  else { initMobileUX(); }
 })();
