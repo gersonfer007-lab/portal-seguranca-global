@@ -1,11 +1,22 @@
-ewogICJuYW1lIjogInBvcnRhbC1zZWd1cmFuY2EtZ2xvYmFsIiwKICAidmVy
-c2lvbiI6ICIxLjAuMCIsCiAgImRlc2NyaXB0aW9uIjogIlBvcnRhbCBTZWd1
-cmFuY2EgR2xvYmFsIOKAlCBJbnRlbGlnZW5jaWEgZW0gU2VndXJhbmNhIFVy
-YmFuYSBlIEJhY2tncm91bmQgQ2hlY2siLAogICJtYWluIjogInNlcnZlci5q
-cyIsCiAgImVuZ2luZXMiOiB7CiAgICAibm9kZSI6ICI+PTE4LjAuMCIKICB9
-LAogICJzY3JpcHRzIjogewogICAgInN0YXJ0IjogIm5vZGUgc2VydmVyLmpz
-IiwKICAgICJkZXYiOiAibm9kZSBzZXJ2ZXIuanMiCiAgfSwKICAiZGVwZW5k
-ZW5jaWVzIjogewogICAgImV4cHJlc3MiOiAiXjQuMjEuMCIsCiAgICAiaGVs
-bWV0IjogIl44LjAuMCIsCiAgICAiZXhwcmVzcy1yYXRlLWxpbWl0IjogIl43
-LjQuMCIsCiAgICAiY29ycyI6ICJeMi44LjUiLAogICAgIm1vcmdhbiI6ICJe
-MS4xMC4wIiwKICAgICJtZXJjYWRvcGFnbyI6ICJeMi4wLjE1IgogIH0KfQo=
+{
+  "name": "portal-seguranca-global",
+  "version": "1.0.0",
+  "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Background Check",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "helmet": "^8.0.0",
+    "express-rate-limit": "^7.4.0",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0",
+    "mercadopago": "^2.0.15",
+    "axios": "^1.7.2"
+  }
+}
