@@ -16,7 +16,6 @@
     "express-rate-limit": "^7.4.0",
     "cors": "^2.8.5",
     "morgan": "^1.10.0",
-    "mercadopago": "^2.0.15",
     "axios": "^1.7.2"
   }
 }
