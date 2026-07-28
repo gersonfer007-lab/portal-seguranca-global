@@ -1,113 +1,146 @@
-Ly8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09Ci8vIFBvcnRhbCBTZWd1cmFuY2EgR2xvYmFsIOKAlCBTZXJ2ZXItU2lkZSBTZWN1cml0
-eSBCYWNrZW5kCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PQpjb25zdCBleHByZXNzID0gcmVxdWlyZSgnZXhwcmVzcycpOwpjb25z
-dCBoZWxtZXQgPSByZXF1aXJlKCdoZWxtZXQnKTsKY29uc3QgcmF0ZUxpbWl0ID0gcmVxdWlyZSgn
-ZXhwcmVzcy1yYXRlLWxpbWl0Jyk7CmNvbnN0IGNvcnMgPSByZXF1aXJlKCdjb3JzJyk7CmNvbnN0
-IG1vcmdhbiA9IHJlcXVpcmUoJ21vcmdhbicpOwpjb25zdCBwYXRoID0gcmVxdWlyZSgncGF0aCcp
-Owpjb25zdCB7IE1lcmNhZG9QYWdvQ29uZmlnLCBQcmVmZXJlbmNlIH0gPSByZXF1aXJlKCdtZXJj
-YWRvcGFnbycpOwpjb25zdCB7IHNhbml0aXplSW5wdXQsIGRldGVjdEluamVjdGlvbiwgdmFsaWRh
-dGVDUEYsIHZhbGlkYXRlQ05QSiwgc2FuaXRpemVIVE1MLCBsb2dFdmVudCwgZ2V0TG9nIH0gPSBy
-ZXF1aXJlKCcuL3ZhbGlkYXRpb24nKTsKCmNvbnN0IGFwcCA9IGV4cHJlc3MoKTsKY29uc3QgUE9S
-VCA9IHByb2Nlc3MuZW52LlBPUlQgfHwgMzAwMDsKCi8vID09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyBNRVJDQURPIFBBR08gQ09O
-RklHCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PQpjb25zdCBjbGllbnQgPSBuZXcgTWVyY2Fkb1BhZ29Db25maWcoeyAKICBhY2Nl
-c3NUb2tlbjogcHJvY2Vzcy5lbnYuUFNHX01QX0FDQ0VTU19UT0tFTiB8fCAnQVBQX1VTUi0zMjEz
-Mzg2MjM2MDA0MTkxLTA3MjYxNC04NzIxZmI2ODU0ZTA0YTBjNjMyZmNkZDdkMDA1NDVlMS05MjYw
-NjExMycgCn0pOwpjb25zdCBwcmVmZXJlbmNlID0gbmV3IFByZWZlcmVuY2UoY2xpZW50KTsKCi8v
-ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQovLyBTRUNVUklUWSBIRUFERVJTIChIZWxtZXQpCi8vID09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQphcHAudXNlKGhlbG1ldCh7
-CiAgY29udGVudFNlY3VyaXR5UG9saWN5OiB7CiAgICBkaXJlY3RpdmVzOiB7CiAgICAgIGRlZmF1
-bHRTcmM6IFsiJ3NlbGYnIl0sCiAgICAgIHNjcmlwdFNyYzogWyInc2VsZiciLCAiaHR0cHM6Ly91
-bnBrZy5jb20iLCAiaHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbSIsICJodHRwczovL2Nkbi5q
-c2RlbGl2ci5uZXQiLCAiaHR0cHM6Ly9zZGsubWVyY2Fkb3BhZ28uY29tIiwgImh0dHBzOi8vd3d3
-LnBheXBhbC5jb20vc2RrL2pzIl0sCiAgICAgIHN0eWxlU3JjOiBbIidzZWxmJyIsICIndW5zYWZl
-LWlubGluZSciLCAiaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbSIsICJodHRwczovL3VucGtn
-LmNvbSJdLAogICAgICBmb250U3JjOiBbImh0dHBzOi8vZm9udHMuZ3N0YXRpYy5jb20iXSwKICAg
-ICAgaW1nU3JjOiBbIidzZWxmJyIsICJkYXRhOiIsICJibG9iOiIsICJodHRwczovLyoudGlsZS5v
-cGVuc3RyZWV0bWFwLm9yZyIsICJodHRwczovLyouYXJjZ2lzb25saW5lLmNvbSIsICJodHRwczov
-LyouZ29vZ2xlYXBpcy5jb20iLCAiaHR0cHM6Ly8qLmdvb2dsZS5jb20iLCAiaHR0cHM6Ly9mbGFn
-Y2RuLmNvbSIsICJodHRwczovLyoubWVyY2Fkb3BhZ28uY29tIl0sCiAgICAgIGNvbm5lY3RTcmM6
-IFsiJ3NlbGYnIiwgImh0dHBzOi8vdmlhY2VwLmNvbS5iciIsICJodHRwczovL25vbWluYXRpbS5v
-cGVuc3RyZWV0bWFwLm9yZyIsICJodHRwczovL2FwaS5tZXJjYWRvcGFnby5jb20iXSwKICAgICAg
-ZnJhbWVTcmM6IFsiaHR0cHM6Ly93d3cuZ29vZ2xlLmNvbSIsICJodHRwczovL21hcHMuZ29vZ2xl
-LmNvbSIsICJodHRwczovL2VhcnRoLmdvb2dsZS5jb20iLCAiaHR0cHM6Ly8qLm1lcmNhZG9wYWdv
-LmNvbSJdLAogICAgICB3b3JrZXJTcmM6IFsiJ3NlbGYnIiwgImh0dHBzOi8vYmxvYjoiXSwKICAg
-ICAgZnJhbWVBbmNlc3RvcnM6IFsiJ25vbmUnIl0sCiAgICAgIGJhc2VVcmk6IFsiJ3NlbGYnIl0s
-CiAgICAgIGZvcm1BY3Rpb246IFsiJ3NlbGYnIl0KICAgIH0KICB9LAogIGNyb3NzT3JpZ2luRW1i
-ZWRkZXJQb2xpY3k6IGZhbHNlLAogIGNyb3NzT3JpZ2luUmVzb3VyY2VQb2xpY3k6IHsgcG9saWN5
-OiAiY3Jvc3Mtb3JpZ2luIiB9Cn0pKTsKCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyBSQVRFIExJTUlUSU5HCi8vID09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0K
-Y29uc3QgZ2VuZXJhbExpbWl0ZXIgPSByYXRlTGltaXQoewogIHdpbmRvd01zOiA2MCAqIDEwMDAs
-CiAgbWF4OiA2MCwKICBzdGFstandardEhlYWRlcnM6IHRydWUsCiAgbGVnYWN5SGVhZGVyczogZmFs
-c2UsCiAgbWVzc2FnZTogeyBlcnJvcjogJ011aXRhcyByZXF1aXNpY29lcy4gQWd1YXJkZSAxIG1p
-bnV0by4nLCBjb2RlOiAnUkFURV9MSU1JVCcgfQp9KTsKCi8vID09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyBNSURETEVXQVJFUwov
-LyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09CmFwcC51c2UoY29ycyh7IG9yaWdpbjogdHJ1ZSwgY3JlZGVudGlhbHM6IHRydWUgfSkp
-OwphcHAudXNlKGV4cHJlc3MuanNvbih7IGxpbWl0OiAnMTBrYicgfSkpOwphcHAudXNlKGV4cHJl
-c3MudXJsZW5jb2RlZCh7IGV4dGVuZGVkOiBmYWxzZSwgbGltaXQ6ICcxMGtiJyB9KSk7CmFwcC51
-c2UobW9yZ2FuKCdjb21iaW5lZCcpKTsKYXBwLnVzZShnZW5lcmFsTGltaXRlcik7CgovLyA9PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PQovLyBTVEFUSUMgRklMRVMKLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PQphcHAudXNlKGV4cHJlc3Muc3RhdGljKHBhdGguam9p
-bihfX2Rpcm5hbWUpLCB7CiAgaW5kZXg6IFsiaW5kZXguaHRtbCJdLAogIGV4dGVuc2lvbnM6IFsn
-aHRtbCddLAogIHNldEhlYWRlcnM6IGZ1bmN0aW9uKHJlcykgewogICAgcmVzLnNldCgnWC1Db250
-ZW50LVR5cGUtT3B0aW9ucycsICdub3NuaWZmJyk7CiAgICByZXMuc2V0KCdYLUZyYW1lLU9wdGlv
-bnMnLCAnREVOWScpOwogICAgcmVzLnNldCgnUmVmZXJyZXItUG9saWN5JywgJ3N0cmljdC1vcmln
-aW4td2hlbi1jcm9zcy1vcmlnaW4nKTsKICB9Cn0pKTsKCi8vID09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyBBUEk6IFBhZ2FtZW50
-byBNZXJjYWRvIFBhZ28KLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PQphcHAucG9zdCgnL2FwaS9jcmVhdGUtcHJlZmVyZW5jZScs
-IGFzeW5jIChyZXEsIHJlcykgPT4gewogIHRyeSB7CiAgICBjb25zdCBib2R5ID0gewogICAgICBp
-dGVtczogWwogICAgICAgIHsKICAgICAgICAgIGlkOiAncmVwb3J0LXBkZicsCiAgICAgICAgICB0
-aXRsZTogJ1JlbGF0b3JpbyBkZSBTZWd1cmFuY2EgR2xvYmFsIC0gUERGJywKICAgICAgICAgIHF1
-YW50aXR5OiAxLAogICAgICAgICAgdW5pdF9wcmljZTogMTAuMDAsCiAgICAgICAgICBjdXJyZW5j
-eV9pZDogJ0JSTCcKICAgICAgICB9CiAgICAgIF0sCiAgICAgIGJhY2tfdXJsczogewogICAgICAg
-IHN1Y2Nlc3M6IGAke3JlcS5wcm90b2NvbH06Ly8ke3JlcS5nZXQoJ2hvc3QnKX0vP3BheW1lbnQ9
-c3VjY2Vzc2AsCiAgICAgICAgZmFpbHVyZTogYCR7cmVxLnByb3RvY29sfTovLyR7cmVxLmdldCgn
-aG9zdCcpfS8/cGF5bWVudD1mYWlsdXJlYCwKICAgICAgICBwZW5kaW5nOiBgJHtyZXEucHJvdG9j
-b2x9Oi8vJHtyZXEuZ2V0KCdob3N0Jyl9Lz9wYXltZW50PXBlbmRpbmdgCiAgICAgIH0sCiAgICAg
-IGF1dG9fcmV0dXJuOiAnYXBwcm92ZWQnLAogICAgICBub3RpZmljYXRpb25fdXJsOiBgJHtyZXEu
-cHJvdG9jb2x9Oi8vJHtyZXEuZ2V0KCdob3N0Jyl9L2FwaS93ZWJob29rYAp7IHBpbmdfc2VjdXJl
-OiB0cnVlIH0KICAgIH07CgogICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgcHJlZmVyZW5jZS5jcmVh
-dGUoeyBib2R5IH0pOwogICAgbG9nRXZlbnQoJ1BBWU1FTlRfSU5JVCcsICdQcmVmZXJlbmNlIElE
-OiAnICsgcmVzdWx0LmlkKTsKICAgIHJlcy5qc29uKHsgaWQ6IHJlc3VsdC5pZCwgaW5pdF9wb2lu
-dDogcmVzdWx0LmluaXRfcG9pbnQgfSk7CiAgfSBjYXRjaCAoZXJyb3IpIHsKICAgIGNvbnNvbGUu
-ZXJyb3IoJ01QIEVycm9yOicsIGVycm9yKTsKICAgIHJlcy5zdGF0dXMoNTAwKS5qc29uKHsgZXJy
-b3I6ICdFcnJvIGFvIGdlcmFyIHBhZ2FtZW50by4nIH0pOwogIH0KfSk7CgovLyBXZWJob29rIHBh
-cmEgY29uZmlybWFyIHBhZ2FtZW50bwphcHAucG9zdCgnL2FwaS93ZWJob29rJywgYXN5bmMgKHJl
-qLCByZXMpID0+IHsKICBjb25zdCB7IHF1ZXJ5IH0gPSByZXE7CiAgY29uc3QgdG9waWMgPSBxdWVy
-eS50b3BpYyB8fCBxdWVyeS50eXBlOwogIAogIGlmICh0b3BpYyA9PT0gJ3BheW1lbnQnKSB7CiAg
-ICBjb25zdCBwYXltZW50SWQgPSBxdWVyeS5pZCB8fCBxdWVyeVsnZGF0YS5pZCddOwogICAgbG9n
-RXZlbnQoJ1BBWU1FTlRfUkVDRUlWRUQnLCAnUGF5bWVudCBJRDogJyArIHBheW1lbnRJZCk7CiAg
-fQogIAogIHJlcy5zZW5kU3RhdHVzKDIwMCk7Cn0pOwoKLy8gPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci8vIEFQSTogT3V0cm9zIChT
-ZWFyY2gsIEJHIENoZWNrKQovLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09CmFwcC5wb3N0KCcvYXBpL3NlYXJjaCcsIGZ1bmN0aW9u
-KHJlcSwgcmVzKSB7CiAgdmFyIHF1ZXJ5ID0gcmVxLmJvZHkucXVlcnk7CiAgaWYgKCFxdWVyeSkg
-cmV0dXJuIHJlcy5zdGF0dXMoNDAwKS5qc29uKHsgZXJyb3I6ICdDYW1wbyB2YXppbycgfSk7CiAg
-aWYgKGRldGVjdEluamVjdGlvbihxdWVyeSkpIHJldHVybiByZXMuc3RhdHVzKDQwMykuanNvbih7
-IGVycm9yOiAnQmxvcXVlYWRvJyB9KTsKICB2YXIgc2FuaXRpemVkID0gc2FuaXRpemVJbnB1dChx
-dWVyeSk7CiAgcmVzLmpzb24oeyB2YWxpZGF0ZWQ6IHRydWUsIHF1ZXJ5OiBzYW5pdGl6ZWQgfSk7
-Cn0pOwoKYXBwLnBvc3QoJy9hcGkvYmFja2dyb3VuZC1jaGVjaycsIGZ1bmN0aW9uKHJlcSwgcmVz
-KSB7CiAgdmFyIGlucHV0ID0gcmVxLmJvZHkuaW5wdXQ7CiAgdmFyIHR5cGUgPSByZXEuYm9keS50
-eXBlOwogIGlmICghaW5wdXQpIHJldHVybiByZXMuc3RhdHVzKDQwMCkuanNvbih7IGVycm9yOiAn
-RG9jIG9icmlnYXRvcmlvJyB9KTsKICBpZiAoZGV0ZWN0SW5qZWN0aW9uKGlucHV0KSkgcmV0dXJu
-IHJlcy5zdGF0dXMoNDAzKS5qc29uKHsgZXJyb3I6ICdCbG9xdWVhZG8nIH0pOwogIHZhciBzYW5p
-dGl6ZWQgPSBzYW5pdGl6ZUlucHV0KGlucHV0KTsKICB2YXIgY2xlYW4gPSBzYW5pdGl6ZWQucmVw
-bGFjZSgvXEQvZywgJycpOwogIAogIGlmICh0eXBlID09PSAnY3BmJyAmJiAhdmFsaWRhdGVDUEYo
-Y2xlYW4pKSByZXR1cm4gcmVzLnN0YXR1cyg0MDApLmpzb24oeyBlcnJvcjogJ0NQRiBpbnZhbGlk
-oJyB9KTsKICBpZiAodHlwZSA9PT0gJ2NucGonICYmICF2YWxpZGF0ZUNOUEooY2xlYW4pKSByZXR1
-cm4gcmVzLnN0YXR1cyg0MDApLmpzb24oeyBlcnJvcjogJ0NOUEogaW52YWxpZG8nIH0pOwogIAog
-bG9nRXZlbnQoJ0JHX0NIRUNLX1ZBTElEQVRFRCcsIHR5cGUgKyAnOicgKyBzYW5pdGl6ZWQuc3Vi
-c3RyaW5nKDAsIDIwKSk7CiAgcmVzLmpzb24oeyB2YWxpZGF0ZWQ6IHRydWUsIGlucHV0OiBzYW5p
-dGl6ZWQsIHR5cGU6IHR5cGUsIGNsZWFuOiBjbGVhbiB9KTsKfSk7CgphcHAuZ2V0KCcvYXBpL2hl
-YWx0aCcsIChyZXEsIHJlcykgPT4gcmVzLmpzb24oeyBzdGF0dXM6ICdvaycgfSkpOwoKYXBwLnVz
-ZShmdW5jdGlvbihlcnIsIHJlcSwgcmVzLCBuZXh0KSB7CiAgY29uc29sZS5lcnJvcihlcnIuc3Rh
-Y2spOwogIHJlcy5zdGF0dXMoNTAwKS5qc29uKHsgZXJyb3I6ICdFcnJvIGludGVybm8nIH0pOwp9
-KTsKCmFwcC5saXN0ZW4oUE9SVCwgKCkgPT4gewogIGNvbnNvbGUubG9nKCdTZXJ2ZXIgcnVubmlu
-ZyBvbiBwb3J0ICcgKyBQT1JUKTsKfSk7Cg==
+// ============================================================
+// Portal Seguranca Global — Server-Side Security Backend
+// ============================================================
+
+const express = require('express');
+const path = require('path');
+const helmet = require('helmet');
+const cors = require('cors');
+const axios = require('axios');
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+// Mercado Pago Configuration (using env secrets)
+const MP_ACCESS_TOKEN = process.env.PSG_MP_ACCESS_TOKEN;
+
+// 1. Basic Security & Middlewares
+app.use(express.json());
+app.use(cors());
+
+// Strict Content Security Policy (CSP)
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://unpkg.com",
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "https://sdk.mercadopago.com",
+      ],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://*.basemaps.cartocdn.com",
+        "https://*.tile.openstreetmap.org",
+        "https://*.arcgisonline.com",
+        "https://*.googleapis.com",
+        "https://*.google.com",
+        "https://flagcdn.com",
+        "https://upload.wikimedia.org",
+        "https://unpkg.com",
+        "https://www.mercadopago.com",
+      ],
+      connectSrc: [
+        "'self'",
+        "https://viacep.com.br",
+        "https://nominatim.openstreetmap.org",
+        "https://api.mercadopago.com",
+      ],
+      frameSrc: [
+        "'self'",
+        "https://www.google.com",
+        "https://maps.google.com",
+        "https://earth.google.com",
+        "https://www.mercadopago.com",
+      ],
+      workerSrc: ["'self'", "blob:"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
+
+// Serve static files from root
+app.use(express.static(__dirname));
+
+// 2. Health Check
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// 3. Payment Integration (Mercado Pago)
+// Create Preference endpoint for Checkout Pro
+app.post('/api/create-preference', async (req, res) => {
+  try {
+    const { title, unit_price, quantity } = req.body;
+
+    if (!MP_ACCESS_TOKEN) {
+      console.error('[Payment] Missing MP_ACCESS_TOKEN');
+      return res.status(500).json({ error: 'Payment system not configured' });
+    }
+
+    const preference = {
+      items: [
+        {
+          title: title || 'Relatório de Segurança Urbana',
+          unit_price: Number(unit_price) || 10.0,
+          quantity: Number(quantity) || 1,
+          currency_id: 'BRL',
+        },
+      ],
+      back_urls: {
+        success: 'https://www.portalsegurancaglobal.com.br?payment=success',
+        failure: 'https://www.portalsegurancaglobal.com.br?payment=failure',
+        pending: 'https://www.portalsegurancaglobal.com.br?payment=pending',
+      },
+      auto_return: 'approved',
+      statement_descriptor: 'PORTAL SEGURANCA',
+    };
+
+    const response = await axios.post(
+      'https://api.mercadopago.com/checkout/preferences',
+      preference,
+      {
+        headers: {
+          Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    res.json({ id: response.data.id });
+  } catch (error) {
+    console.error('[Payment] Error creating preference:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Failed to initiate payment' });
+  }
+});
+
+// 4. Main routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/background-check', (req, res) => {
+  res.sendFile(path.join(__dirname, 'background-check.html'));
+});
+
+// Catch-all for React-like behavior if needed (optional)
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'index.html'));
+// });
+
+// Start Server
+app.listen(PORT, () => {
+  console.log('');
+  console.log('==============================================');
+  console.log(`  Portal Seguranca Global is LIVE on port ${PORT}`);
+  console.log('==============================================');
+  console.log('  http://localhost:' + PORT);
+  console.log('');
+});
