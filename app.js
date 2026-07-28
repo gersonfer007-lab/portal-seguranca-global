@@ -879,14 +879,183 @@ async function generatePDF() {
 }
 
 // ============================================================
-// SHARE
+// SHARE — painel de compartilhamento em redes sociais
 // ============================================================
+var SHARE_SITE_URL = 'https://portalsegurancaglobal.com.br';
+
+var shareI18n = {
+  pt: { title: 'Compartilhar Resultado', sub: 'Envie esta analise de seguranca para quem precisa saber',
+    score: 'Safety Score', at: 'em', cta: 'Consulte a seguranca de qualquer endereco do mundo:',
+    copy: 'Copiar link', copyMsg: 'Copiar mensagem', copied: 'Copiado com sucesso!',
+    native: 'Mais opcoes', email: 'E-mail', cancel: 'Fechar', preview: 'Previa da mensagem',
+    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analise de Seguranca — Portal Seguranca Global' },
+  en: { title: 'Share Result', sub: 'Send this safety analysis to those who need to know',
+    score: 'Safety Score', at: 'at', cta: 'Check the safety of any address in the world:',
+    copy: 'Copy link', copyMsg: 'Copy message', copied: 'Copied successfully!',
+    native: 'More options', email: 'Email', cancel: 'Close', preview: 'Message preview',
+    safe: 'SAFE', mod: 'MODERATE', crit: 'CRITICAL', subject: 'Safety Analysis — Global Security Portal' },
+  es: { title: 'Compartir Resultado', sub: 'Envie este analisis de seguridad a quien necesite saberlo',
+    score: 'Safety Score', at: 'en', cta: 'Consulte la seguridad de cualquier direccion del mundo:',
+    copy: 'Copiar enlace', copyMsg: 'Copiar mensaje', copied: 'Copiado con exito!',
+    native: 'Mas opciones', email: 'Correo', cancel: 'Cerrar', preview: 'Vista previa del mensaje',
+    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analisis de Seguridad — Portal de Seguridad Global' },
+  fr: { title: 'Partager le Resultat', sub: 'Envoyez cette analyse de securite a ceux qui doivent savoir',
+    score: 'Safety Score', at: 'a', cta: 'Consultez la securite de toute adresse dans le monde:',
+    copy: 'Copier le lien', copyMsg: 'Copier le message', copied: 'Copie avec succes!',
+    native: "Plus d'options", email: 'E-mail', cancel: 'Fermer', preview: 'Apercu du message',
+    safe: 'SUR', mod: 'MODERE', crit: 'CRITIQUE', subject: 'Analyse de Securite — Portail de Securite Mondiale' },
+  de: { title: 'Ergebnis Teilen', sub: 'Senden Sie diese Sicherheitsanalyse an alle, die es wissen mussen',
+    score: 'Safety Score', at: 'in', cta: 'Prufen Sie die Sicherheit jeder Adresse weltweit:',
+    copy: 'Link kopieren', copyMsg: 'Nachricht kopieren', copied: 'Erfolgreich kopiert!',
+    native: 'Mehr Optionen', email: 'E-Mail', cancel: 'Schliessen', preview: 'Nachrichtenvorschau',
+    safe: 'SICHER', mod: 'MASSIG', crit: 'KRITISCH', subject: 'Sicherheitsanalyse — Globales Sicherheitsportal' },
+  ja: { title: '結果を共有', sub: 'この安全分析を必要な人に送信します',
+    score: 'Safety Score', at: '場所:', cta: '世界中のあらゆる住所の安全性を確認:',
+    copy: 'リンクをコピー', copyMsg: 'メッセージをコピー', copied: 'コピーしました!',
+    native: 'その他', email: 'メール', cancel: '閉じる', preview: 'メッセージのプレビュー',
+    safe: '安全', mod: '中程度', crit: '危険', subject: '安全分析 — グローバルセキュリティポータル' },
+  ar: { title: 'مشاركة النتيجة', sub: 'أرسل تحليل الأمان هذا إلى من يحتاج إلى معرفته',
+    score: 'Safety Score', at: 'في', cta: 'تحقق من أمان أي عنوان في العالم:',
+    copy: 'نسخ الرابط', copyMsg: 'نسخ الرسالة', copied: 'تم النسخ بنجاح!',
+    native: 'المزيد', email: 'البريد', cancel: 'إغلاق', preview: 'معاينة الرسالة',
+    safe: 'آمن', mod: 'متوسط', crit: 'حرج', subject: 'تحليل الأمان — بوابة الأمن العالمية' },
+  ru: { title: 'Поделиться результатом', sub: 'Отправьте этот анализ безопасности тем, кому нужно знать',
+    score: 'Safety Score', at: 'в', cta: 'Проверьте безопасность любого адреса в мире:',
+    copy: 'Копировать ссылку', copyMsg: 'Копировать сообщение', copied: 'Успешно скопировано!',
+    native: 'Ещё', email: 'Эл. почта', cancel: 'Закрыть', preview: 'Предпросмотр сообщения',
+    safe: 'БЕЗОПАСНО', mod: 'УМЕРЕННО', crit: 'КРИТИЧНО', subject: 'Анализ безопасности — Глобальный портал безопасности' },
+  zh: { title: '分享结果', sub: '将此安全分析发送给需要了解的人',
+    score: 'Safety Score', at: '位置:', cta: '查询世界上任何地址的安全状况:',
+    copy: '复制链接', copyMsg: '复制消息', copied: '复制成功!',
+    native: '更多选项', email: '电子邮件', cancel: '关闭', preview: '消息预览',
+    safe: '安全', mod: '中等', crit: '危险', subject: '安全分析 — 全球安全门户' }
+};
+
+function shareLang() {
+  var l = 'pt';
+  try { l = localStorage.getItem('psg_lang') || 'pt'; } catch (e) {}
+  return shareI18n[l] ? l : 'en';
+}
+
+function shareStrings() { return shareI18n[shareLang()] || shareI18n.en; }
+
+function shareRiskLabel(score, s) {
+  return score >= 70 ? s.safe : score >= 40 ? s.mod : s.crit;
+}
+
+function buildShareText() {
+  if (!currentData) return '';
+  var s = shareStrings();
+  var addr = (currentData.address && currentData.address.fullAddress) ? currentData.address.fullAddress : '';
+  return s.score + ': ' + currentData.safetyScore + '/100 (' + shareRiskLabel(currentData.safetyScore, s) + ') ' +
+         s.at + ' ' + addr + '\n\n' + s.cta;
+}
+
+function buildShareUrl() {
+  if (!currentData) return SHARE_SITE_URL;
+  var q = '';
+  var a = currentData.address || {};
+  if (a.cep) q = a.cep;
+  else if (a.fullAddress) q = a.fullAddress;
+  return q ? SHARE_SITE_URL + '/?q=' + encodeURIComponent(q) : SHARE_SITE_URL;
+}
+
 function shareResult() {
   if (!currentData) return;
-  const text = 'Portal Seguranca Global - Safety Score: ' + currentData.safetyScore + '/100 para ' + currentData.address.fullAddress;
-  if (navigator.share) { navigator.share({ title: 'Portal Seguranca Global', text: text }); }
-  else { navigator.clipboard.writeText(text); alert('Link copiado para a area de transferencia!'); }
+  var ov = document.getElementById('share-overlay');
+  if (!ov) { shareNative(); return; }
+  applyShareI18n(shareLang());
+  var pv = document.getElementById('share-preview-text');
+  if (pv) pv.textContent = buildShareText() + ' ' + buildShareUrl();
+  var ok = document.getElementById('share-copied');
+  if (ok) ok.classList.remove('show');
+  ov.style.display = 'flex';
+  setTimeout(function() { ov.classList.add('active'); }, 10);
 }
+
+function closeShareModal() {
+  var ov = document.getElementById('share-overlay');
+  if (!ov) return;
+  ov.classList.remove('active');
+  setTimeout(function() { ov.style.display = 'none'; }, 260);
+}
+
+function shareTo(network) {
+  if (!currentData) return;
+  var s = shareStrings();
+  var txt = buildShareText();
+  var url = buildShareUrl();
+  var t = encodeURIComponent(txt);
+  var u = encodeURIComponent(url);
+  var full = encodeURIComponent(txt + ' ' + url);
+  var link = '';
+  switch (network) {
+    case 'whatsapp': link = 'https://api.whatsapp.com/send?text=' + full; break;
+    case 'telegram': link = 'https://t.me/share/url?url=' + u + '&text=' + t; break;
+    case 'twitter':  link = 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u; break;
+    case 'facebook': link = 'https://www.facebook.com/sharer/sharer.php?u=' + u; break;
+    case 'linkedin': link = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u; break;
+    case 'reddit':   link = 'https://www.reddit.com/submit?url=' + u + '&title=' + t; break;
+    case 'email':    link = 'mailto:?subject=' + encodeURIComponent(s.subject) + '&body=' + full; break;
+    case 'sms':      link = 'sms:?&body=' + full; break;
+    default: return;
+  }
+  if (network === 'email' || network === 'sms') { window.location.href = link; return; }
+  window.open(link, '_blank', 'noopener,noreferrer,width=680,height=640');
+}
+
+function shareCopy(mode) {
+  var text = (mode === 'link') ? buildShareUrl() : (buildShareText() + ' ' + buildShareUrl());
+  var done = function() {
+    var ok = document.getElementById('share-copied');
+    if (!ok) return;
+    ok.classList.add('show');
+    setTimeout(function() { ok.classList.remove('show'); }, 2600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function() { shareCopyFallback(text, done); });
+  } else { shareCopyFallback(text, done); }
+}
+
+function shareCopyFallback(text, done) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  } catch (e) { alert(text); }
+}
+
+function shareNative() {
+  if (!currentData) return;
+  var s = shareStrings();
+  if (navigator.share) {
+    navigator.share({ title: s.subject, text: buildShareText(), url: buildShareUrl() }).catch(function() {});
+  } else {
+    shareCopy('full');
+  }
+}
+
+function applyShareI18n(langCode) {
+  var s = shareI18n[langCode] || shareI18n.en;
+  var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+  set('share-title', s.title);
+  set('share-sub', s.sub);
+  set('share-preview-label', s.preview);
+  set('share-copy-link-text', s.copy);
+  set('share-copy-msg-text', s.copyMsg);
+  set('share-copied-text', s.copied);
+  set('share-native-text', s.native);
+  set('share-email-text', s.email);
+  set('share-cancel', s.cancel);
+  var box = document.getElementById('share-box');
+  if (box) box.setAttribute('dir', langCode === 'ar' ? 'rtl' : 'ltr');
+}
+window.applyShareI18n = applyShareI18n;
 
 // ============================================================
 // HELPERS
@@ -983,6 +1152,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target.closest('#btn-share')) shareResult();
     if (e.target.closest('#btn-heatmap')) toggleHeatmap();
     if (e.target.closest('#btn-markers')) toggleMarkers();
+
+    // Painel de compartilhamento
+    var net = e.target.closest('[data-share]');
+    if (net) { shareTo(net.getAttribute('data-share')); return; }
+    if (e.target.closest('#share-copy-link')) { shareCopy('link'); return; }
+    if (e.target.closest('#share-copy-msg')) { shareCopy('full'); return; }
+    if (e.target.closest('#share-native')) { shareNative(); return; }
+    if (e.target.closest('#share-close') || e.target.closest('#share-cancel')) { closeShareModal(); return; }
+    if (e.target.id === 'share-overlay') { closeShareModal(); return; }
+  });
+
+  // ESC fecha o painel de compartilhamento
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var so = document.getElementById('share-overlay');
+      if (so && so.style.display === 'flex') closeShareModal();
+    }
   });
 });
 
@@ -1485,6 +1671,8 @@ var PSG_LANG = (function() {
     if (searchHint) searchHint.innerHTML = t.searchHint;
     // Pesquisa pelo mapa / GPS
     try { applyMapSearchI18n(langCode); } catch(e) {}
+    // Painel de compartilhamento
+    try { applyShareI18n(langCode); } catch(e) {}
     // Cards
     var cards = document.querySelectorAll('.card-header h3');
     cards.forEach(function(h3) {
@@ -1776,4 +1964,23 @@ var PSG_DELIVERY = (function() {
 
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileUX); }
   else { initMobileUX(); }
+})();
+
+// ============================================================
+// LINK COMPARTILHADO — abre a analise direto pelo parametro ?q=
+// (respeita o termo de uso: handleSearch valida antes de buscar)
+// ============================================================
+(function() {
+  function openSharedQuery() {
+    var q = '';
+    try { q = new URLSearchParams(window.location.search).get('q') || ''; } catch (e) { return; }
+    q = q.replace(/[<>"'`\\]/g, '').trim().slice(0, 160);
+    if (!q) return;
+    var input = document.getElementById('search-input');
+    if (!input) return;
+    input.value = q;
+    setTimeout(function() { try { handleSearch(); } catch (e) {} }, 700);
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', openSharedQuery); }
+  else { openSharedQuery(); }
 })();

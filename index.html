@@ -487,6 +487,135 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
 }
 
+/* ============================================================
+   MODAL — COMPARTILHAR NAS REDES SOCIAIS
+   ============================================================ */
+.share-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2700;
+  background: rgba(4,7,15,.86); backdrop-filter: blur(5px);
+  align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity .25s;
+}
+.share-overlay.active { opacity: 1; }
+.share-box {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 18px; box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 520px; max-height: 92vh;
+  display: flex; flex-direction: column; overflow-y: auto;
+  transform: translateY(14px) scale(.985); transition: transform .28s;
+}
+.share-overlay.active .share-box { transform: translateY(0) scale(1); }
+
+.share-head {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(59,130,246,.09), transparent);
+}
+.share-head-txt { flex: 1; min-width: 0; }
+.share-head h3 {
+  font-size: 1.08rem; font-weight: 800; color: var(--text-primary);
+  letter-spacing: -.01em; margin-bottom: 3px;
+}
+.share-head p { font-size: .8rem; color: var(--text-secondary); line-height: 1.45; }
+.share-close {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 1.35rem; line-height: 1;
+  cursor: pointer; transition: background .2s, color .2s;
+}
+.share-close:hover { background: var(--red-glow); color: var(--red); }
+
+.share-preview {
+  margin: 16px 20px 0; padding: 12px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0;
+}
+.share-preview-label {
+  display: block; font-size: .66rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-muted); margin-bottom: 5px;
+}
+.share-preview-text {
+  font-size: .8rem; color: var(--text-secondary); line-height: 1.55;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.share-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; padding: 18px 20px 4px;
+}
+.share-net {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 13px 4px 11px; border-radius: 13px; cursor: pointer;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: inherit;
+  font-size: .7rem; font-weight: 600; text-align: center;
+  transition: transform .16s, border-color .2s, background .2s, color .2s;
+}
+.share-net:hover { transform: translateY(-3px); color: var(--text-primary); }
+.share-net svg { width: 22px; height: 22px; }
+.share-net[data-share="whatsapp"]:hover { border-color: #25D366; background: rgba(37,211,102,.12); color: #25D366; }
+.share-net[data-share="telegram"]:hover { border-color: #229ED9; background: rgba(34,158,217,.12); color: #229ED9; }
+.share-net[data-share="twitter"]:hover  { border-color: #e7e9ea; background: rgba(231,233,234,.12); color: #e7e9ea; }
+.share-net[data-share="facebook"]:hover { border-color: #1877F2; background: rgba(24,119,242,.12); color: #1877F2; }
+.share-net[data-share="linkedin"]:hover { border-color: #0A66C2; background: rgba(10,102,194,.14); color: #4d9fe8; }
+.share-net[data-share="reddit"]:hover   { border-color: #FF4500; background: rgba(255,69,0,.12); color: #FF4500; }
+.share-net[data-share="email"]:hover    { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+.share-net[data-share="sms"]:hover      { border-color: #a78bfa; background: rgba(167,139,250,.13); color: #a78bfa; }
+
+.share-actions {
+  display: flex; flex-direction: column; gap: 9px;
+  padding: 16px 20px 6px;
+}
+.share-act {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 12px 16px; border-radius: 11px; cursor: pointer;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: inherit;
+  font-size: .85rem; font-weight: 600;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.share-act:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent); }
+.share-act svg { width: 17px; height: 17px; flex-shrink: 0; }
+#share-native { display: none; }
+
+.share-copied {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 0 20px; max-height: 0; overflow: hidden; opacity: 0;
+  border-radius: 10px; background: rgba(34,197,94,.14);
+  border: 1px solid rgba(34,197,94,.4); color: #22c55e;
+  font-size: .82rem; font-weight: 700;
+  transition: max-height .28s, opacity .28s, margin-top .28s;
+}
+.share-copied.show { max-height: 52px; opacity: 1; margin-top: 12px; padding: 11px 14px; }
+
+.share-foot { padding: 14px 20px 18px; }
+.share-btn-cancel {
+  width: 100%; padding: 12px 18px; border-radius: 11px; cursor: pointer;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-family: inherit;
+  font-size: .85rem; font-weight: 600;
+  transition: background .2s, color .2s;
+}
+.share-btn-cancel:hover { background: var(--bg-card); color: var(--text-primary); }
+
+@media (max-width: 560px) {
+  .share-overlay { padding: 0; align-items: flex-end; }
+  .share-box { max-width: 100%; max-height: 94vh; border-radius: 20px 20px 0 0; }
+  .share-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px 14px 4px; }
+  .share-net { padding: 11px 2px 9px; font-size: .64rem; gap: 6px; }
+  .share-net svg { width: 20px; height: 20px; }
+  .share-head { padding: 15px 14px 12px; }
+  .share-head h3 { font-size: .98rem; }
+  .share-head p { font-size: .75rem; }
+  .share-preview, .share-copied { margin-left: 14px; margin-right: 14px; }
+  .share-actions, .share-foot { padding-left: 14px; padding-right: 14px; }
+  #share-native { display: inline-flex; }
+}
+@media (max-width: 360px) {
+  .share-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* MAIN LAYOUT */
 .main-content {
   display: none; /* hidden until search */
@@ -1684,6 +1813,83 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <span id="mapsel-confirm-text">Analisar este local</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: COMPARTILHAR NAS REDES SOCIAIS ===== -->
+<div class="share-overlay" id="share-overlay">
+  <div class="share-box" id="share-box">
+    <div class="share-head">
+      <div class="share-head-txt">
+        <h3 id="share-title">Compartilhar Resultado</h3>
+        <p id="share-sub">Envie esta an&aacute;lise de seguran&ccedil;a para quem precisa saber</p>
+      </div>
+      <button type="button" class="share-close" id="share-close" aria-label="Fechar">&times;</button>
+    </div>
+
+    <div class="share-preview">
+      <span class="share-preview-label" id="share-preview-label">Pr&eacute;via da mensagem</span>
+      <p class="share-preview-text" id="share-preview-text">&mdash;</p>
+    </div>
+
+    <div class="share-grid">
+      <button type="button" class="share-net" data-share="whatsapp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.02a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.79 9.79 0 0 1-1.5-5.22c0-5.4 4.4-9.8 9.82-9.8 2.62 0 5.08 1.03 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.81-9.8 9.81M20.5 3.49A11.72 11.72 0 0 0 12.05 0C5.55 0 .26 5.29.26 11.79c0 2.08.54 4.1 1.58 5.9L.16 24l6.45-1.69a11.75 11.75 0 0 0 5.44 1.38h.01c6.5 0 11.79-5.29 11.79-11.79 0-3.15-1.23-6.11-3.46-8.34"/></svg>
+        <span>WhatsApp</span>
+      </button>
+      <button type="button" class="share-net" data-share="telegram">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.91 3.79 20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>
+        <span>Telegram</span>
+      </button>
+      <button type="button" class="share-net" data-share="twitter">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93zm-1.29 19.5h2.04L6.49 3.24H4.3z"/></svg>
+        <span>X / Twitter</span>
+      </button>
+      <button type="button" class="share-net" data-share="facebook">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07"/></svg>
+        <span>Facebook</span>
+      </button>
+      <button type="button" class="share-net" data-share="linkedin">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13m1.78 13.02H3.55V9h3.57zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0"/></svg>
+        <span>LinkedIn</span>
+      </button>
+      <button type="button" class="share-net" data-share="reddit">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0m6.07 12.6c.03.2.04.4.04.61 0 3.1-3.6 5.6-8.05 5.6s-8.05-2.5-8.05-5.6c0-.21.01-.42.04-.62a2.02 2.02 0 1 1 2.24-3.29 9.9 9.9 0 0 1 5.38-1.7l1.02-4.8a.42.42 0 0 1 .5-.33l3.38.72a1.41 1.41 0 1 1-.19.9l-3-.64-.91 4.3a9.87 9.87 0 0 1 5.28 1.71 2.02 2.02 0 1 1 2.32 3.14M8.2 13.53a1.41 1.41 0 1 0 0-2.82 1.41 1.41 0 0 0 0 2.82m7.6 0a1.41 1.41 0 1 0 0-2.82 1.41 1.41 0 0 0 0 2.82m-.42 2.2a.42.42 0 0 0-.6 0 4.2 4.2 0 0 1-2.78.86 4.2 4.2 0 0 1-2.78-.87.42.42 0 1 0-.6.6 5 5 0 0 0 3.39 1.11 5 5 0 0 0 3.38-1.1.42.42 0 0 0 0-.6"/></svg>
+        <span>Reddit</span>
+      </button>
+      <button type="button" class="share-net" data-share="email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+        <span id="share-email-text">E-mail</span>
+      </button>
+      <button type="button" class="share-net" data-share="sms">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+        <span>SMS</span>
+      </button>
+    </div>
+
+    <div class="share-copied" id="share-copied">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span id="share-copied-text">Copiado com sucesso!</span>
+    </div>
+
+    <div class="share-actions">
+      <button type="button" class="share-act" id="share-copy-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span id="share-copy-link-text">Copiar link</span>
+      </button>
+      <button type="button" class="share-act" id="share-copy-msg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span id="share-copy-msg-text">Copiar mensagem</span>
+      </button>
+      <button type="button" class="share-act" id="share-native">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+        <span id="share-native-text">Mais op&ccedil;&otilde;es</span>
+      </button>
+    </div>
+
+    <div class="share-foot">
+      <button type="button" class="share-btn-cancel" id="share-cancel">Fechar</button>
     </div>
   </div>
 </div>
