@@ -1,0 +1,29 @@
+name: Commit PSG v2 package-lock.json
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download package-lock.json v2
+        run: |
+          curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/1cd1e9bb3da14a6bbc3a9a3c511cf162_package-lock.json" -o package-lock.json
+          echo "Downloaded file size: $(wc -c < package-lock.json) bytes"
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git diff --cached --quiet || git commit -m "chore: update package-lock.json for PSG v2.0"
+          git push
