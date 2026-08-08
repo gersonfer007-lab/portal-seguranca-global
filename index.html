@@ -1,1 +1,1910 @@
-77u/PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9InB0LUJSIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCxpbml0aWFsLXNjYWxlPTEiPgo8dGl0bGU+UG9ydGFsIFNlZ3VyYW5jYSBHbG9iYWw8L3RpdGxlPgoKPCEtLSBTRUNVUklUWSBIRUFERVJTIC0tPgo8bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVNlY3VyaXR5LVBvbGljeSIgY29udGVudD0iZGVmYXVsdC1zcmMgJ3NlbGYnOyBzY3JpcHQtc3JjICdzZWxmJyBodHRwczovL3VucGtnLmNvbSBodHRwczovL2NkbmpzLmNsb3VkZmxhcmUuY29tIGh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldDsgc3R5bGUtc3JjICdzZWxmJyAndW5zYWZlLWlubGluZScgaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbSBodHRwczovL3VucGtnLmNvbTsgZm9udC1zcmMgaHR0cHM6Ly9mb250cy5nc3RhdGljLmNvbTsgaW1nLXNyYyAnc2VsZicgZGF0YTogYmxvYjogaHR0cHM6Ly8qLmJhc2VtYXBzLmNhcnRvY2RuLmNvbSBodHRwczovLyoudGlsZS5vcGVuc3RyZWV0bWFwLm9yZyBodHRwczovLyouYXJjZ2lzb25saW5lLmNvbSBodHRwczovLyouZ29vZ2xlYXBpcy5jb20gaHR0cHM6Ly8qLmdvb2dsZS5jb20gaHR0cHM6Ly9mbGFnY2RuLmNvbSBodHRwczovL3VwbG9hZC53aWtpbWVkaWEub3JnIGh0dHBzOi8vdW5wa2cuY29tOyBjb25uZWN0LXNyYyAnc2VsZicgaHR0cHM6Ly92aWFjZXAuY29tLmJyIGh0dHBzOi8vbm9taW5hdGltLm9wZW5zdHJlZXRtYXAub3JnOyBmcmFtZS1zcmMgaHR0cHM6Ly93d3cuZ29vZ2xlLmNvbSBodHRwczovL21hcHMuZ29vZ2xlLmNvbSBodHRwczovL2VhcnRoLmdvb2dsZS5jb207IHdvcmtlci1zcmMgJ3NlbGYnIGJsb2I6OyBmcmFtZS1hbmNlc3RvcnMgJ25vbmUnOyBiYXNlLXVyaSAnc2VsZic7IGZvcm0tYWN0aW9uICdzZWxmJzsiPgo8bWV0YSBodHRwLWVxdWl2PSJYLU
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Seguranca Global</title>
+
+<!-- SECURITY HEADERS -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(self)">
+<!-- PERFORMANCE: abrir conexao com os CDNs o quanto antes -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://flagcdn.com" crossorigin>
+<link rel="dns-prefetch" href="https://flagcdn.com">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://upload.wikimedia.org">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- Leaflet (defer: nao travam a renderizacao da pagina) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script defer src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<!-- Chart.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- jsPDF + html2canvas: carregados SOB DEMANDA (só ao gerar o PDF) -->
+<style>html{background:#0a0e1a}</style>
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-card-hover: #1f2a40;
+  --border: #2a3550;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8b95a8;
+  --text-muted: #5a6478;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,.25);
+  --green: #22c55e;
+  --green-glow: rgba(34,197,94,.2);
+  --yellow: #eab308;
+  --yellow-glow: rgba(234,179,8,.2);
+  --red: #ef4444;
+  --red-glow: rgba(239,68,68,.2);
+  --orange: #f97316;
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-safe: linear-gradient(135deg, #22c55e, #10b981);
+  --shadow: 0 4px 24px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+  --radius: 12px;
+  --radius-lg: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; -webkit-font-smoothing: antialiased; position: relative; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* HEADER */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.header-brand {
+  display: flex; align-items: center; gap: 12px;
+  font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em;
+}
+.header-brand .icon {
+  width: 36px; height: 36px; background: var(--gradient-accent);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 20px var(--accent-glow);
+}
+.header-badge {
+  background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em;
+}
+.header-status {
+  display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--text-secondary);
+}
+.header-status .dot {
+  width: 8px; height: 8px; background: var(--green); border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+/* BRASAO / EMBLEM */
+.emblem-section {
+  display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 0;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-secondary) 100%);
+  position: relative; overflow: hidden;
+}
+
+/* FLAGS LATERAIS — acompanham toda a altura da pagina */
+.flags-column {
+  position: absolute; top: 0; display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 0; z-index: 900;
+  min-height: 100%;
+}
+.flags-column.left { left: 4px; }
+.flags-column.right { right: 4px; }
+.flag-item {
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer; position: relative; transition: transform .2s, box-shadow .25s;
+  padding: 1px 3px; border-radius: 4px;
+}
+.flag-item:hover { transform: scale(1.15); z-index: 10; background: rgba(59,130,246,.15); }
+.flag-item.flag-active { background: rgba(59,130,246,.25); box-shadow: 0 0 8px rgba(59,130,246,.5); transform: scale(1.12); }
+.flag-item img {
+  width: 26px; height: 17px; object-fit: cover; display: block;
+  border-radius: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.4); flex-shrink: 0;
+}
+.flag-name {
+  font-size: .45rem; color: var(--text-secondary); white-space: nowrap;
+  font-weight: 500; letter-spacing: .02em; line-height: 1;
+}
+.flags-column.left .flag-name { text-align: left; }
+.flags-column.right { align-items: flex-end; }
+.flags-column.right .flag-item { flex-direction: row-reverse; }
+.flags-column.right .flag-name { text-align: right; }
+/* Logo ONU nas bandeiras */
+.flag-un-logo {
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 0; margin: 4px 0;
+}
+.flag-un-logo img {
+  width: 36px; height: 36px; object-fit: contain; display: block;
+  filter: drop-shadow(0 0 6px rgba(0,157,255,.4));
+  border-radius: 0; box-shadow: none;
+}
+@media (max-width: 420px) {
+  .flag-item img { width: 20px; height: 14px; }
+  .flag-name { font-size: .38rem; }
+  .flags-column { gap: 2px; padding: 4px 0; }
+  .flags-column.left { left: 1px; }
+  .flags-column.right { right: 1px; }
+  .flag-un-logo img { width: 28px; height: 28px; }
+}
+/* MOBILE: esconder bandeiras laterais e liberar conteudo */
+@media (max-width: 768px) {
+  .flags-column { display: none !important; }
+}
+/* Seletor de idioma compacto para mobile */
+.mobile-lang-bar {
+  display: none; background: rgba(10,14,26,.95); border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 6px 10px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; gap: 6px;
+}
+.mobile-lang-bar::-webkit-scrollbar { display: none; }
+.mobile-lang-bar .mlb-flag {
+  display: inline-flex; align-items: center; gap: 3px; padding: 4px 8px; border-radius: 6px;
+  cursor: pointer; border: 1px solid transparent; transition: all .2s; flex-shrink: 0;
+}
+.mobile-lang-bar .mlb-flag:hover, .mobile-lang-bar .mlb-flag.active {
+  background: rgba(59,130,246,.2); border-color: rgba(59,130,246,.4);
+}
+.mobile-lang-bar .mlb-flag img { width: 22px; height: 15px; border-radius: 2px; }
+.mobile-lang-bar .mlb-flag span { font-size: .65rem; color: #ccc; }
+@media (max-width: 768px) {
+  .mobile-lang-bar { display: flex; }
+}
+.emblem-img {
+  width: 160px; height: auto;
+  filter: drop-shadow(0 0 30px rgba(59,130,246,.3)) drop-shadow(0 4px 20px rgba(0,0,0,.5));
+  animation: emblem-float 4s ease-in-out infinite;
+  transition: transform .3s;
+}
+.emblem-img:hover { transform: scale(1.08); }
+@keyframes emblem-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.emblem-title {
+  font-size: 1.1rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase;
+  margin-top: .8rem; color: var(--text-primary);
+  text-shadow: 0 0 20px var(--accent-glow);
+  text-align: center; width: 100%; padding: 0 1rem; box-sizing: border-box;
+  word-wrap: break-word; line-height: 1.4;
+}
+.emblem-tagline {
+  font-size: .88rem; font-weight: 600; color: var(--accent);
+  letter-spacing: .04em; margin-top: .5rem; text-align: center;
+  width: 100%; padding: 0 1rem; box-sizing: border-box;
+  text-shadow: 0 0 14px var(--accent-glow); line-height: 1.4;
+}
+.emblem-subtitle {
+  font-size: .72rem; color: var(--text-secondary); letter-spacing: .3em; text-transform: uppercase;
+  margin-top: .3rem; font-weight: 500;
+}
+.emblem-divider {
+  width: 120px; height: 2px; margin-top: 1rem;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+/* MODAL DE TERMOS */
+.terms-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center;
+  padding: 1rem; opacity: 0; transition: opacity .4s;
+}
+.terms-overlay.active { display: flex; opacity: 1; }
+.terms-overlay.hidden { opacity: 0; pointer-events: none; }
+.terms-box {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  max-width: 440px; width: 100%; padding: 2rem 1.5rem; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6); max-height: 90vh; overflow-y: auto;
+}
+.terms-box .terms-emblem { width: 90px; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(59,130,246,.3)); }
+.terms-box h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .3rem; color: var(--text-primary); }
+.terms-box .terms-sub { font-size: .7rem; color: var(--accent); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 1.2rem; }
+.terms-box .terms-text {
+  text-align: left; font-size: .75rem; color: var(--text-secondary); line-height: 1.6;
+  background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1rem; margin-bottom: 1rem; max-height: 220px; overflow-y: auto;
+}
+.terms-box .terms-text strong { color: var(--text-primary); }
+.terms-box .terms-text ul { margin: .5rem 0; padding-left: 1.2rem; }
+.terms-box .terms-text li { margin-bottom: .4rem; }
+.terms-check {
+  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 1.2rem;
+  text-align: left; font-size: .72rem; color: var(--text-secondary); cursor: pointer;
+}
+.terms-check input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
+  accent-color: var(--accent); cursor: pointer;
+}
+.terms-btn {
+  width: 100%; padding: 12px; font-size: .85rem; font-weight: 700; border: none; border-radius: 10px;
+  cursor: pointer; transition: all .3s; text-transform: uppercase; letter-spacing: .1em;
+}
+.terms-btn.disabled {
+  background: rgba(255,255,255,.08); color: rgba(255,255,255,.25); cursor: not-allowed;
+}
+.terms-btn.enabled {
+  background: var(--accent); color: #fff; box-shadow: 0 4px 20px var(--accent-glow);
+}
+.terms-btn.enabled:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--accent-glow); }
+
+/* SEARCH SECTION */
+.search-section {
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  padding: 3rem 2rem 2rem;
+  text-align: center;
+}
+.search-title {
+  font-size: 2rem; font-weight: 800; letter-spacing: -.03em;
+  background: linear-gradient(135deg, #e8ecf4, #8b95a8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: .5rem;
+}
+.search-subtitle {
+  color: var(--text-secondary); font-size: .95rem; margin-bottom: 2rem;
+}
+.search-box {
+  max-width: 640px; margin: 0 auto;
+  display: flex; gap: 0;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow), 0 0 0 1px rgba(59,130,246,.1);
+  transition: box-shadow .3s;
+}
+.search-box:focus-within {
+  box-shadow: var(--shadow-lg), 0 0 0 2px var(--accent), 0 0 40px var(--accent-glow);
+}
+.search-box input {
+  flex: 1; padding: 1rem 1.5rem; background: none; border: none; outline: none;
+  color: var(--text-primary); font-size: 1rem; font-family: inherit;
+}
+.search-box input::placeholder { color: var(--text-muted); }
+.search-box button {
+  padding: 1rem 2rem; background: var(--gradient-accent); border: none;
+  color: #fff; font-weight: 700; font-size: .9rem; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: opacity .2s;
+  font-family: inherit;
+}
+.search-box button:hover { opacity: .9; }
+.search-box button:disabled { opacity: .5; cursor: not-allowed; }
+.search-hint {
+  margin-top: 1rem; font-size: .78rem; color: var(--text-muted);
+}
+.search-hint kbd {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem;
+}
+
+/* ============================================================
+   PESQUISAR PELO MAPA — botoes na area de busca
+   ============================================================ */
+.search-divider {
+  display: flex; align-items: center; gap: 12px;
+  max-width: 560px; margin: 1.4rem auto .9rem;
+  color: var(--text-muted); font-size: .74rem;
+  text-transform: uppercase; letter-spacing: .12em;
+}
+.search-divider::before, .search-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.map-search-actions {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  max-width: 560px; margin: 0 auto;
+}
+.btn-map-search, .btn-gps-search {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; border-radius: 11px; cursor: pointer;
+  font-family: inherit; font-size: .88rem; font-weight: 600;
+  transition: transform .15s, box-shadow .2s, background .2s, border-color .2s;
+}
+.btn-map-search {
+  background: var(--gradient-accent); color: #fff;
+  border: 1px solid rgba(99,102,241,.5);
+  box-shadow: 0 4px 16px rgba(59,130,246,.28);
+}
+.btn-map-search:hover {
+  transform: translateY(-2px); box-shadow: 0 7px 22px rgba(59,130,246,.42);
+}
+.btn-gps-search {
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-gps-search:hover {
+  background: var(--bg-card-hover); border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.btn-map-search svg, .btn-gps-search svg { flex-shrink: 0; }
+
+/* ============================================================
+   MODAL — SELECIONAR LOCAL NO MAPA
+   ============================================================ */
+.mapsel-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2600;
+  background: rgba(4,7,15,.86); backdrop-filter: blur(5px);
+  align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity .25s;
+}
+.mapsel-overlay.active { opacity: 1; }
+.mapsel-box {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 18px; box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 780px; max-height: 92vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(14px) scale(.985); transition: transform .28s;
+}
+.mapsel-overlay.active .mapsel-box { transform: translateY(0) scale(1); }
+
+.mapsel-head {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(59,130,246,.09), transparent);
+}
+.mapsel-head-txt { flex: 1; min-width: 0; }
+.mapsel-head h3 {
+  font-size: 1.08rem; font-weight: 800; color: var(--text-primary);
+  letter-spacing: -.01em; margin-bottom: 3px;
+}
+.mapsel-head p { font-size: .8rem; color: var(--text-secondary); line-height: 1.45; }
+.mapsel-close {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 1.35rem; line-height: 1;
+  cursor: pointer; transition: background .2s, color .2s;
+}
+.mapsel-close:hover { background: var(--red-glow); color: var(--red); }
+
+.mapsel-searchrow {
+  display: flex; gap: 8px; padding: 14px 20px 12px;
+}
+.mapsel-searchrow input {
+  flex: 1; min-width: 0; padding: 11px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: inherit; font-size: 16px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.mapsel-searchrow input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.mapsel-searchrow input::placeholder { color: var(--text-muted); }
+.mapsel-searchrow button {
+  flex-shrink: 0; width: 44px; border-radius: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); transition: background .2s, color .2s, border-color .2s;
+}
+.mapsel-searchrow button:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+
+.mapsel-mapwrap {
+  position: relative; margin: 0 20px; border-radius: 12px;
+  overflow: hidden; border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+#mapsel-map { width: 100%; height: 340px; cursor: crosshair; }
+.mapsel-crosshair-hint {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: 12px; z-index: 500; pointer-events: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 20px;
+  background: rgba(10,14,26,.9); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: .76rem; font-weight: 500;
+  white-space: nowrap; transition: opacity .3s;
+}
+.mapsel-crosshair-hint.gone { opacity: 0; }
+
+.mapsel-picked {
+  display: flex; align-items: flex-start; gap: 11px;
+  margin: 14px 20px 0; padding: 12px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--text-muted); border-radius: 0 10px 10px 0;
+  transition: border-left-color .25s;
+}
+.mapsel-picked.filled { border-left-color: var(--accent); }
+.mapsel-picked-icon {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-glow); color: var(--accent);
+}
+.mapsel-picked-body { flex: 1; min-width: 0; }
+.mapsel-picked-label {
+  display: block; font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-muted); margin-bottom: 3px;
+}
+.mapsel-picked-addr {
+  font-size: .84rem; color: var(--text-primary); line-height: 1.45;
+  font-weight: 500; word-break: break-word;
+}
+.mapsel-picked-coords {
+  display: block; margin-top: 4px; font-size: .7rem;
+  font-family: 'JetBrains Mono', monospace; color: var(--text-muted);
+}
+
+.mapsel-foot {
+  display: flex; gap: 10px; padding: 16px 20px 18px;
+}
+.mapsel-btn-cancel, .mapsel-btn-go {
+  padding: 13px 18px; border-radius: 11px; cursor: pointer;
+  font-family: inherit; font-size: .88rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+}
+.mapsel-btn-cancel {
+  flex-shrink: 0; background: var(--bg-card); color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.mapsel-btn-cancel:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.mapsel-btn-go {
+  flex: 1; background: var(--gradient-accent); color: #fff;
+  border: 1px solid rgba(99,102,241,.5);
+  box-shadow: 0 4px 16px rgba(59,130,246,.28);
+}
+.mapsel-btn-go:hover:not(:disabled) {
+  transform: translateY(-2px); box-shadow: 0 7px 22px rgba(59,130,246,.42);
+}
+.mapsel-btn-go:disabled {
+  opacity: .45; cursor: not-allowed; box-shadow: none;
+  background: var(--bg-card); border-color: var(--border); color: var(--text-muted);
+}
+/* Pino animado do local escolhido */
+.mapsel-pin-pulse {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent); border: 3px solid #fff;
+  box-shadow: 0 0 0 rgba(59,130,246,.65);
+  animation: mapselPulse 1.9s infinite;
+}
+@keyframes mapselPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(59,130,246,.6); }
+  70%  { box-shadow: 0 0 0 16px rgba(59,130,246,0); }
+  100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+}
+
+/* ============================================================
+   MODAL — COMPARTILHAR NAS REDES SOCIAIS
+   ============================================================ */
+.share-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2700;
+  background: rgba(4,7,15,.86); backdrop-filter: blur(5px);
+  align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity .25s;
+}
+.share-overlay.active { opacity: 1; }
+.share-box {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 18px; box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 520px; max-height: 92vh;
+  display: flex; flex-direction: column; overflow-y: auto;
+  transform: translateY(14px) scale(.985); transition: transform .28s;
+}
+.share-overlay.active .share-box { transform: translateY(0) scale(1); }
+
+.share-head {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(59,130,246,.09), transparent);
+}
+.share-head-txt { flex: 1; min-width: 0; }
+.share-head h3 {
+  font-size: 1.08rem; font-weight: 800; color: var(--text-primary);
+  letter-spacing: -.01em; margin-bottom: 3px;
+}
+.share-head p { font-size: .8rem; color: var(--text-secondary); line-height: 1.45; }
+.share-close {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 1.35rem; line-height: 1;
+  cursor: pointer; transition: background .2s, color .2s;
+}
+.share-close:hover { background: var(--red-glow); color: var(--red); }
+
+.share-preview {
+  margin: 16px 20px 0; padding: 12px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0;
+}
+.share-preview-label {
+  display: block; font-size: .66rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-muted); margin-bottom: 5px;
+}
+.share-preview-text {
+  font-size: .8rem; color: var(--text-secondary); line-height: 1.55;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.share-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; padding: 18px 20px 4px;
+}
+.share-net {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 13px 4px 11px; border-radius: 13px; cursor: pointer;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: inherit;
+  font-size: .7rem; font-weight: 600; text-align: center;
+  transition: transform .16s, border-color .2s, background .2s, color .2s;
+}
+.share-net:hover { transform: translateY(-3px); color: var(--text-primary); }
+.share-net svg { width: 22px; height: 22px; }
+.share-net[data-share="whatsapp"]:hover { border-color: #25D366; background: rgba(37,211,102,.12); color: #25D366; }
+.share-net[data-share="telegram"]:hover { border-color: #229ED9; background: rgba(34,158,217,.12); color: #229ED9; }
+.share-net[data-share="twitter"]:hover  { border-color: #e7e9ea; background: rgba(231,233,234,.12); color: #e7e9ea; }
+.share-net[data-share="facebook"]:hover { border-color: #1877F2; background: rgba(24,119,242,.12); color: #1877F2; }
+.share-net[data-share="linkedin"]:hover { border-color: #0A66C2; background: rgba(10,102,194,.14); color: #4d9fe8; }
+.share-net[data-share="reddit"]:hover   { border-color: #FF4500; background: rgba(255,69,0,.12); color: #FF4500; }
+.share-net[data-share="email"]:hover    { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+.share-net[data-share="sms"]:hover      { border-color: #a78bfa; background: rgba(167,139,250,.13); color: #a78bfa; }
+
+.share-actions {
+  display: flex; flex-direction: column; gap: 9px;
+  padding: 16px 20px 6px;
+}
+.share-act {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 12px 16px; border-radius: 11px; cursor: pointer;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: inherit;
+  font-size: .85rem; font-weight: 600;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.share-act:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent); }
+.share-act svg { width: 17px; height: 17px; flex-shrink: 0; }
+#share-native { display: none; }
+
+.share-copied {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 0 20px; max-height: 0; overflow: hidden; opacity: 0;
+  border-radius: 10px; background: rgba(34,197,94,.14);
+  border: 1px solid rgba(34,197,94,.4); color: #22c55e;
+  font-size: .82rem; font-weight: 700;
+  transition: max-height .28s, opacity .28s, margin-top .28s;
+}
+.share-copied.show { max-height: 52px; opacity: 1; margin-top: 12px; padding: 11px 14px; }
+
+.share-foot { padding: 14px 20px 18px; }
+.share-btn-cancel {
+  width: 100%; padding: 12px 18px; border-radius: 11px; cursor: pointer;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-family: inherit;
+  font-size: .85rem; font-weight: 600;
+  transition: background .2s, color .2s;
+}
+.share-btn-cancel:hover { background: var(--bg-card); color: var(--text-primary); }
+
+@media (max-width: 560px) {
+  .share-overlay { padding: 0; align-items: flex-end; }
+  .share-box { max-width: 100%; max-height: 94vh; border-radius: 20px 20px 0 0; }
+  .share-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px 14px 4px; }
+  .share-net { padding: 11px 2px 9px; font-size: .64rem; gap: 6px; }
+  .share-net svg { width: 20px; height: 20px; }
+  .share-head { padding: 15px 14px 12px; }
+  .share-head h3 { font-size: .98rem; }
+  .share-head p { font-size: .75rem; }
+  .share-preview, .share-copied { margin-left: 14px; margin-right: 14px; }
+  .share-actions, .share-foot { padding-left: 14px; padding-right: 14px; }
+  #share-native { display: inline-flex; }
+}
+@media (max-width: 360px) {
+  .share-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* MAIN LAYOUT */
+.main-content {
+  display: none; /* hidden until search */
+  max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem 3rem;
+}
+.main-content.active { display: block; }
+
+/* RESULT HEADER */
+.result-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.result-location h2 {
+  font-size: 1.4rem; font-weight: 700; margin-bottom: .25rem;
+}
+.result-location p { color: var(--text-secondary); font-size: .85rem; }
+.result-actions { display: flex; gap: .75rem; }
+.btn {
+  padding: .65rem 1.2rem; border-radius: var(--radius); font-size: .82rem;
+  font-weight: 600; cursor: pointer; border: none; font-family: inherit;
+  display: flex; align-items: center; gap: 6px; transition: all .2s;
+}
+.btn-primary { background: var(--gradient-accent); color: #fff; box-shadow: 0 0 20px var(--accent-glow); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 30px var(--accent-glow); }
+.btn-outline { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--bg-card-hover); }
+
+/* GRID */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-template-rows: auto auto auto;
+  gap: 1.5rem;
+}
+@media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+/* CARDS */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.card-header {
+  padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h3 {
+  font-size: .85rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-header h3 .icon { font-size: 1rem; }
+.card-body { padding: 1.25rem; }
+
+/* MAP */
+.map-card { grid-column: 1; grid-row: 1 / 3; }
+#map { width: 100%; height: 480px; background: var(--bg-primary); border-radius: 0; }
+#cesium-globe { width: 100%; height: 480px; background: var(--bg-primary); display: none; position: relative; overflow: hidden; }
+#earth-iframe {
+  width: 100%; height: 100%; border: none;
+  filter: contrast(1.05) saturate(1.1);
+}
+.globe-loading {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-primary); color: var(--text-secondary);
+  font-size: .85rem; z-index: 2; pointer-events: none; transition: opacity .5s;
+}
+.globe-loading.hidden { opacity: 0; pointer-events: none; }
+.map-view-toggle {
+  display: flex; gap: 4px; background: var(--bg-primary); border-radius: 8px; padding: 3px;
+}
+.map-view-toggle button {
+  padding: 4px 10px; font-size: .7rem; border-radius: 6px; border: none;
+  cursor: pointer; font-weight: 600; transition: all .2s;
+  background: transparent; color: var(--text-secondary);
+}
+.map-view-toggle button.active {
+  background: var(--accent); color: #fff; box-shadow: 0 2px 8px var(--accent-glow);
+}
+.map-view-toggle button:hover:not(.active) { color: var(--text-primary); background: rgba(255,255,255,.06); }
+.globe-info-bar {
+  display: none; padding: 8px 14px; background: rgba(59,130,246,.1); border-top: 1px solid var(--border);
+  font-size: .72rem; color: var(--accent); text-align: center; gap: 8px; align-items: center; justify-content: center;
+}
+.globe-info-bar.active { display: flex; }
+.globe-coords { font-family: 'JetBrains Mono', monospace; }
+.leaflet-container { background: var(--bg-primary) !important; }
+.map-legend {
+  display: flex; gap: 1.5rem; padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border); font-size: .75rem; color: var(--text-secondary);
+}
+.map-legend-item { display: flex; align-items: center; gap: 6px; }
+.map-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* SAFETY SCORE */
+.score-card { grid-column: 2; grid-row: 1; }
+.score-display {
+  text-align: center; padding: 1.5rem 1.25rem;
+}
+.score-gauge {
+  position: relative; width: 180px; height: 180px; margin: 0 auto 1rem;
+}
+.score-gauge svg { transform: rotate(-90deg); }
+.score-gauge-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+.score-gauge-fill {
+  fill: none; stroke-width: 8; stroke-linecap: round;
+  transition: stroke-dashoffset 1.5s ease, stroke .5s;
+}
+.score-gauge-value {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-gauge-value .number {
+  font-size: 3rem; font-weight: 900; letter-spacing: -.04em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.score-gauge-value .label {
+  font-size: .75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .1em; margin-top: 2px;
+}
+.score-pillars {
+  display: flex; flex-direction: column; gap: .75rem;
+  padding: 0 1.25rem 1.25rem;
+}
+.pillar {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .75rem; background: rgba(255,255,255,.03);
+  border-radius: var(--radius); border: 1px solid rgba(255,255,255,.04);
+}
+.pillar-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.pillar-info { flex: 1; }
+.pillar-info .name { font-size: .78rem; font-weight: 500; margin-bottom: 4px; }
+.pillar-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.pillar-bar-fill { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
+.pillar-score { font-family: 'JetBrains Mono', monospace; font-size: .8rem; font-weight: 600; min-width: 28px; text-align: right; }
+
+/* STATS GRID */
+.stats-card { grid-column: 2; grid-row: 2; }
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+  padding: 1.25rem;
+}
+.stat-item {
+  padding: .85rem; background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.04); border-radius: var(--radius);
+  text-align: center;
+}
+.stat-value {
+  font-size: 1.5rem; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 2px;
+}
+.stat-label { font-size: .7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; }
+
+/* CHARTS */
+.charts-section {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+@media (max-width: 768px) { .charts-section { grid-template-columns: 1fr; } }
+.chart-container { position: relative; height: 260px; padding: 1rem 1.25rem; }
+
+/* AD BANNER */
+.ad-section {
+  grid-column: 1 / -1;
+}
+.ad-banner {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59,130,246,.08) 100%);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 2rem; display: flex; align-items: center; gap: 2rem;
+  transition: border-color .3s;
+}
+.ad-banner:hover { border-color: var(--accent); }
+.ad-banner-icon {
+  width: 64px; height: 64px; background: var(--gradient-accent);
+  border-radius: var(--radius-lg); display: flex; align-items: center;
+  justify-content: center; font-size: 1.8rem; flex-shrink: 0;
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+.ad-banner-content { flex: 1; }
+.ad-banner-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: .35rem; }
+.ad-banner-content p { font-size: .85rem; color: var(--text-secondary); line-height: 1.5; }
+.ad-banner-tag {
+  font-size: .6rem; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: .1em; margin-bottom: .5rem;
+}
+.ad-banner .btn { flex-shrink: 0; }
+
+/* AD SIDEBAR CARDS */
+.ad-sidebar {
+  display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;
+}
+.ad-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  transition: border-color .3s;
+}
+.ad-card:hover { border-color: var(--accent); }
+.ad-card-tag { font-size: .6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .75rem; }
+.ad-card h5 { font-size: .9rem; font-weight: 600; margin-bottom: .35rem; }
+.ad-card p { font-size: .78rem; color: var(--text-secondary); line-height: 1.4; }
+.ad-card .btn { margin-top: .75rem; width: 100%; justify-content: center; font-size: .78rem; }
+
+/* LOADING */
+.loading-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(10,14,26,.85);
+  z-index: 200; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1.5rem; backdrop-filter: blur(8px);
+}
+.loading-overlay.active { display: flex; }
+.loading-spinner {
+  width: 48px; height: 48px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: .9rem; color: var(--text-secondary); }
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 2rem; font-size: .75rem;
+  color: var(--text-muted); border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+/* PDF REPORT (hidden, used for generation) */
+#pdf-report {
+  position: absolute; left: -9999px; top: 0;
+  width: 800px; background: #fff; color: #111; padding: 40px;
+  font-family: 'Inter', sans-serif;
+}
+#pdf-report h1 { font-size: 24px; color: #1a2235; margin-bottom: 4px; }
+#pdf-report .pdf-subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
+#pdf-report .pdf-score-box {
+  background: linear-gradient(135deg, #1a2235, #2a3550);
+  color: #fff; padding: 24px; border-radius: 12px; text-align: center;
+  margin-bottom: 24px;
+}
+#pdf-report .pdf-score-number { font-size: 64px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+#pdf-report .pdf-score-label { font-size: 14px; opacity: .7; }
+#pdf-report .pdf-section { margin-bottom: 20px; }
+#pdf-report .pdf-section h3 { font-size: 16px; color: #1a2235; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px; }
+#pdf-report .pdf-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+#pdf-report .pdf-stat { background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; }
+#pdf-report .pdf-stat .val { font-size: 24px; font-weight: 800; color: #1a2235; }
+#pdf-report .pdf-stat .lbl { font-size: 11px; color: #666; text-transform: uppercase; }
+#pdf-report .pdf-footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #999; text-align: center; }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .map-card { grid-column: auto; grid-row: auto; }
+  .score-card { grid-column: auto; grid-row: auto; }
+  .stats-card { grid-column: auto; grid-row: auto; }
+  .ad-card { grid-column: auto; }
+}
+/* ============================================================
+   MOBILE / CELULAR — EXPERIENCIA OTIMIZADA
+   ============================================================ */
+@media (max-width: 768px) {
+  html { -webkit-text-size-adjust: 100%; }
+  body { overflow-x: hidden; }
+  * { -webkit-tap-highlight-color: rgba(59,130,246,.22); }
+
+  /* HEADER compacto — nao quebra em 3 linhas */
+  .header { padding: 0 .7rem; height: 54px; gap: .5rem; }
+  .header-brand { font-size: .76rem; letter-spacing: 0; gap: 7px; line-height: 1.1; min-width: 0; }
+  .header-brand img { width: 28px !important; height: 28px !important; }
+  .header-brand > span:not(.header-badge) {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw;
+  }
+  .header-badge { font-size: .54rem; padding: 2px 6px; flex-shrink: 0; }
+  .header-status { font-size: .6rem; line-height: 1.2; text-align: right; max-width: 32vw; }
+
+  /* BARRA DE IDIOMAS — fixa logo abaixo do header, sempre ao alcance */
+  .mobile-lang-bar {
+    position: sticky; top: 54px; z-index: 99;
+    padding: 7px 8px; gap: 7px;
+    background: rgba(17,24,39,.97); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-lang-bar .mlb-flag { padding: 6px 8px; }
+  .mobile-lang-bar .mlb-flag img { width: 26px; height: 18px; }
+  .mobile-lang-bar .mlb-flag span { font-size: .62rem; font-weight: 600; }
+
+  /* BRASAO */
+  .emblem-section { padding: 1.2rem .75rem 0; }
+  .emblem-img { width: 108px !important; height: auto !important; }
+  .emblem-title { font-size: .84rem; letter-spacing: .06em; margin-top: .6rem; padding: 0 .3rem; }
+  .emblem-tagline { font-size: .76rem; margin-top: .4rem; padding: 0 .3rem; }
+  .emblem-subtitle { font-size: .6rem; letter-spacing: .15em; }
+  .emblem-divider { width: 90px; margin-top: .7rem; }
+
+  /* ORGAOS INTEGRADOS */
+  .agencies-banner { padding: 0 .7rem !important; margin-bottom: 1rem !important; }
+
+  /* BUSCA — a parte mais importante no celular */
+  .search-section { padding: 1.4rem .8rem 1.2rem; }
+  .search-title { font-size: 1.22rem; line-height: 1.28; margin-bottom: .4rem; }
+  .search-subtitle { font-size: .78rem; margin-bottom: 1.1rem; line-height: 1.5; }
+  .search-box { flex-direction: column; border-radius: 14px; }
+  .search-box input {
+    width: 100%; font-size: 16px; padding: 1rem .9rem; text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-box button {
+    width: 100%; justify-content: center; padding: 1rem;
+    font-size: .95rem; min-height: 52px;
+  }
+  .search-hint { font-size: .68rem; margin-top: .9rem; line-height: 2.1; }
+  .search-hint kbd { font-size: .64rem; display: inline-block; margin: 2px 1px; padding: 3px 7px; }
+
+  /* DASHBOARD DE RESULTADOS */
+  .main-content { padding: .9rem .65rem 2rem; }
+  .result-header { flex-direction: column; gap: .8rem; margin-bottom: 1rem; }
+  .result-location h2 { font-size: 1.05rem; line-height: 1.32; word-break: break-word; }
+  .result-location p { font-size: .74rem; line-height: 1.55; }
+  .result-actions { width: 100%; flex-direction: column; gap: .55rem; }
+  .result-actions .btn { width: 100%; justify-content: center; min-height: 48px; font-size: .88rem; }
+
+  .dashboard-grid { gap: 1rem; }
+  .card { border-radius: 14px; }
+
+  /* CABECALHO DOS CARDS — controles empilhados e roláveis */
+  .card-header { flex-direction: column; align-items: stretch; gap: .6rem; padding: .85rem .9rem; }
+  .card-header h3 { font-size: .74rem; letter-spacing: .04em; }
+  .map-card .card-header > div {
+    width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important; scrollbar-width: none; padding-bottom: 2px;
+  }
+  .map-card .card-header > div::-webkit-scrollbar { display: none; }
+  .map-view-toggle { flex-shrink: 0; }
+  .map-view-toggle button { padding: 7px 11px; font-size: .68rem; white-space: nowrap; }
+  .map-card .card-header .btn { flex-shrink: 0; white-space: nowrap; min-height: 34px; }
+
+  /* MAPA */
+  #map, #cesium-globe { height: 300px; }
+  .map-legend { flex-wrap: wrap; gap: .5rem .9rem; padding: .8rem .9rem; font-size: .68rem; }
+
+  /* SAFETY SCORE */
+  .score-display { padding: 1.1rem .9rem; }
+  .score-gauge, .score-gauge svg { width: 152px; height: 152px; }
+  .score-gauge-value .number { font-size: 2.4rem; }
+  .score-gauge-value .label { font-size: .64rem; }
+  .score-pillars { padding: 0 .9rem 1rem; gap: .6rem; }
+  .pillar { padding: .65rem; gap: .6rem; }
+  .pillar-icon { width: 32px; height: 32px; font-size: .9rem; }
+  .pillar-info .name { font-size: .73rem; }
+
+  /* ESTATISTICAS — 2 colunas fica melhor que 1 */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: .6rem; padding: .9rem; }
+  .stat-item { padding: .75rem .5rem; }
+  .stat-value { font-size: 1.28rem; }
+  .stat-label { font-size: .6rem; letter-spacing: .03em; line-height: 1.3; }
+
+  /* GRAFICOS */
+  .charts-section { gap: 1rem; }
+  .chart-container { height: 230px; padding: .8rem .55rem; }
+
+  /* ANUNCIOS */
+  .ad-banner { flex-direction: column; text-align: center; gap: 1rem; padding: 1.3rem 1rem; }
+  .ad-banner-icon { width: 52px; height: 52px; font-size: 1.5rem; }
+  .ad-banner-content h4 { font-size: .98rem; }
+  .ad-banner-content p { font-size: .78rem; }
+  .ad-banner .btn { width: 100%; justify-content: center; min-height: 46px; }
+  .ad-sidebar { padding: 0 .9rem .9rem !important; margin-top: 0; }
+  .ad-card { padding: 1rem; }
+  .ad-card .btn { min-height: 44px; }
+
+  /* MANUAL, TERMOS, FOOTER e BOTAO-TOPO: ver bloco mobile final do CSS */
+
+  /* FOOTER */
+  .footer { padding: 1.4rem .9rem; font-size: .66rem; line-height: 1.75; }
+}
+
+/* TELAS BEM PEQUENAS (iPhone SE etc.) */
+@media (max-width: 380px) {
+  .header-brand > span:not(.header-badge) { max-width: 34vw; font-size: .7rem; }
+  .header-status span:not(.dot) { display: none; }
+  .emblem-img { width: 92px !important; }
+  .emblem-title { font-size: .76rem; }
+  .emblem-tagline { font-size: .7rem; }
+  .search-title { font-size: 1.08rem; }
+  .search-subtitle { font-size: .74rem; }
+  .stats-grid { gap: .5rem; }
+  .stat-value { font-size: 1.12rem; }
+  .stat-label { font-size: .56rem; }
+  .score-gauge, .score-gauge svg { width: 132px; height: 132px; }
+  .score-gauge-value .number { font-size: 2rem; }
+  #map, #cesium-globe { height: 265px; }
+  .chart-container { height: 205px; }
+}
+
+/* BOTAO VOLTAR AO TOPO (celular) */
+.to-top-btn {
+  display: none; position: fixed; bottom: 18px; right: 14px; z-index: 150;
+  width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(59,130,246,.5);
+  background: rgba(26,34,53,.94); color: var(--accent); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 6px 22px rgba(0,0,0,.5); font-size: 1.25rem; line-height: 1;
+  opacity: 0; transition: opacity .3s, transform .3s; transform: translateY(8px);
+}
+.to-top-btn.show { opacity: 1; transform: translateY(0); }
+@media (max-width: 768px) { .to-top-btn { display: flex; } }
+
+/* MANUAL DE INSTRUCOES */
+.manual-section {
+  max-width: 900px; margin: 2rem auto; padding: 0 1rem;
+}
+.manual-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 2rem; box-shadow: var(--shadow);
+}
+.manual-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;
+  padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
+.manual-header h2 { font-size: 1.3rem; color: var(--text-primary); margin: 0; }
+.manual-lang-select {
+  margin-left: auto; background: var(--bg-secondary); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+  font-family: var(--font); font-size: .85rem; cursor: pointer;
+}
+.manual-lang-select:focus { outline: none; border-color: var(--accent); }
+.manual-step {
+  display: flex; gap: 14px; margin-bottom: 1.2rem; align-items: flex-start;
+}
+.manual-step-num {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--gradient-accent); color: #fff; display: flex;
+  align-items: center; justify-content: center; font-weight: 700; font-size: .9rem;
+}
+.manual-step-text { flex: 1; }
+.manual-step-text h3 { font-size: 1rem; color: var(--text-primary); margin: 0 0 4px; }
+.manual-step-text p { font-size: .85rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+.manual-note {
+  background: rgba(59,130,246,.08); border-left: 3px solid var(--accent);
+  padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 1rem;
+  font-size: .82rem; color: var(--text-secondary); line-height: 1.5;
+}
+
+/* ============================================================
+   BASE LEGAL — leis que amparam a consulta de informacoes
+   ============================================================ */
+.legal-section { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+.legal-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow);
+}
+.legal-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: .6rem;
+}
+.legal-header h2 { font-size: 1.3rem; color: var(--text-primary); margin: 0; }
+.legal-intro {
+  font-size: .85rem; color: var(--text-secondary); line-height: 1.6;
+  margin: 0 0 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border);
+}
+.legal-group { margin-bottom: 1.6rem; }
+.legal-group:last-of-type { margin-bottom: 0; }
+.legal-group-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.02rem; font-weight: 700; color: var(--text-primary);
+  margin: 0 0 1rem;
+}
+.legal-group-flag { font-size: 1.35rem; line-height: 1; }
+.legal-law {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.14);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0; padding: 13px 16px; margin-bottom: .7rem;
+}
+.legal-law:last-child { margin-bottom: 0; }
+.legal-law-icon {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(59,130,246,.14); display: flex; align-items: center;
+  justify-content: center; font-size: .95rem;
+}
+.legal-law-body { flex: 1; min-width: 0; }
+.legal-law-name {
+  display: block; font-size: .88rem; font-weight: 700;
+  color: #93c5fd; margin-bottom: 3px; line-height: 1.4;
+}
+.legal-law-desc {
+  font-size: .82rem; color: var(--text-secondary); line-height: 1.55; margin: 0;
+}
+.legal-group-global .legal-law {
+  background: rgba(16,185,129,.05); border-color: rgba(16,185,129,.14);
+  border-left-color: #10b981;
+}
+.legal-group-global .legal-law-icon { background: rgba(16,185,129,.14); }
+.legal-group-global .legal-law-name { color: #6ee7b7; }
+.legal-footnote {
+  margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+  font-size: .78rem; color: var(--text-muted); line-height: 1.6;
+}
+
+/* ============================================================
+   BLOCO MOBILE FINAL — precisa vir DEPOIS de todas as regras base
+   para sobrescrever manual, termos, footer e botao-topo.
+   ============================================================ */
+@media (max-width: 768px) {
+  /* MANUAL DE INSTRUCOES */
+  .manual-section { margin: 1.2rem auto; padding: 0 .65rem; }
+  .manual-card { padding: 1.1rem .9rem; border-radius: 14px; }
+  .manual-header { flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; padding-bottom: .8rem; }
+  .manual-header h2 { font-size: 1.02rem; }
+  .manual-lang-select {
+    margin-left: 0; width: 100%; padding: 12px; font-size: 16px;
+    min-height: 48px; border-radius: 10px;
+  }
+  .manual-step { gap: 10px; margin-bottom: 1rem; }
+  .manual-step-num { width: 27px; height: 27px; font-size: .78rem; }
+  .manual-step-text h3 { font-size: .92rem; }
+  .manual-step-text p { font-size: .82rem; line-height: 1.55; }
+  .manual-note { font-size: .78rem; padding: 11px 13px; }
+
+  /* TERMOS DE USO */
+  .terms-overlay { padding: .6rem; }
+  .terms-box { padding: 1.3rem 1rem; max-height: 92vh; border-radius: 14px; }
+  .terms-emblem { width: 66px !important; margin-bottom: .7rem; }
+  .terms-box h2 { font-size: 1.02rem; }
+  .terms-sub { font-size: .63rem; margin-bottom: .9rem; }
+  .terms-text { max-height: 34vh; font-size: .74rem; padding: .85rem; line-height: 1.6; }
+  .terms-check { font-size: .72rem; line-height: 1.5; gap: 10px; }
+  .terms-check input[type=checkbox] { width: 22px; height: 22px; flex-shrink: 0; }
+  .terms-btn { padding: 15px; min-height: 52px; font-size: .8rem; }
+
+  /* FOOTER */
+  .footer { padding: 1.4rem .9rem; font-size: .68rem; line-height: 1.8; }
+
+  /* BOTAO VOLTAR AO TOPO */
+  .to-top-btn { display: flex; }
+
+  /* CABECALHOS DOS CARDS: empilhar titulo e botoes para nao estourar a tela */
+  .card-header {
+    flex-direction: column; align-items: stretch; gap: 10px;
+  }
+  .card-header h3 { font-size: .95rem; }
+  .card-header > div {
+    width: 100%; max-width: 100%; flex-wrap: wrap; justify-content: flex-start;
+  }
+  /* Barra de controles do mapa em grade 2 colunas:
+     linha 1 = Mapa/Satelite/3D Globe, linha 2 = Heatmap/Pontos */
+  .map-card .card-header > div {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px; width: 100%; box-sizing: border-box;
+  }
+  .map-view-toggle {
+    display: flex; grid-column: 1 / -1; width: 100%; box-sizing: border-box; gap: 4px;
+  }
+  .map-view-toggle button {
+    flex: 1 1 0; min-width: 0; min-height: 40px; padding: 6px 4px;
+    font-size: .72rem; white-space: nowrap;
+  }
+  /* Heatmap e Pontos dividem a linha seguinte */
+  #btn-heatmap, #btn-markers {
+    width: 100%; min-width: 0; min-height: 40px;
+    padding: 8px 6px !important; font-size: .74rem !important;
+  }
+
+  /* BASE LEGAL */
+  .legal-section { margin: 1.2rem auto; padding: 0 .65rem; }
+  .legal-card { padding: 1.1rem .9rem; border-radius: 14px; }
+  .legal-header { gap: 9px; margin-bottom: .5rem; }
+  .legal-header h2 { font-size: 1.02rem; }
+  .legal-intro { font-size: .8rem; margin-bottom: 1.1rem; padding-bottom: .9rem; }
+  .legal-group { margin-bottom: 1.3rem; }
+  .legal-group-title { font-size: .92rem; margin-bottom: .8rem; }
+  .legal-group-flag { font-size: 1.2rem; }
+  .legal-law { gap: 10px; padding: 11px 12px; border-radius: 0 9px 9px 0; }
+  .legal-law-icon { width: 26px; height: 26px; font-size: .85rem; border-radius: 7px; }
+  .legal-law-name { font-size: .83rem; }
+  .legal-law-desc { font-size: .78rem; line-height: 1.5; }
+  .legal-footnote { font-size: .73rem; margin-top: 1.1rem; padding-top: .9rem; }
+
+  /* PESQUISAR PELO MAPA (celular) */
+  .search-divider { margin: 1.1rem auto .7rem; font-size: .68rem; padding: 0 .65rem; }
+  .map-search-actions { padding: 0 .65rem; gap: 8px; }
+  .btn-map-search, .btn-gps-search {
+    flex: 1 1 100%; min-height: 46px; padding: 12px 14px;
+    font-size: .84rem; min-width: 0;
+  }
+  /* MODAL DO MAPA (celular) */
+  .mapsel-overlay { padding: 0; align-items: flex-end; }
+  .mapsel-box {
+    max-width: 100%; width: 100%; max-height: 94vh;
+    border-radius: 16px 16px 0 0; border-left: 0; border-right: 0; border-bottom: 0;
+  }
+  .mapsel-head { padding: 14px 14px 11px; gap: 10px; }
+  .mapsel-head h3 { font-size: .96rem; }
+  .mapsel-head p { font-size: .74rem; }
+  .mapsel-close { width: 38px; height: 38px; }
+  .mapsel-searchrow { padding: 11px 14px 9px; gap: 7px; }
+  .mapsel-searchrow input { padding: 11px 12px; font-size: 16px; }
+  .mapsel-searchrow button { width: 46px; min-height: 44px; }
+  .mapsel-mapwrap { margin: 0 14px; }
+  #mapsel-map { height: 46vh; min-height: 240px; }
+  .mapsel-crosshair-hint { font-size: .7rem; padding: 7px 11px; bottom: 10px; }
+  .mapsel-picked { margin: 11px 14px 0; padding: 10px 12px; gap: 9px; }
+  .mapsel-picked-icon { width: 27px; height: 27px; }
+  .mapsel-picked-addr { font-size: .79rem; }
+  .mapsel-picked-coords { font-size: .66rem; }
+  .mapsel-foot { padding: 13px 14px 16px; gap: 8px; }
+  .mapsel-btn-cancel, .mapsel-btn-go { min-height: 48px; font-size: .84rem; padding: 12px 14px; }
+
+  /* Nada pode estourar a largura da tela */
+  body { overflow-x: hidden; }
+}
+
+@media (max-width: 380px) {
+  .manual-header h2 { font-size: .94rem; }
+  .manual-step-text h3 { font-size: .86rem; }
+  .manual-step-text p { font-size: .78rem; }
+  .terms-text { max-height: 30vh; font-size: .7rem; }
+  .terms-check { font-size: .68rem; }
+}
+
+/* Controles do Leaflet nao podem ficar na frente dos modais */
+.leaflet-top, .leaflet-bottom, .leaflet-control-container { z-index: 400 !important; }
+.leaflet-pane { z-index: 300 !important; }
+#terms-overlay { z-index: 3000 !important; }
+#paywall-modal { z-index: 2000 !important; }
+#delivery-modal { z-index: 2100 !important; }
+</style>
+</head>
+<body>
+
+<!-- MODAL DE TERMOS DE USO -->
+<div class="terms-overlay" id="terms-overlay">
+  <div class="terms-box">
+    <img src="brasao-sh.png" alt="Portal Seguranca Global" class="terms-emblem">
+    <h2>Termos de Uso e Responsabilidade</h2>
+    <div class="terms-sub">Leia antes de prosseguir</div>
+
+    <div class="terms-text">
+      <strong>1. Responsabilidade do Usuario</strong>
+      <p>Ao utilizar o Portal Seguranca Global, voce declara estar ciente de que e o unico responsavel pelas buscas realizadas e pelo uso das informacoes obtidas nesta plataforma.</p>
+
+      <strong>2. Finalidade das Consultas</strong>
+      <p>As consultas devem ser realizadas exclusivamente para fins licitos, tais como:</p>
+      <ul>
+        <li>Verificacao de seguranca de enderecos e regioes</li>
+        <li>Analise de risco para fins pessoais ou profissionais</li>
+        <li>Consultas de antecedentes dentro dos limites legais</li>
+      </ul>
+
+      <strong>3. Uso Indevido</strong>
+      <p>E expressamente proibido utilizar este sistema para:</p>
+      <ul>
+        <li>Perseguicao, assedio ou vigilancia ilegal de terceiros</li>
+        <li>Discriminacao com base em dados obtidos</li>
+        <li>Compartilhamento nao autorizado de informacoes pessoais</li>
+        <li>Qualquer atividade que viole leis locais ou internacionais</li>
+      </ul>
+
+      <strong>4. Privacidade e Protecao de Dados</strong>
+      <p>Todas as consultas sao registradas e monitoradas. O Portal Seguranca Global opera em conformidade com as leis de protecao de dados (LGPD, GDPR e equivalentes internacionais).</p>
+
+      <strong>5. Limitacao de Responsabilidade</strong>
+      <p>O Portal Seguranca Global fornece dados de fontes publicas e algoritmos estatisticos. As informacoes nao substituem consultas oficiais a orgaos competentes. O sistema nao se responsabiliza por decisoes tomadas com base nos dados apresentados.</p>
+
+      <strong>6. Consequencias Legais</strong>
+      <p>O uso indevido desta plataforma podera resultar em bloqueio permanente do acesso, notificacao as autoridades competentes e responsabilizacao civil e criminal conforme a legislacao vigente.</p>
+    </div>
+
+    <label class="terms-check" id="terms-label">
+      <input type="checkbox" id="terms-checkbox">
+      <span>Declaro que li, compreendi e aceito os Termos de Uso. Estou ciente de que sou inteiramente responsavel pelas buscas realizadas nesta plataforma.</span>
+    </label>
+
+    <button class="terms-btn disabled" id="terms-btn" disabled>
+      Concordo e Desejo Prosseguir
+    </button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <span>PORTAL SEGURANCA GLOBAL</span>
+    <span class="header-badge">Intel</span>
+  </div>
+  <div class="header-status">
+    <span class="dot"></span>
+    <span>Base de dados atualizada</span>
+  </div>
+</header>
+
+<!-- BARRA DE IDIOMAS MOBILE (aparece so no celular) -->
+<div class="mobile-lang-bar" id="mobile-lang-bar">
+  <div class="mlb-flag active" data-lang="pt"><img src="https://flagcdn.com/w40/br.png" alt="BR"><span>PT</span></div>
+  <div class="mlb-flag" data-lang="en"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>EN</span></div>
+  <div class="mlb-flag" data-lang="es"><img src="https://flagcdn.com/w40/es.png" alt="ES"><span>ES</span></div>
+  <div class="mlb-flag" data-lang="fr"><img src="https://flagcdn.com/w40/fr.png" alt="FR"><span>FR</span></div>
+  <div class="mlb-flag" data-lang="de"><img src="https://flagcdn.com/w40/de.png" alt="DE"><span>DE</span></div>
+  <div class="mlb-flag" data-lang="it"><img src="https://flagcdn.com/w40/it.png" alt="IT"><span>IT</span></div>
+  <div class="mlb-flag" data-lang="ja"><img src="https://flagcdn.com/w40/jp.png" alt="JP"><span>JA</span></div>
+  <div class="mlb-flag" data-lang="zh"><img src="https://flagcdn.com/w40/cn.png" alt="CN"><span>ZH</span></div>
+  <div class="mlb-flag" data-lang="ru"><img src="https://flagcdn.com/w40/ru.png" alt="RU"><span>RU</span></div>
+  <div class="mlb-flag" data-lang="ar"><img src="https://flagcdn.com/w40/sa.png" alt="SA"><span>AR</span></div>
+  <div class="mlb-flag" data-lang="ko"><img src="https://flagcdn.com/w40/kr.png" alt="KR"><span>KO</span></div>
+</div>
+
+<!-- BRASAO -->
+<section class="emblem-section">
+  <img src="brasao-sh.png" alt="Portal Seguranca Global" class="emblem-img">
+  <div class="emblem-title">Busca em tempo real em qualquer endere&ccedil;o do mundo</div>
+  <div class="emblem-tagline">Veja se o lugar que voc&ecirc; procura &eacute; realmente seguro</div>
+  <div class="emblem-subtitle">portalsegurancaglobal.com.br</div>
+  <div class="emblem-divider"></div>
+</section>
+
+<!-- BANDEIRAS LATERAIS FIXAS (descem com a pagina toda) -->
+<!-- ESQUERDA (Americas + Europa) -->
+<div class="flags-column left">
+  <div class="flag-un-logo"><img loading="lazy" decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/fr.png" alt="Franca"><span class="flag-name">Franca</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/de.png" alt="Alemanha"><span class="flag-name">Alemanha</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/it.png" alt="Italia"><span class="flag-name">Italia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/es.png" alt="Espanha"><span class="flag-name">Espanha</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pt.png" alt="Portugal"><span class="flag-name">Portugal</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ca.png" alt="Canada"><span class="flag-name">Canada</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/mx.png" alt="Mexico"><span class="flag-name">Mexico</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ar.png" alt="Argentina"><span class="flag-name">Argentina</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/co.png" alt="Colombia"><span class="flag-name">Colombia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cl.png" alt="Chile"><span class="flag-name">Chile</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pe.png" alt="Peru"><span class="flag-name">Peru</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/uy.png" alt="Uruguai"><span class="flag-name">Uruguai</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/py.png" alt="Paraguai"><span class="flag-name">Paraguai</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ve.png" alt="Venezuela"><span class="flag-name">Venezuela</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/bo.png" alt="Bolivia"><span class="flag-name">Bolivia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ec.png" alt="Equador"><span class="flag-name">Equador</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cu.png" alt="Cuba"><span class="flag-name">Cuba</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pa.png" alt="Panama"><span class="flag-name">Panama</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cr.png" alt="Costa Rica"><span class="flag-name">Costa Rica</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/nl.png" alt="Holanda"><span class="flag-name">Holanda</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/be.png" alt="Belgica"><span class="flag-name">Belgica</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/se.png" alt="Suecia"><span class="flag-name">Suecia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/dk.png" alt="Dinamarca"><span class="flag-name">Dinamarca</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/fi.png" alt="Finlandia"><span class="flag-name">Finlandia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/at.png" alt="Austria"><span class="flag-name">Austria</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pl.png" alt="Polonia"><span class="flag-name">Polonia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ua.png" alt="Ucrania"><span class="flag-name">Ucrania</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gr.png" alt="Grecia"><span class="flag-name">Grecia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ie.png" alt="Irlanda"><span class="flag-name">Irlanda</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cz.png" alt="Rep. Tcheca"><span class="flag-name">Rep. Tcheca</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ro.png" alt="Romenia"><span class="flag-name">Romenia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/hu.png" alt="Hungria"><span class="flag-name">Hungria</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/hr.png" alt="Croacia"><span class="flag-name">Croacia</span></div>
+</div>
+
+<!-- DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
+<div class="flags-column right">
+  <div class="flag-un-logo"><img loading="lazy" decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/in.png" alt="India"><span class="flag-name">India</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/au.png" alt="Australia"><span class="flag-name">Australia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ru.png" alt="Russia"><span class="flag-name">Russia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/za.png" alt="Africa do Sul"><span class="flag-name">Africa do Sul</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ng.png" alt="Nigeria"><span class="flag-name">Nigeria</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/eg.png" alt="Egito"><span class="flag-name">Egito</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/il.png" alt="Israel"><span class="flag-name">Israel</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/sa.png" alt="Arabia Saudita"><span class="flag-name">Arabia Saudita</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/tr.png" alt="Turquia"><span class="flag-name">Turquia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ch.png" alt="Suica"><span class="flag-name">Suica</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/no.png" alt="Noruega"><span class="flag-name">Noruega</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/nz.png" alt="Nova Zelandia"><span class="flag-name">Nova Zelandia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/id.png" alt="Indonesia"><span class="flag-name">Indonesia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/th.png" alt="Tailandia"><span class="flag-name">Tailandia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/vn.png" alt="Vietna"><span class="flag-name">Vietna</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ph.png" alt="Filipinas"><span class="flag-name">Filipinas</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/my.png" alt="Malasia"><span class="flag-name">Malasia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/sg.png" alt="Singapura"><span class="flag-name">Singapura</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pk.png" alt="Paquistao"><span class="flag-name">Paquistao</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ae.png" alt="Emirados Arabes"><span class="flag-name">Emirados Arabes</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/qa.png" alt="Qatar"><span class="flag-name">Qatar</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ma.png" alt="Marrocos"><span class="flag-name">Marrocos</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ke.png" alt="Kenya"><span class="flag-name">Kenya</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/et.png" alt="Etiopia"><span class="flag-name">Etiopia</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gh.png" alt="Gana"><span class="flag-name">Gana</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ao.png" alt="Angola"><span class="flag-name">Angola</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/mz.png" alt="Mocambique"><span class="flag-name">Mocambique</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ir.png" alt="Ira"><span class="flag-name">Ira</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/iq.png" alt="Iraque"><span class="flag-name">Iraque</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jo.png" alt="Jordania"><span class="flag-name">Jordania</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/bd.png" alt="Bangladesh"><span class="flag-name">Bangladesh</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/tz.png" alt="Tanzania"><span class="flag-name">Tanzania</span></div>
+  <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kp.png" alt="Coreia do Norte"><span class="flag-name">Coreia do Norte</span></div>
+</div>
+
+<!-- INTEGRATED AGENCIES NETWORK -->
+<section class="agencies-banner" style="max-width:1200px;margin:0 auto 1.5rem;padding:0 1rem;">
+  <img src="agencies-network.png" alt="Portal Seguranca Global - Rede Integrada de Orgaos de Seguranca" style="width:100%;border-radius:12px;border:1px solid rgba(0,157,255,.18);box-shadow:0 4px 24px rgba(0,0,0,.45);">
+</section>
+
+<!-- SEARCH -->
+<section class="search-section" id="search-section">
+  <h1 class="search-title">Consulte a Seguranca de Qualquer Lugar do Mundo</h1>
+  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana â€” cobertura global</p>
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="CEP ou endereço..." autocomplete="off">
+    <button id="search-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Analisar
+    </button>
+  </div>
+  <p class="search-hint">Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd> | <kbd>Champs-Elysees, Paris</kbd></p>
+
+  <!-- OPCAO DE PESQUISA PELO MAPA -->
+  <div class="search-divider"><span id="search-divider-text">ou</span></div>
+  <div class="map-search-actions">
+    <button type="button" class="btn-map-search" id="btn-map-search">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span id="btn-map-search-text">Pesquisar pelo Mapa</span>
+    </button>
+    <button type="button" class="btn-gps-search" id="btn-gps-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+      <span id="btn-gps-search-text">Onde estou agora</span>
+    </button>
+  </div>
+</section>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Coletando dados de inteligencia...</div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div class="main-content" id="main-content">
+
+  <!-- Result Header -->
+  <div class="result-header">
+    <div class="result-location">
+      <h2 id="result-address">--</h2>
+      <p id="result-meta">--</p>
+    </div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-pdf">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Gerar Relatorio PDF
+      </button>
+      <button class="btn btn-outline" id="btn-share">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartilhar
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard-grid">
+
+    <!-- MAP -->
+    <div class="card map-card">
+      <div class="card-header">
+        <h3><span class="icon">&#127758;</span> Mapa de Ocorrencias</h3>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div class="map-view-toggle">
+            <button id="btn-view-dark" class="active">Mapa</button>
+            <button id="btn-view-satellite">Satelite</button>
+            <button id="btn-view-3d">&#127760; 3D Globe</button>
+          </div>
+          <button class="btn btn-outline" id="btn-heatmap" style="padding:4px 10px;font-size:.72rem;">Heatmap</button>
+          <button class="btn btn-outline" id="btn-markers" style="padding:4px 10px;font-size:.72rem;">Pontos</button>
+        </div>
+      </div>
+      <div id="map"></div>
+      <div id="cesium-globe">
+        <div class="globe-loading" id="globe-loading">Carregando Google Earth 3D...</div>
+        <iframe id="earth-iframe" allow="accelerometer; gyroscope" loading="lazy"></iframe>
+      </div>
+      <div class="globe-info-bar" id="globe-info">
+        <span>&#127760; Globo 3D Interativo</span>
+        <span class="globe-coords" id="globe-coords">Lat -- | Lng -- | Alt --km</span>
+      </div>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#22c55e;"></div> Baixo Risco</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#eab308;"></div> Medio Risco</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ef4444;"></div> Alto Risco</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#7c3aed;"></div> Ponto de Interesse</div>
+      </div>
+    </div>
+
+    <!-- SAFETY SCORE -->
+    <div class="card score-card">
+      <div class="card-header">
+        <h3><span class="icon">&#128170;</span> Safety Score</h3>
+        <span style="font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;" id="score-timestamp">--</span>
+      </div>
+      <div class="score-display">
+        <div class="score-gauge">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="78" class="score-gauge-bg"/>
+            <circle cx="90" cy="90" r="78" class="score-gauge-fill" id="score-circle"
+              stroke-dasharray="490" stroke-dashoffset="490" stroke="var(--accent)"/>
+          </svg>
+          <div class="score-gauge-value">
+            <div class="number" id="score-number">--</div>
+            <div class="label" id="score-label" style="color:var(--text-muted);">AGUARDANDO</div>
+          </div>
+        </div>
+      </div>
+      <div class="score-pillars">
+        <div class="pillar">
+          <div class="pillar-icon" style="background:var(--red-glow);color:var(--red);">&#128680;</div>
+          <div class="pillar-info">
+            <div class="name">Indice Criminal</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-crime" style="width:0%;background:var(--red);"></div></div>
+          </div>
+          <div class="pillar-score" id="pillar-crime-val">--</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon" style="background:var(--yellow-glow);color:var(--yellow);">&#128161;</div>
+          <div class="pillar-info">
+            <div class="name">Infraestrutura</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-infra" style="width:0%;background:var(--yellow);"></div></div>
+          </div>
+          <div class="pillar-score" id="pillar-infra-val">--</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon" style="background:var(--green-glow);color:var(--green);">&#128694;</div>
+          <div class="pillar-info">
+            <div class="name">Movimentacao Urbana</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-movement" style="width:0%;background:var(--green);"></div></div>
+          </div>
+          <div class="pillar-score" id="pillar-movement-val">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card stats-card">
+      <div class="card-header">
+        <h3><span class="icon">&#128202;</span> Estatisticas do Bairro</h3>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-occurrences" style="color:var(--red);">--</div>
+          <div class="stat-label">Ocorrencias/mes</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-cameras" style="color:var(--accent);">--</div>
+          <div class="stat-label">Cameras</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-lights" style="color:var(--yellow);">--</div>
+          <div class="stat-label">Iluminacao</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-commerce" style="color:var(--green);">--</div>
+          <div class="stat-label">Comercios</div>
+        </div>
+      </div>
+      <!-- Ad Cards -->
+      <div class="ad-sidebar" style="padding: 0 1.25rem 1.25rem;">
+        <div class="ad-card">
+          <div class="ad-card-tag">&#128226; Patrocinado</div>
+          <h5>Monitore sua Residencia 24h</h5>
+          <p>Cameras inteligentes com IA para deteccao de movimento. A partir de R$ 89/mes.</p>
+          <button class="btn btn-outline">Saiba Mais</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-section">
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="icon">&#128200;</span> Ocorrencias por Tipo</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-types"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="icon">&#128197;</span> Evolucao Mensal</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-monthly"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD BANNER -->
+    <div class="ad-section">
+      <div class="ad-banner">
+        <div class="ad-banner-icon">&#128274;</div>
+        <div class="ad-banner-content">
+          <div class="ad-banner-tag">&#128226; Espaco Publicitario</div>
+          <h4>Proteja sua Familia com Tecnologia de Ponta</h4>
+          <p>Alarmes monitorados, cercas eletricas e cameras com reconhecimento facial. Orcamento gratis para moradores da regiao analisada.</p>
+        </div>
+        <button class="btn btn-primary">Solicitar Orcamento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Report Template (hidden) -->
+<div id="pdf-report">
+  <h1 id="pdf-title">Relatorio de Seguranca</h1>
+  <div class="pdf-subtitle" id="pdf-address">--</div>
+  <div class="pdf-score-box">
+    <div class="pdf-score-number" id="pdf-score">--</div>
+    <div class="pdf-score-label" id="pdf-score-label">Safety Score</div>
+  </div>
+  <div class="pdf-section">
+    <h3>Indicadores Principais</h3>
+    <div class="pdf-stat-grid">
+      <div class="pdf-stat"><div class="val" id="pdf-crime">--</div><div class="lbl">Indice Criminal</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-infra">--</div><div class="lbl">Infraestrutura</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-movement">--</div><div class="lbl">Movimentacao</div></div>
+    </div>
+  </div>
+  <div class="pdf-section">
+    <h3>Estatisticas do Bairro</h3>
+    <div class="pdf-stat-grid">
+      <div class="pdf-stat"><div class="val" id="pdf-occ">--</div><div class="lbl">Ocorrencias/mes</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-cam">--</div><div class="lbl">Cameras</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-com">--</div><div class="lbl">Comercios</div></div>
+    </div>
+  </div>
+  <div class="pdf-footer">
+    Gerado por Portal Seguranca Global &mdash; portalsegurancaglobal.com.br<br>
+    Cobertura mundial. Este relatorio e baseado em dados publicos e estimativas estatisticas. Nao substitui consultoria profissional.
+  </div>
+</div>
+
+<!-- MANUAL DE INSTRUCOES MULTILINGUE -->
+<section class="manual-section" id="manual-section">
+  <div class="manual-card">
+    <div class="manual-header">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <h2 id="manual-title">Manual de Instrucoes</h2>
+      <select class="manual-lang-select" id="manual-lang">
+        <option value="pt">Portugues</option>
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ar">Arabic</option>
+        <option value="ru">Russian</option>
+        <option value="ko">Korean</option>
+        <option value="hi">Hindi</option>
+      </select>
+    </div>
+    <div id="manual-content">
+      <!-- Preenchido via JS -->
+    </div>
+  </div>
+</section>
+
+<!-- BASE LEGAL: LEIS QUE AMPARAM A CONSULTA DE INFORMACOES -->
+<section class="legal-section" id="legal-section">
+  <div class="legal-card">
+    <div class="legal-header">
+      <span style="font-size:1.6rem;">&#9878;</span>
+      <h2 id="legal-title">Base Legal da Consulta de Informa&ccedil;&otilde;es</h2>
+    </div>
+    <p class="legal-intro" id="legal-intro">
+      O Portal de Seguran&ccedil;a Global opera com fundamento em direitos assegurados pela
+      legisla&ccedil;&atilde;o brasileira e por tratados internacionais. Toda consulta realizada
+      neste sistema utiliza exclusivamente dados de fontes p&uacute;blicas e oficiais,
+      amparada nas normas abaixo.
+    </p>
+
+    <div class="legal-group" id="legal-group-br">
+      <h3 class="legal-group-title">
+        <span class="legal-group-flag">&#127463;&#127479;</span>
+        <span id="legal-br-title">No Brasil</span>
+      </h3>
+
+      <div class="legal-law">
+        <div class="legal-law-icon">&#128220;</div>
+        <div class="legal-law-body">
+          <span class="legal-law-name">Constitui&ccedil;&atilde;o Federal de 1988, art. 5&ordm;, XXXIII</span>
+          <p class="legal-law-desc">Garante o direito fundamental de receber informa&ccedil;&otilde;es de
+          interesse p&uacute;blico e a liberdade de buscar e difundir informa&ccedil;&otilde;es.</p>
+        </div>
+      </div>
+
+      <div class="legal-law">
+        <div class="legal-law-icon">&#128196;</div>
+        <div class="legal-law-body">
+          <span class="legal-law-name">Lei n&ordm; 12.527/2011 &mdash; Lei de Acesso &agrave; Informa&ccedil;&atilde;o (LAI)</span>
+          <p class="legal-law-desc">Regulamenta esse direito, permitindo consultar dados oficiais
+          inclusive sobre seguran&ccedil;a, salvo quando classificados por risco &agrave; sociedade
+          ou ao Estado.</p>
+        </div>
+      </div>
+
+      <div class="legal-law">
+        <div class="legal-law-icon">&#127760;</div>
+        <div class="legal-law-body">
+          <span class="legal-law-name">Marco Civil da Internet &mdash; Lei n&ordm; 12.965/2014</span>
+          <p class="legal-law-desc">Assegura a liberdade de express&atilde;o, comunica&ccedil;&atilde;o
+          e acesso &agrave; rede, desde que em conformidade legal.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="legal-group legal-group-global" id="legal-group-world">
+      <h3 class="legal-group-title">
+        <span class="legal-group-flag">&#127758;</span>
+        <span id="legal-world-title">Em todo o planeta</span>
+      </h3>
+
+      <div class="legal-law">
+        <div class="legal-law-icon">&#127961;</div>
+        <div class="legal-law-body">
+          <span class="legal-law-name">Declara&ccedil;&atilde;o Universal dos Direitos Humanos, art. 19</span>
+          <p class="legal-law-desc">Todos t&ecirc;m direito &agrave; liberdade de opini&atilde;o e
+          express&atilde;o, incluindo buscar e receber informa&ccedil;&otilde;es e ideias de qualquer
+          natureza, independentemente de fronteiras.</p>
+        </div>
+      </div>
+
+      <div class="legal-law">
+        <div class="legal-law-icon">&#129309;</div>
+        <div class="legal-law-body">
+          <span class="legal-law-name">Pacto Internacional sobre Direitos Civis e Pol&iacute;ticos, art. 19</span>
+          <p class="legal-law-desc">Confirma esse mesmo direito, ratificado pelo Brasil.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="legal-footnote" id="legal-footnote">
+      <strong>Uso respons&aacute;vel:</strong> o exerc&iacute;cio desses direitos n&atilde;o autoriza
+      viola&ccedil;&atilde;o da privacidade, discrimina&ccedil;&atilde;o ou uso indevido das
+      informa&ccedil;&otilde;es obtidas. As consultas seguem a LGPD (Lei n&ordm; 13.709/2018), o GDPR
+      europeu e legisla&ccedil;&otilde;es equivalentes, respeitando integralmente a presun&ccedil;&atilde;o
+      de inoc&ecirc;ncia e os direitos individuais de cada pessoa.
+    </p>
+  </div>
+</section>
+
+<!-- ===== MODAL: PESQUISAR PELO MAPA ===== -->
+<div class="mapsel-overlay" id="mapsel-overlay">
+  <div class="mapsel-box">
+    <div class="mapsel-head">
+      <div class="mapsel-head-txt">
+        <h3 id="mapsel-title">Pesquisar pelo Mapa</h3>
+        <p id="mapsel-sub">Toque em qualquer ponto do mapa para analisar a seguran&ccedil;a do local</p>
+      </div>
+      <button type="button" class="mapsel-close" id="mapsel-close" aria-label="Fechar">&times;</button>
+    </div>
+
+    <div class="mapsel-searchrow">
+      <input type="text" id="mapsel-find" placeholder="Ir para uma cidade ou pais..." autocomplete="off">
+      <button type="button" id="mapsel-find-btn" aria-label="Localizar no mapa">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button type="button" id="mapsel-gps" aria-label="Minha localizacao" title="Minha localizacao">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+      </button>
+    </div>
+
+    <div class="mapsel-mapwrap">
+      <div id="mapsel-map"></div>
+      <div class="mapsel-crosshair-hint" id="mapsel-hint">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span id="mapsel-hint-text">Toque no mapa para escolher o local</span>
+      </div>
+    </div>
+
+    <div class="mapsel-picked" id="mapsel-picked">
+      <div class="mapsel-picked-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div class="mapsel-picked-body">
+        <span class="mapsel-picked-label" id="mapsel-picked-label">Local selecionado</span>
+        <p class="mapsel-picked-addr" id="mapsel-picked-addr">&mdash;</p>
+        <span class="mapsel-picked-coords" id="mapsel-picked-coords"></span>
+      </div>
+    </div>
+
+    <div class="mapsel-foot">
+      <button type="button" class="mapsel-btn-cancel" id="mapsel-cancel">Cancelar</button>
+      <button type="button" class="mapsel-btn-go" id="mapsel-confirm" disabled>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span id="mapsel-confirm-text">Analisar este local</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: COMPARTILHAR NAS REDES SOCIAIS ===== -->
+<div class="share-overlay" id="share-overlay">
+  <div class="share-box" id="share-box">
+    <div class="share-head">
+      <div class="share-head-txt">
+        <h3 id="share-title">Compartilhar Resultado</h3>
+        <p id="share-sub">Envie esta an&aacute;lise de seguran&ccedil;a para quem precisa saber</p>
+      </div>
+      <button type="button" class="share-close" id="share-close" aria-label="Fechar">&times;</button>
+    </div>
+
+    <div class="share-preview">
+      <span class="share-preview-label" id="share-preview-label">Pr&eacute;via da mensagem</span>
+      <p class="share-preview-text" id="share-preview-text">&mdash;</p>
+    </div>
+
+    <div class="share-grid">
+      <button type="button" class="share-net" data-share="whatsapp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.02a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.79 9.79 0 0 1-1.5-5.22c0-5.4 4.4-9.8 9.82-9.8 2.62 0 5.08 1.03 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.81-9.8 9.81M20.5 3.49A11.72 11.72 0 0 0 12.05 0C5.55 0 .26 5.29.26 11.79c0 2.08.54 4.1 1.58 5.9L.16 24l6.45-1.69a11.75 11.75 0 0 0 5.44 1.38h.01c6.5 0 11.79-5.29 11.79-11.79 0-3.15-1.23-6.11-3.46-8.34"/></svg>
+        <span>WhatsApp</span>
+      </button>
+      <button type="button" class="share-net" data-share="telegram">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.91 3.79 20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>
+        <span>Telegram</span>
+      </button>
+      <button type="button" class="share-net" data-share="twitter">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93zm-1.29 19.5h2.04L6.49 3.24H4.3z"/></svg>
+        <span>X / Twitter</span>
+      </button>
+      <button type="button" class="share-net" data-share="facebook">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07"/></svg>
+        <span>Facebook</span>
+      </button>
+      <button type="button" class="share-net" data-share="linkedin">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13m1.78 13.02H3.55V9h3.57zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0"/></svg>
+        <span>LinkedIn</span>
+      </button>
+      <button type="button" class="share-net" data-share="reddit">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0m6.07 12.6c.03.2.04.4.04.61 0 3.1-3.6 5.6-8.05 5.6s-8.05-2.5-8.05-5.6c0-.21.01-.42.04-.62a2.02 2.02 0 1 1 2.24-3.29 9.9 9.9 0 0 1 5.38-1.7l1.02-4.8a.42.42 0 0 1 .5-.33l3.38.72a1.41 1.41 0 1 1-.19.9l-3-.64-.91 4.3a9.87 9.87 0 0 1 5.28 1.71 2.02 2.02 0 1 1 2.32 3.14M8.2 13.53a1.41 1.41 0 1 0 0-2.82 1.41 1.41 0 0 0 0 2.82m7.6 0a1.41 1.41 0 1 0 0-2.82 1.41 1.41 0 0 0 0 2.82m-.42 2.2a.42.42 0 0 0-.6 0 4.2 4.2 0 0 1-2.78.86 4.2 4.2 0 0 1-2.78-.87.42.42 0 1 0-.6.6 5 5 0 0 0 3.39 1.11 5 5 0 0 0 3.38-1.1.42.42 0 0 0 0-.6"/></svg>
+        <span>Reddit</span>
+      </button>
+      <button type="button" class="share-net" data-share="email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+        <span id="share-email-text">E-mail</span>
+      </button>
+      <button type="button" class="share-net" data-share="sms">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+        <span>SMS</span>
+      </button>
+    </div>
+
+    <div class="share-copied" id="share-copied">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span id="share-copied-text">Copiado com sucesso!</span>
+    </div>
+
+    <div class="share-actions">
+      <button type="button" class="share-act" id="share-copy-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span id="share-copy-link-text">Copiar link</span>
+      </button>
+      <button type="button" class="share-act" id="share-copy-msg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span id="share-copy-msg-text">Copiar mensagem</span>
+      </button>
+      <button type="button" class="share-act" id="share-native">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+        <span id="share-native-text">Mais op&ccedil;&otilde;es</span>
+      </button>
+    </div>
+
+    <div class="share-foot">
+      <button type="button" class="share-btn-cancel" id="share-cancel">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Portal Seguranca Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
+  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.<br><br>
+  <strong>&copy; 2026 Portal de Seguran&ccedil;a Global. Todos os direitos reservados.</strong><br>
+  &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.
+</footer>
+
+<!-- BOTAO VOLTAR AO TOPO (celular) -->
+<button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
+
+<script defer src="app.js"></script>
+</body>
+</html>
