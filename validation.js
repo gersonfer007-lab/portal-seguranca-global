@@ -1,39 +1,25 @@
 'use strict';
-
-const BLOCKED_PATTERNS = [
-  /\d{3}\.?\d{3}\.?\d{3}-?\d{2}/,
-  /\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/,
-  /cpf/i,
-  /cnpj/i,
-  /rg\b/i,
-  /cnh\b/i,
-  /facial/i,
-  /biometr/i
-];
-
-const INJECTION_PATTERNS = [
-  /<script/i, /javascript:/i, /on\w+\s*=/i, /eval\s*\(/i,
-  /document\.(cookie|write|location)/i, /union\s+select/i,
-  /drop\s+table/i, /insert\s+into/i, /delete\s+from/i
-];
-
-function sanitize(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/[<>"'`;\\(){}[\]]/g, '').trim().substring(0, 500);
+var _serverLog = [];
+function sanitizeInput(str) { if (typeof str !== 'string') return ''; return str.replace(/[<>"'`;\\(){}[\]]/g, '').trim(); }
+function sanitizeHTML(str) { if (typeof str !== 'string') return ''; return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;'); }
+function detectInjection(str) {
+  if (typeof str !== 'string') return false;
+  var patterns = [/<script/i, /javascript:/i, /on\w+\s*=/i, /eval\s*\(/i, /document\.(cookie|write|location)/i, /window\.(location|open)/i, /\.\.\//g, /%3C/i, /%3E/i, /%00/i, /union\s+select/i, /drop\s+table/i, /insert\s+into/i, /delete\s+from/i, /update\s+.*set/i, /src\s*=\s*['"]/i, /href\s*=\s*["']javascript/i, /\bor\b\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i, /;\s*--/, /\/\*.*\*\//, /xp_cmdshell/i, /exec\s*\(/i, /UNION\s+ALL\s+SELECT/i, /select\s+.+\s+from/i, /alter\s+table/i, /create\s+table/i, /truncate\s+table/i];
+  for (var i = 0; i < patterns.length; i++) { if (patterns[i].test(str)) { logEvent('INJECTION_PATTERN_' + i, str.substring(0, 80)); return true; } }
+  return false;
 }
-
-function validateSearch(body) {
-  if (!body || typeof body !== 'object') return { valid: false, error: 'Requisicao invalida.' };
-  const raw = body.query;
-  if (!raw || typeof raw !== 'string') return { valid: false, error: 'Campo de busca obrigatorio.' };
-  if (raw.length > 500) return { valid: false, error: 'Busca muito longa.' };
-  for (const p of INJECTION_PATTERNS) {
-    if (p.test(raw)) return { valid: false, error: 'Entrada invalida detectada.' };
-  }
-  for (const p of BLOCKED_PATTERNS) {
-    if (p.test(raw)) return { valid: false, error: 'Este portal e exclusivo para buscas de enderecos e locais. Nao e permitido buscar dados pessoais (CPF, CNPJ, RG etc).' };
-  }
-  return { valid: true, sanitized: sanitize(raw) };
+function isPersonalOrCompanyData(str) {
+  if (typeof str !== 'string') return false;
+  var s = str.replace(/\D/g, '');
+  if (/^\d{11}$/.test(s) || /^\d{14}$/.test(s)) { logEvent('PERSONAL_DATA_BLOCKED', str.substring(0, 20)); return true; }
+  var rgPatterns = [/\brg\b/i, /\bidentidade\b/i, /\bregistro geral\b/i, /\bcnpj\b/i, /\bcpf\b/i];
+  for (var j = 0; j < rgPatterns.length; j++) { if (rgPatterns[j].test(str)) { logEvent('PERSONAL_DATA_BLOCKED', str.substring(0, 50)); return true; } }
+  return false;
 }
-
-module.exports = { validateSearch, sanitize };
+function logEvent(type, detail) {
+  var entry = { ts: Date.now(), date: new Date().toISOString(), type: type, detail: typeof detail === 'string' ? detail.substring(0, 200) : '' };
+  _serverLog.push(entry); if (_serverLog.length > 2000) _serverLog.shift();
+  console.log('[SH_SEC] ' + type + ': ' + entry.detail);
+}
+function getLog() { return _serverLog.slice(); }
+module.exports = { sanitizeInput, sanitizeHTML, detectInjection, isPersonalOrCompanyData, logEvent, getLog };
