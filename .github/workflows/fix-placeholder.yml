@@ -1,7 +1,10 @@
-name: Fix Placeholder
+name: Fix Placeholder v2
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   fix:
@@ -9,10 +12,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download Fixed index.html
         run: |
           curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/bdb1b1ae1e5b48c9a5bd5196d35747b0_index_fixed_clean.html" -o index.html
+          echo "Downloaded file size: $(wc -c < index.html)"
 
       - name: Commit and Push
         run: |
