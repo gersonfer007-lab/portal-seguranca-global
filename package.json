@@ -1,7 +1,7 @@
 {
   "name": "portal-seguranca-global",
-  "version": "1.0.0",
-  "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Background Check",
+  "version": "2.0.0",
+  "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Analise de Localizacao (100% Gratuito)",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0"
