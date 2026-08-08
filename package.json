@@ -1,21 +1,17 @@
 {
   "name": "portal-seguranca-global",
   "version": "2.0.0",
-  "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Analise de Localizacao (100% Gratuito)",
+  "description": "Portal de Seguranca Global v2 - Location-based safety analysis",
   "main": "server.js",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "express": "^4.21.0",
-    "helmet": "^8.0.0",
-    "express-rate-limit": "^7.4.0",
-    "cors": "^2.8.5",
-    "morgan": "^1.10.0",
-    "axios": "^1.7.2"
-  }
+    "express": "^4.18.2"
+  },
+  "license": "MIT"
 }
