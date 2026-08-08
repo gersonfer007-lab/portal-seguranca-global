@@ -3,8 +3,13 @@
   "version": "2.0.0",
   "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Analise de Localizacao (100% Gratuito)",
   "main": "server.js",
-  "engines": { "node": ">=18.0.0" },
-  "scripts": { "start": "node server.js", "dev": "node server.js" },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
   "dependencies": {
     "express": "^4.21.0",
     "helmet": "^8.0.0",
