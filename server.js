@@ -7,13 +7,13 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
-const { sanitizeInput, detectInjection, validateCPF, validateCNPJ, sanitizeHTML, logEvent, getLog } = require('./validation');
+const { sanitizeInput, detectInjection, sanitizeHTML, logEvent, getLog } = require('./validation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================================
-// SECURITY HEADERS (Helmet — substitui meta tags CSP)
+// SECURITY HEADERS (Helmet)
 // ============================================================
 app.use(helmet({
   contentSecurityPolicy: {
@@ -36,7 +36,7 @@ app.use(helmet({
 }));
 
 // ============================================================
-// RATE LIMITING — por IP
+// RATE LIMITING
 // ============================================================
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -62,18 +62,6 @@ const searchLimiter = rateLimit({
   }
 });
 
-const bgCheckLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Limite de consultas Background Check (5/min). Aguarde.', code: 'BG_RATE_LIMIT' },
-  handler: function(req, res, next, options) {
-    logEvent('BG_CHECK_RATE_LIMIT', req.ip + ' — ' + JSON.stringify(req.body).substring(0, 100));
-    res.status(429).json(options.message);
-  }
-});
-
 // ============================================================
 // MIDDLEWARES GERAIS
 // ============================================================
@@ -83,7 +71,6 @@ app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(morgan('combined'));
 app.use(generalLimiter);
 
-// Anti-payload oversized
 app.use(function(req, res, next) {
   if (req.body && JSON.stringify(req.body).length > 5000) {
     logEvent('PAYLOAD_TOO_LARGE', req.ip);
@@ -93,7 +80,7 @@ app.use(function(req, res, next) {
 });
 
 // ============================================================
-// STATIC FILES (HTML, CSS, JS, imagens)
+// STATIC FILES
 // ============================================================
 app.use(express.static(path.join(__dirname), {
   extensions: ['html'],
@@ -106,7 +93,7 @@ app.use(express.static(path.join(__dirname), {
 }));
 
 // ============================================================
-// API: Validar entrada (Search — Portal Principal)
+// API: Validar entrada (Search — Busca por Localizacao)
 // ============================================================
 app.post('/api/search', searchLimiter, function(req, res) {
   var query = req.body.query;
@@ -115,19 +102,16 @@ app.post('/api/search', searchLimiter, function(req, res) {
     return res.status(400).json({ error: 'Campo de busca obrigatorio.', code: 'EMPTY_INPUT' });
   }
 
-  // Tamanho maximo
   if (query.length > 200) {
     logEvent('INPUT_TOO_LONG', req.ip + ' — ' + query.length + ' chars');
     return res.status(400).json({ error: 'Entrada muito longa (max 200 caracteres).', code: 'INPUT_TOO_LONG' });
   }
 
-  // Deteccao de injecao server-side
   if (detectInjection(query)) {
     logEvent('INJECTION_BLOCKED', req.ip + ' — ' + query.substring(0, 80));
     return res.status(403).json({ error: 'Entrada bloqueada por politica de seguranca.', code: 'INJECTION_DETECTED' });
   }
 
-  // Sanitizacao server-side
   var sanitized = sanitizeInput(query);
   if (!sanitized) {
     return res.status(400).json({ error: 'Entrada invalida apos sanitizacao.', code: 'SANITIZED_EMPTY' });
@@ -138,70 +122,9 @@ app.post('/api/search', searchLimiter, function(req, res) {
 });
 
 // ============================================================
-// API: Validar entrada (Background Check)
-// ============================================================
-app.post('/api/background-check', bgCheckLimiter, function(req, res) {
-  var input = req.body.input;
-  var type = req.body.type;
-
-  if (!input || typeof input !== 'string') {
-    logEvent('BG_INVALID_INPUT', req.ip);
-    return res.status(400).json({ error: 'Documento obrigatorio.', code: 'EMPTY_INPUT' });
-  }
-
-  if (!type || !['cpf', 'cnpj', 'nome'].includes(type)) {
-    return res.status(400).json({ error: 'Tipo de busca invalido.', code: 'INVALID_TYPE' });
-  }
-
-  if (input.length > 100) {
-    logEvent('BG_INPUT_TOO_LONG', req.ip);
-    return res.status(400).json({ error: 'Entrada muito longa.', code: 'INPUT_TOO_LONG' });
-  }
-
-  // Deteccao de injecao
-  if (detectInjection(input)) {
-    logEvent('BG_INJECTION_BLOCKED', req.ip + ' — ' + input.substring(0, 80));
-    return res.status(403).json({ error: 'Entrada bloqueada.', code: 'INJECTION_DETECTED' });
-  }
-
-  var sanitized = sanitizeInput(input);
-  var clean = sanitized.replace(/\D/g, '');
-
-  // Validacao de CPF
-  if (type === 'cpf') {
-    if (!validateCPF(clean)) {
-      logEvent('INVALID_CPF', req.ip);
-      return res.status(400).json({ error: 'CPF invalido. Verifique os digitos.', code: 'INVALID_CPF' });
-    }
-  }
-
-  // Validacao de CNPJ
-  if (type === 'cnpj') {
-    if (!validateCNPJ(clean)) {
-      logEvent('INVALID_CNPJ', req.ip);
-      return res.status(400).json({ error: 'CNPJ invalido. Verifique os digitos.', code: 'INVALID_CNPJ' });
-    }
-  }
-
-  // Validacao de nome
-  if (type === 'nome') {
-    if (sanitized.length < 3) {
-      return res.status(400).json({ error: 'Nome muito curto (minimo 3 caracteres).', code: 'NAME_TOO_SHORT' });
-    }
-    if (/\d/.test(sanitized)) {
-      return res.status(400).json({ error: 'Nome nao pode conter numeros.', code: 'NAME_HAS_NUMBERS' });
-    }
-  }
-
-  logEvent('BG_CHECK_VALIDATED', req.ip + ' — tipo:' + type + ' input:' + sanitized.substring(0, 20));
-  return res.json({ validated: true, input: sanitized, type: type, clean: clean });
-});
-
-// ============================================================
-// API: Log de seguranca (somente leitura — admin futuro)
+// API: Log de seguranca
 // ============================================================
 app.get('/api/security-log', function(req, res) {
-  // Em producao, proteger com autenticacao
   var log = getLog();
   res.json({ total: log.length, entries: log.slice(-50) });
 });
@@ -235,14 +158,14 @@ app.use(function(err, req, res, next) {
 app.listen(PORT, function() {
   console.log('');
   console.log('==============================================');
-  console.log('  Portal Seguranca Global — Seguranca Ativa');
+  console.log('  Portal Seguranca Global v2.0 — 100% Free');
   console.log('==============================================');
   console.log('  Porta:       ' + PORT);
   console.log('  Ambiente:    ' + (process.env.NODE_ENV || 'development'));
-  console.log('  Rate Limit:  30 req/min geral, 10/min busca, 5/min background');
-  console.log('  CSP:         Sem unsafe-inline, sem unsafe-eval');
-  console.log('  Helmet:      Ativo (headers de seguranca)');
-  console.log('  Validacao:   Server-side (sanitize + injection + CPF/CNPJ)');
+  console.log('  Rate Limit:  30 req/min geral, 10/min busca');
+  console.log('  Modo:        Busca por Localizacao (Free)');
+  console.log('  CSP:         Ativo (sem unsafe-eval)');
+  console.log('  Helmet:      Ativo');
   console.log('==============================================');
   console.log('  http://localhost:' + PORT);
   console.log('');
