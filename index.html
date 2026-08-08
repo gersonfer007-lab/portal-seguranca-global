@@ -23,13 +23,21 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <!-- Leaflet (defer: nao travam a renderizacao da pagina) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script defer src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <!-- Chart.js -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <!-- jsPDF + html2canvas: carregados SOB DEMANDA (só ao gerar o PDF) -->
-<style>html{background:#0a0e1a}</style>
+<!-- PERFORMANCE: mapa e globo 3D sob demanda -->
+<style>
+.lazy-map { min-height: 360px; background: var(--bg-card); }
+.lazy-globe { display: none; }
+.lazy-globe.active { display: block; }
+.flag-item img, .flag-un-logo img { transition: opacity .3s; }
+.flag-item img[data-src], .flag-un-logo img[data-src] { opacity: 0; }
+.flag-item img.loaded, .flag-un-logo img.loaded { opacity: 1; }
+</style>
 <style>
 :root {
   --bg-primary: #0a0e1a;
@@ -1264,10 +1272,13 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <ul>
         <li>Verificacao de seguranca de enderecos e regioes</li>
         <li>Analise de risco para fins pessoais ou profissionais</li>
-        <li>Consultas de antecedentes dentro dos limites legais</li>
+        <li>Planejamento de viagens e mudancas</li>
       </ul>
 
-      <strong>3. Uso Indevido</strong>
+      <strong>3. O que NAO Fazemos</strong>
+      <p>O Portal Seguranca Global NAO consulta e NAO fornece dados de CPF, CNPJ, RG, identidade de pessoas ou identidade de empresas. Nao oferecemos antecedentes criminais oficiais. Nossos relatorios sao baseados em dados abertos, estatisticas publicas e modelos estatisticos.</p>
+
+      <strong>4. Uso Indevido</strong>
       <p>E expressamente proibido utilizar este sistema para:</p>
       <ul>
         <li>Perseguicao, assedio ou vigilancia ilegal de terceiros</li>
@@ -1276,19 +1287,19 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <li>Qualquer atividade que viole leis locais ou internacionais</li>
       </ul>
 
-      <strong>4. Privacidade e Protecao de Dados</strong>
+      <strong>5. Privacidade e Protecao de Dados</strong>
       <p>Todas as consultas sao registradas e monitoradas. O Portal Seguranca Global opera em conformidade com as leis de protecao de dados (LGPD, GDPR e equivalentes internacionais).</p>
 
-      <strong>5. Limitacao de Responsabilidade</strong>
+      <strong>6. Limitacao de Responsabilidade</strong>
       <p>O Portal Seguranca Global fornece dados de fontes publicas e algoritmos estatisticos. As informacoes nao substituem consultas oficiais a orgaos competentes. O sistema nao se responsabiliza por decisoes tomadas com base nos dados apresentados.</p>
 
-      <strong>6. Consequencias Legais</strong>
+      <strong>7. Consequencias Legais</strong>
       <p>O uso indevido desta plataforma podera resultar em bloqueio permanente do acesso, notificacao as autoridades competentes e responsabilizacao civil e criminal conforme a legislacao vigente.</p>
     </div>
 
     <label class="terms-check" id="terms-label">
       <input type="checkbox" id="terms-checkbox">
-      <span>Declaro que li, compreendi e aceito os Termos de Uso. Estou ciente de que sou inteiramente responsavel pelas buscas realizadas nesta plataforma.</span>
+      <span>Li e aceito os Termos de Uso. Declaro que nao usarei o Portal para consultar CPF, CNPJ, RG ou identidade de pessoas/empresas. Estou ciente de que sou responsavel pelas buscas realizadas.</span>
     </label>
 
     <button class="terms-btn disabled" id="terms-btn" disabled>
@@ -1312,8 +1323,8 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- BARRA DE IDIOMAS MOBILE (aparece so no celular) -->
 <div class="mobile-lang-bar" id="mobile-lang-bar">
-  <div class="mlb-flag active" data-lang="pt"><img src="https://flagcdn.com/w40/br.png" alt="BR"><span>PT</span></div>
-  <div class="mlb-flag" data-lang="en"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>EN</span></div>
+  <div class="mlb-flag active" data-lang="pt-BR"><img src="https://flagcdn.com/w40/br.png" alt="BR"><span>PT</span></div>
+  <div class="mlb-flag" data-lang="en-US"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>EN</span></div>
   <div class="mlb-flag" data-lang="es"><img src="https://flagcdn.com/w40/es.png" alt="ES"><span>ES</span></div>
   <div class="mlb-flag" data-lang="fr"><img src="https://flagcdn.com/w40/fr.png" alt="FR"><span>FR</span></div>
   <div class="mlb-flag" data-lang="de"><img src="https://flagcdn.com/w40/de.png" alt="DE"><span>DE</span></div>
@@ -1336,7 +1347,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- BANDEIRAS LATERAIS FIXAS (descem com a pagina toda) -->
 <!-- ESQUERDA (Americas + Europa) -->
-<div class="flags-column left">
+<div class="flags-column left" id="flags-left">
   <div class="flag-un-logo"><img loading="lazy" decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
@@ -1377,7 +1388,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 </div>
 
 <!-- DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
-<div class="flags-column right">
+<div class="flags-column right" id="flags-right">
   <div class="flag-un-logo"><img loading="lazy" decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
@@ -1433,7 +1444,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       Analisar
     </button>
   </div>
-  <p class="search-hint">Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd> | <kbd>Champs-Elysees, Paris</kbd></p>
+  <p class="search-hint">Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd> | <kbd>Champs-Elysees, Paris</kbd> | <kbd>coordenadas GPS</kbd></p>
 
   <!-- OPCAO DE PESQUISA PELO MAPA -->
   <div class="search-divider"><span id="search-divider-text">ou</span></div>
@@ -1450,7 +1461,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 </section>
 
 <!-- LOADING -->
-<div class="loading-overlay" id="loading">
+<div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loading-text">Coletando dados de inteligencia...</div>
 </div>
@@ -1462,7 +1473,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="result-header">
     <div class="result-location">
       <h2 id="result-address">--</h2>
-      <p id="result-meta">--</p>
+      <p id="result-meta" data-i18n="resultMeta">--</p>
     </div>
     <div class="result-actions">
       <button class="btn btn-primary" id="btn-pdf">
@@ -1493,10 +1504,14 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
           <button class="btn btn-outline" id="btn-markers" style="padding:4px 10px;font-size:.72rem;">Pontos</button>
         </div>
       </div>
-      <div id="map"></div>
-      <div id="cesium-globe">
-        <div class="globe-loading" id="globe-loading">Carregando Google Earth 3D...</div>
-        <iframe id="earth-iframe" allow="accelerometer; gyroscope" loading="lazy"></iframe>
+      <div id="map" class="lazy-map"></div>
+      <div id="cesium-globe" class="lazy-globe">
+        <div class="globe-placeholder" id="globe-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:360px;background:var(--bg-card);color:var(--text-secondary);gap:12px;border-radius:12px;">
+          <span style="font-size:2rem;">&#127760;</span>
+          <span>Google Earth 3D</span>
+          <button type="button" id="btn-load-globe" style="padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Carregar globo 3D</button>
+        </div>
+        <iframe id="earth-iframe" allow="accelerometer; gyroscope" loading="lazy" style="display:none;"></iframe>
       </div>
       <div class="globe-info-bar" id="globe-info">
         <span>&#127760; Globo 3D Interativo</span>
@@ -1618,7 +1633,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <div class="ad-banner-content">
           <div class="ad-banner-tag">&#128226; Espaco Publicitario</div>
           <h4>Proteja sua Familia com Tecnologia de Ponta</h4>
-          <p>Alarmes monitorados, cercas eletricas e cameras com reconhecimento facial. Orcamento gratis para moradores da regiao analisada.</p>
+          <p>Alarmes monitorados, cercas eletricas e cameras de seguranca. Orcamento gratis para moradores da regiao analisada.</p>
         </div>
         <button class="btn btn-primary">Solicitar Orcamento</button>
       </div>
