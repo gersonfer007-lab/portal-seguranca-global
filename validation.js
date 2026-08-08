@@ -89,7 +89,7 @@ function isPersonalOrCompanyData(str) {
   var rgPatterns = [/\brg\b/i, /\bidentidade\b/i, /\bregistro geral\b/i, /\bcnpj\b/i, /\bcpf\b/i];
   for (var j = 0; j < rgPatterns.length; j++) {
     if (rgPatterns[j].test(str)) {
-      logEvent('PERSONAL_DATA_BLOCED', str.substring(0, 50));
+      logEvent('PERSONAL_DATA_BLOCKED', str.substring(0, 50));
       return true;
     }
   }

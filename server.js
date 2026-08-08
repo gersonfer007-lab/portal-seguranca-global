@@ -113,13 +113,13 @@ app.post('/api/search', searchLimiter, function(req, res) {
   }
 
   if (isPersonalOrCompanyData(query)) {
-    logEvent('PERSONAL_DATA_BLOCKED', req.ip + ' — campo vazio');
+    logEvent('PERSONAL_DATA_BLOCKED', req.ip + ' — ' + query.substring(0, 50));
     return res.status(403).json({ error: 'Nao consultamos CPF, CNPJ, RG ou identidade. Use endereco ou CEP.', code: 'PERSONAL_DATA_BLOCKED' });
   }
 
   var sanitized = sanitizeInput(query);
   if (!sanitized) {
-    return res.status(400).json({ error: 'Entrada invalida apos sanitization.', code: 'SANITIZED_EMPTY' });
+    return res.status(400).json({ error: 'Entrada invalida apos sanitizacao.', code: 'SANITIZED_EMPTY' });
   }
 
   logEvent('SEARCH_VALIDATED', req.ip + ' — ' + sanitized.substring(0, 50));
@@ -164,14 +164,14 @@ app.listen(PORT, function() {
   console.log('');
   console.log('==============================================');
   console.log('  Portal Seguranca Global v2.0 — 100% Free');
-  console.log('===============================================');
+  console.log('==============================================');
   console.log('  Porta:       ' + PORT);
   console.log('  Ambiente:    ' + (process.env.NODE_ENV || 'development'));
   console.log('  Rate Limit:  30 req/min geral, 10/min busca');
   console.log('  Modo:        Busca por Localizacao (Free)');
   console.log('  CSP:         Ativo (sem unsafe-eval)');
   console.log('  Helmet:      Ativo');
-  console.log('===============================================');
+  console.log('==============================================');
   console.log('  http://localhost:' + PORT);
   console.log('');
 
