@@ -1,0 +1,29 @@
+name: Commit PSG v2 index.html
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download index.html v2
+        run: |
+          curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/2b42505904254190a0c60d2610785779_index.html" -o index.html
+          echo "Downloaded file size: $(wc -c < index.html) bytes"
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "feat: PSG v2.0 - optimized index.html (lazy map/globe, no CPF/CNPJ, terms)"
+          git push
