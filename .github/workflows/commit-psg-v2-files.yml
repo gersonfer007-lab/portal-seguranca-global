@@ -1,0 +1,34 @@
+name: Commit PSG v2.0 app.js and package-lock.json
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download app.js v2
+        run: |
+          curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/a95c54379b004997887491e5947c4948_app.js" -o app.js
+          echo "Downloaded app.js size: $(wc -c < app.js) bytes"
+
+      - name: Download package-lock.json v2
+        run: |
+          curl -L "https://customer-assets-m6fa6gv7.emergentagent.net/wingman/dedf7f69-4e6e-48e8-839f-3d2ce1ac8693/attachments/b169c80cbdcb4f7a88ea82a88f59a54d_package-lock.json" -o package-lock.json
+          echo "Downloaded package-lock.json size: $(wc -c < package-lock.json) bytes"
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.js package-lock.json
+          git diff --cached --quiet || git commit -m "feat: PSG v2.0 Free Mode - update app.js and package-lock.json"
+          git push
