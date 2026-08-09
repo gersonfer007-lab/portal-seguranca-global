@@ -948,8 +948,8 @@ function openShare() {
   var ui = shareI18n[lang] || shareI18n.pt;
   var scoreText = (currentData.safetyScore >= 70 ? ui.safe : currentData.safetyScore >= 40 ? ui.mod : ui.crit);
   var msg = "*" + ui.subject + "*\n\n"
-    + "\ud83d\udccd " + currentData.address.fullAddress + "\n"
-    + "\ud83d\udee1\ufe0f " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
+    + "📍 " + currentData.address.fullAddress + "\n"
+    + "🛡️ " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
     + ui.cta + "\n"
     + SHARE_SITE_URL + "?q=" + encodeURIComponent(currentData.address.fullAddress);
 
@@ -1059,6 +1059,202 @@ function showTermsModal() { document.getElementById('terms-overlay').classList.r
   }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileUX); }
   else { initMobileUX(); }
+})();
+
+// ============================================================
+// MANUAL MULTILINGUE
+// Abre no idioma do pais clicado na bandeira
+// ============================================================
+(function() {
+  var MANUAL_I18N = {
+    pt: {
+      title: 'Manual de Instrucoes',
+      steps: [
+        { h: '1. Digite um local', p: 'Use CEP, endereco completo ou coordenadas GPS no campo de busca.' },
+        { h: '2. Escolha no mapa (opcional)', p: 'Clique no botao do mapa para selecionar um ponto com o toque.' },
+        { h: '3. Veja o Safety Score', p: 'O sistema calcula uma nota de seguranca baseada em dados abertos e estatisticas.' },
+        { h: '4. Compartilhe ou baixe o PDF', p: 'Envie o relatorio por WhatsApp, email ou faca o download gratuito.' },
+        { h: '5. Importante', p: 'Nao consultamos CPF, CNPJ, RG ou dados pessoais. Use apenas enderecos.' }
+      ]
+    },
+    en: {
+      title: 'User Manual',
+      steps: [
+        { h: '1. Enter a location', p: 'Use ZIP code, full address or GPS coordinates in the search field.' },
+        { h: '2. Pick on the map (optional)', p: 'Click the map button to select a point by touch.' },
+        { h: '3. See the Safety Score', p: 'The system calculates a safety score based on open data and statistics.' },
+        { h: '4. Share or download PDF', p: 'Send the report via WhatsApp, email or download it for free.' },
+        { h: '5. Important', p: 'We do not query SSN, tax ID, ID cards or personal data. Use addresses only.' }
+      ]
+    },
+    es: {
+      title: 'Manual de Uso',
+      steps: [
+        { h: '1. Escriba un lugar', p: 'Use codigo postal, direccion completa o coordenadas GPS en el campo de busqueda.' },
+        { h: '2. Elija en el mapa (opcional)', p: 'Toque el boton del mapa para seleccionar un punto.' },
+        { h: '3. Vea la Puntuacion de Seguridad', p: 'El sistema calcula una puntuacion basada en datos abiertos y estadisticas.' },
+        { h: '4. Comparta o descargue el PDF', p: 'Envie el informe por WhatsApp, email o descarguelo gratis.' },
+        { h: '5. Importante', p: 'No consultamos DNI, NIF, CIF ni datos personales. Use solo direcciones.' }
+      ]
+    },
+    fr: {
+      title: 'Manuel d\'Utilisation',
+      steps: [
+        { h: '1. Saisissez un lieu', p: 'Utilisez le code postal, l\'adresse complete ou les coordonnees GPS.' },
+        { h: '2. Choisir sur la carte (facultatif)', p: 'Touchez le bouton de la carte pour selectionner un point.' },
+        { h: '3. Consultez le Safety Score', p: 'Le systeme calcule un score de securite base sur des donnees ouvertes.' },
+        { h: '4. Partagez ou telechargez le PDF', p: 'Envoyez le rapport par WhatsApp, email ou telechargez-le gratuitement.' },
+        { h: '5. Important', p: 'Nous ne consultons pas les numeros de securite sociale, SIRET ou donnees personnelles.' }
+      ]
+    },
+    de: {
+      title: 'Bedienungsanleitung',
+      steps: [
+        { h: '1. Ort eingeben', p: 'Verwenden Sie Postleitzahl, vollstandige Adresse oder GPS-Koordinaten.' },
+        { h: '2. Auf Karte wahlen (optional)', p: 'Tippen Sie auf die Karte, um einen Punkt auszuwahlen.' },
+        { h: '3. Safety Score anzeigen', p: 'Das System berechnet einen Sicherheitswert basierend auf offenen Daten.' },
+        { h: '4. Teilen oder PDF herunterladen', p: 'Senden Sie den Bericht uber WhatsApp, E-Mail oder laden Sie ihn kostenlos herunter.' },
+        { h: '5. Wichtig', p: 'Wir fragen keine Sozialversicherungsnummern, Steuernummern oder personenbezogene Daten ab.' }
+      ]
+    },
+    it: {
+      title: 'Manuale d\'Uso',
+      steps: [
+        { h: '1. Inserisci un luogo', p: 'Usa CAP, indirizzo completo o coordinate GPS nel campo di ricerca.' },
+        { h: '2. Scegli sulla mappa (opzionale)', p: 'Tocca il pulsante mappa per selezionare un punto.' },
+        { h: '3. Vedi il Safety Score', p: 'Il sistema calcola un punteggio di sicurezza basato su dati aperti.' },
+        { h: '4. Condividi o scarica il PDF', p: 'Invia il rapporto via WhatsApp, email o scaricalo gratuitamente.' },
+        { h: '5. Importante', p: 'Non consultiamo codici fiscali, partite IVA o dati personali. Usa solo indirizzi.' }
+      ]
+    },
+    zh: {
+      title: '使用手册',
+      steps: [
+        { h: '1. 输入地点', p: '在搜索框中输入邮政编码、完整地址或GPS坐标。' },
+        { h: '2. 在地图上选择（可选）', p: '点击地图按钮选择地点。' },
+        { h: '3. 查看安全评分', p: '系统根据公开数据和统计数据计算安全评分。' },
+        { h: '4. 分享或下载PDF', p: '通过WhatsApp、邮件发送报告或免费下载。' },
+        { h: '5. 重要提示', p: '我们不查询身份证、税号或个人数据。请仅使用地址。' }
+      ]
+    },
+    ja: {
+      title: '取扱説明書',
+      steps: [
+        { h: '1. 場所を入力', p: '郵便番号、住所、またはGPS座標を検索欄に入力してください。' },
+        { h: '2. 地図で選択（任意）', p: '地図ボタンをタップしてポイントを選択します。' },
+        { h: '3. セーフティスコアを見る', p: 'システムは公開データと統計に基づいて安全スコアを計算します。' },
+        { h: '4. 共有またはPDFダウンロード', p: 'WhatsApp、メールで送信するか、無料でダウンロードしてください。' },
+        { h: '5. 重要', p: '個人番号、法人番号、個人データは照会しません。住所のみをご利用ください。' }
+      ]
+    },
+    ar: {
+      title: 'دليل الاستخدام',
+      steps: [
+        { h: '1. أدخل موقعًا', p: 'استخدم الرمز البريدي أو العنوان الكامل أو إحداثيات GPS في حقل البحث.' },
+        { h: '2. اختر على الخريطة (اختياري)', p: 'اضغط على زر الخريطة لتحديد نقطة.' },
+        { h: '3. شاهد درجة الأمان', p: 'يحسب النظام درجة أمان بناءً على البيانات المفتوحة والإحصائيات.' },
+        { h: '4. شارك أو حمّل PDF', p: 'أرسل التقرير عبر واتساب أو البريد الإلكتروني أو حمّله مجانًا.' },
+        { h: '5. مهم', p: 'لا نستعلم عن أرقام الهوية أو الضريبة أو البيانات الشخصية. استخدم العناوين فقط.' }
+      ]
+    },
+    ru: {
+      title: 'Руководство пользователя',
+      steps: [
+        { h: '1. Введите место', p: 'Используйте почтовый индекс, полный адрес или GPS-координаты в поле поиска.' },
+        { h: '2. Выберите на карте (необязательно)', p: 'Нажмите кнопку карты, чтобы выбрать точку.' },
+        { h: '3. Посмотрите Safety Score', p: 'Система рассчитывает оценку безопасности на основе открытых данных.' },
+        { h: '4. Поделитесь или скачайте PDF', p: 'Отправьте отчет через WhatsApp, email или скачайте бесплатно.' },
+        { h: '5. Важно', p: 'Мы не запрашиваем ИНН, ОГРН или персональные данные. Используйте только адреса.' }
+      ]
+    },
+    ko: {
+      title: '사용 설명서',
+      steps: [
+        { h: '1. 장소 입력', p: '우편번호, 전체 주소 또는 GPS 좌표를 검색창에 입력하세요.' },
+        { h: '2. 지도에서 선택(선택사항)', p: '지도 버튼을 눌러 지점을 선택하세요.' },
+        { h: '3. 안전 점수 보기', p: '시스템은 공개 데이터와 통계를 기반으로 안전 점수를 계산합니다.' },
+        { h: '4. 공유 또는 PDF 다운로드', p: 'WhatsApp, 이메일로 보고서를 본거나 묣으로 다운로드하세요.' },
+        { h: '5. 중요', p: '주민등록번호, 사업자번호 또는 개인 데이터는 조회하지 않습니다. 주소만 사용하세요.' }
+      ]
+    },
+    hi: {
+      title: 'उपयोगकर्ता मार्गदर्शिका',
+      steps: [
+        { h: '1. स्थान दर्ज करें', p: 'खोज बॉक्स में पिन कोड, पूरा पता या GPS निर्देशांक का उपयोग करें।' },
+        { h: '2. नक्शे पर चुनें (वैकल्पिक)', p: 'बिंदु चुनने के लिए नक्शा बटन दबाएं।' },
+        { h: '3. सुरक्षा स्कोर देखें', p: 'सिस्टम खुले डेटा और आंकड़ों के आधार पर सुरक्षा स्कोर की गणना करता है।' },
+        { h: '4. साझा करें या PDF डाउनलोड करें', p: 'WhatsApp, ईमेल के माध्यम से रिपोर्ट भेजें या मुफ्त में डाउनलोड करें।' },
+        { h: '5. महत्वपूर्ण', p: 'हम आधार, पैन या व्यक्तिगत डेटा की जांच नहीं करते। केवल पते का उपयोग करें।' }
+      ]
+    }
+  };
+
+  function renderManual(lang) {
+    lang = MANUAL_I18N[lang] ? lang : 'pt';
+    var data = MANUAL_I18N[lang];
+    var title = document.getElementById('manual-title');
+    var content = document.getElementById('manual-content');
+    var select = document.getElementById('manual-lang');
+    if (title) title.textContent = data.title;
+    if (select) select.value = lang;
+    if (!content) return;
+    content.innerHTML = '';
+    data.steps.forEach(function(step, idx) {
+      var div = document.createElement('div');
+      div.className = 'manual-step';
+      div.innerHTML = '<div class="manual-step-num">' + (idx + 1) + '</div>' +
+        '<div class="manual-step-text"><h3>' + escapeHtml(step.h) + '</h3><p>' + escapeHtml(step.p) + '</p></div>';
+      content.appendChild(div);
+    });
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function manualLangFromFlag(flagLang) {
+    var map = {
+      'pt-BR': 'pt', 'en-US': 'en', 'es': 'es', 'fr': 'fr', 'de': 'de',
+      'it': 'it', 'ja': 'ja', 'zh': 'zh', 'ar': 'ar', 'ru': 'ru', 'ko': 'ko', 'hi': 'hi'
+    };
+    return map[flagLang] || flagLang;
+  }
+
+  function bindManualEvents() {
+    var select = document.getElementById('manual-lang');
+    if (select) {
+      select.addEventListener('change', function() { renderManual(select.value); });
+    }
+
+    // Quando o usuario clica em uma bandeira lateral
+    var flags = document.querySelectorAll('.flags-column .flag-item');
+    flags.forEach(function(flag) {
+      flag.addEventListener('click', function() {
+        var lang = flag.getAttribute('data-lang');
+        renderManual(manualLangFromFlag(lang));
+      });
+    });
+
+    // Quando o usuario clica na barra de idiomas mobile
+    var mlbFlags = document.querySelectorAll('.mobile-lang-bar .mlb-flag');
+    mlbFlags.forEach(function(flag) {
+      flag.addEventListener('click', function() {
+        var lang = flag.getAttribute('data-lang');
+        renderManual(manualLangFromFlag(lang));
+      });
+    });
+  }
+
+  function initManual() {
+    bindManualEvents();
+    var select = document.getElementById('manual-lang');
+    var initialLang = (window.PSG_LANG || 'pt').replace(/-BR|-US/g, '');
+    if (select && MANUAL_I18N[select.value]) initialLang = select.value;
+    renderManual(MANUAL_I18N[initialLang] ? initialLang : 'pt');
+  }
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initManual); }
+  else { initManual(); }
 })();
 
 // ============================================================
