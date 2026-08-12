@@ -1,4 +1,12 @@
 // ============================================================
+// CONFIGURACAO DO BACKEND
+// Troque pela URL absoluta do backend no Render
+// Exemplo: 'https://portal-seguranca-global.onrender.com'
+// Deixe vazio ('') para usar chamadas relativas (mesmo dominio)
+// ============================================================
+const PSG_BACKEND_URL = 'https://portal-seguranca-global.onrender.com';
+
+// ============================================================
 // SECURITY MODULE — SH_SECURITY (IIFE)
 // ============================================================
 const SH_SECURITY = (function() {
@@ -276,7 +284,7 @@ function observeMapLazy() {
 }
 
 function keepBackendAwake() {
-  var url = (window.PSG_BACKEND_URL || '') + '/api/health';
+  var url = (typeof PSG_BACKEND_URL !== 'undefined' ? PSG_BACKEND_URL : '') + '/api/health';
   function ping() {
     fetch(url).then(function(r) { return r.json(); }).then(function() {
       console.log('[KEEPALIVE] backend acordado');
@@ -408,7 +416,8 @@ async function handleSearch() {
 
   // Server-side validation (segunda camada — segura)
   try {
-    var valRes = await fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: query }) });
+    var backendUrl = (typeof PSG_BACKEND_URL !== 'undefined' ? PSG_BACKEND_URL : '');
+    var valRes = await fetch(backendUrl + '/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: query }) });
     var valData = await valRes.json();
     if (!valRes.ok) { alert(valData.error || 'Erro de validacao no servidor.'); return; }
   } catch(serverErr) {
