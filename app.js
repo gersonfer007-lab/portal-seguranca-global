@@ -796,6 +796,8 @@ function randomRecentDate() {
 // ============================================================
 function renderDashboard(data) {
   document.getElementById('main-content').classList.add('active');
+  if (!map) { try { initMap(); } catch(e) { console.error('[MAP] initMap falhou:', e); } }
+  if (map) map.invalidateSize();
   document.getElementById('result-address').textContent = data.address.fullAddress;
   document.getElementById('result-meta').textContent = 'Lat ' + data.lat.toFixed(4) + ' | Lng ' + data.lng.toFixed(4) + (data.address.cep ? ' | CEP ' + data.address.cep : '') + ' | Raio de analise: 1.5km';
   try {
@@ -804,11 +806,13 @@ function renderDashboard(data) {
     heatLayer.setLatLngs(data.heatPoints);
     setTimeout(function() { try { map.addLayer(heatLayer); map.invalidateSize(); } catch(e) {} }, 800);
   } catch(e) {}
-  markersLayer.clearLayers();
-  data.markerPoints.forEach(p => {
-    markersLayer.addLayer(L.circleMarker([p.lat, p.lng], { radius: 5, color: '#ef4444', fillColor: '#ef4444', fillOpacity: .7, weight: 1 }).bindPopup('<b>' + p.type + '</b><br>' + p.date));
-  });
-  L.marker([data.lat, data.lng]).addTo(markersLayer).bindPopup('<b>Local pesquisado</b><br>' + data.address.fullAddress).openPopup();
+  if (markersLayer) {
+    markersLayer.clearLayers();
+    data.markerPoints.forEach(p => {
+      markersLayer.addLayer(L.circleMarker([p.lat, p.lng], { radius: 5, color: '#ef4444', fillColor: '#ef4444', fillOpacity: .7, weight: 1 }).bindPopup('<b>' + p.type + '</b><br>' + p.date));
+    });
+    L.marker([data.lat, data.lng]).addTo(markersLayer).bindPopup('<b>Local pesquisado</b><br>' + data.address.fullAddress).openPopup();
+  }
   const circumference = 2 * Math.PI * 78;
   const offset = circumference - (data.safetyScore / 100) * circumference;
   const scoreColor = data.safetyScore >= 70 ? 'var(--green)' : data.safetyScore >= 40 ? 'var(--yellow)' : 'var(--red)';
@@ -1029,12 +1033,12 @@ function hideLoading() { document.getElementById('loading-overlay').classList.ad
 function termsAccepted() { return localStorage.getItem('psg_terms_accepted') === 'true'; }
 function acceptTerms() {
   localStorage.setItem('psg_terms_accepted', 'true');
-  document.getElementById('terms-overlay').classList.add('hidden');
+  document.getElementById('terms-overlay').classList.remove('active');
   if (window._pendingSearch) { window._pendingSearch = false; handleSearch(); }
   if (window._pendingMapSearch) { window._pendingMapSearch = false; openMapSearch(); }
   if (window._pendingGpsSearch) { window._pendingGpsSearch = false; searchByGps(); }
 }
-function showTermsModal() { document.getElementById('terms-overlay').classList.remove('hidden'); }
+function showTermsModal() { var el = document.getElementById('terms-overlay'); el.classList.remove('hidden'); el.classList.add('active'); }
 
 // ============================================================
 // MOBILE UX IMPROVEMENTS
