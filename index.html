@@ -874,6 +874,15 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-stat { background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; }
 #pdf-report .pdf-stat .val { font-size: 24px; font-weight: 800; color: #1a2235; }
 #pdf-report .pdf-stat .lbl { font-size: 11px; color: #666; text-transform: uppercase; }
+#pdf-report .pdf-force-box { display: flex; gap: 16px; align-items: stretch; margin-top: 12px; }
+#pdf-report .pdf-force { flex: 1; background: #f3f4f6; border-radius: 8px; padding: 16px; text-align: center; }
+#pdf-report .pdf-force .badge { width: 48px; height: 48px; margin: 0 auto 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 13px; }
+#pdf-report .pdf-force .pm { background: linear-gradient(135deg,#1a4d8f,#3b82f6); }
+#pdf-report .pdf-force .pc { background: linear-gradient(135deg,#7c2d12,#f97316); }
+#pdf-report .pdf-force .name { font-size: 12px; font-weight: 700; color: #1a2235; margin-bottom: 4px; }
+#pdf-report .pdf-force .city { font-size: 11px; color: #666; }
+#pdf-report .pdf-flag { width: 40px; height: 30px; border-radius: 4px; object-fit: cover; margin-right: 12px; vertical-align: middle; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+#pdf-report .pdf-header-row { display: flex; align-items: center; margin-bottom: 8px; }
 #pdf-report .pdf-footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #999; text-align: center; }
 
 /* RESPONSIVE */
@@ -1643,11 +1652,31 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- PDF Report Template (hidden) -->
 <div id="pdf-report">
-  <h1 id="pdf-title">Relatorio de Seguranca</h1>
-  <div class="pdf-subtitle" id="pdf-address">--</div>
+  <div class="pdf-header-row">
+    <img id="pdf-country-flag" class="pdf-flag" src="" alt="Bandeira" style="display:none;">
+    <div>
+      <h1 id="pdf-title">Relatorio de Seguranca</h1>
+      <div class="pdf-subtitle" id="pdf-address">--</div>
+    </div>
+  </div>
   <div class="pdf-score-box">
     <div class="pdf-score-number" id="pdf-score">--</div>
     <div class="pdf-score-label" id="pdf-score-label">Safety Score</div>
+  </div>
+  <div class="pdf-section">
+    <h3>Forcas de Seguranca</h3>
+    <div class="pdf-force-box">
+      <div class="pdf-force">
+        <div class="badge pm">PM</div>
+        <div class="name">Policia Militar</div>
+        <div class="city" id="pdf-pm-city">--</div>
+      </div>
+      <div class="pdf-force">
+        <div class="badge pc">PC</div>
+        <div class="name">Policia Civil</div>
+        <div class="city" id="pdf-pc-city">--</div>
+      </div>
+    </div>
   </div>
   <div class="pdf-section">
     <h3>Indicadores Principais</h3>

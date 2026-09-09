@@ -435,12 +435,12 @@ async function handleSearch() {
       try {
         const res = await fetch('https://viacep.com.br/ws/' + cepClean + '/json/');
         const data = await res.json();
-        if (!data.erro) { addressData = { street: data.logradouro || '', neighborhood: data.bairro || '', city: data.localidade || '', state: data.uf || '', country: 'Brasil', cep: data.cep, fullAddress: [data.logradouro, data.bairro, data.localidade, data.uf, 'Brasil'].filter(Boolean).join(', ') }; }
+        if (!data.erro) { addressData = { street: data.logradouro || '', neighborhood: data.bairro || '', city: data.localidade || '', state: data.uf || '', country: 'Brasil', country_code: 'br', cep: data.cep, fullAddress: [data.logradouro, data.bairro, data.localidade, data.uf, 'Brasil'].filter(Boolean).join(', ') }; }
       } catch(e) {}
     }
-    if (!addressData && /^\d{5}(-\d{4})?$/.test(query.trim())) { addressData = { street: '', neighborhood: '', city: '', state: '', country: 'USA', cep: query.trim(), fullAddress: query.trim() + ', United States' }; }
-    if (!addressData && /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(query.trim())) { addressData = { street: '', neighborhood: '', city: '', state: '', country: 'UK', cep: query.trim(), fullAddress: query.trim() + ', United Kingdom' }; }
-    if (!addressData) { addressData = { street: query, neighborhood: '', city: '', state: '', country: '', cep: '', fullAddress: query }; }
+    if (!addressData && /^\d{5}(-\d{4})?$/.test(query.trim())) { addressData = { street: '', neighborhood: '', city: '', state: '', country: 'USA', country_code: 'us', cep: query.trim(), fullAddress: query.trim() + ', United States' }; }
+    if (!addressData && /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(query.trim())) { addressData = { street: '', neighborhood: '', city: '', state: '', country: 'UK', country_code: 'gb', cep: query.trim(), fullAddress: query.trim() + ', United Kingdom' }; }
+    if (!addressData) { addressData = { street: query, neighborhood: '', city: '', state: '', country: '', country_code: '', cep: '', fullAddress: query }; }
     updateLoading('Geolocalizando endereco...');
     const geo = await geocodeAddress(addressData, query);
     if (!geo) { throw new Error('Endereco nao encontrado. Tente incluir a cidade e o pais (ex.: Av. Brasil, Maringa, PR, Brasil).'); }
@@ -449,6 +449,7 @@ async function handleSearch() {
     if (!addressData.city && geo.city) { addressData.city = geo.city; }
     if (!addressData.state && geo.state) { addressData.state = geo.state; }
     if (!addressData.country && geo.country) { addressData.country = geo.country; }
+    if (!addressData.country_code && geo.country_code) { addressData.country_code = geo.country_code; }
     updateLoading('Analisando dados de criminalidade...'); await sleep(600);
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
@@ -570,6 +571,7 @@ async function mapselReverseGeocode(lat, lng) {
       city: a.city || a.town || a.village || a.municipality || a.county || '',
       state: a.state || a.region || '',
       country: a.country || '',
+      country_code: a.country_code || '',
       cep: a.postcode || '',
       fullAddress: (data && data.display_name) ? data.display_name : ''
     };
@@ -579,7 +581,7 @@ async function mapselReverseGeocode(lat, lng) {
 
   // Sem resposta do servico: usa as coordenadas mesmo assim
   if (!addressData || !addressData.fullAddress) {
-    addressData = addressData || { street: '', neighborhood: '', city: '', state: '', country: '', cep: '' };
+    addressData = addressData || { street: '', neighborhood: '', city: '', state: '', country: '', country_code: '', cep: '' };
     addressData.fullAddress = 'Local no mapa (' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')';
   }
 
@@ -672,12 +674,13 @@ async function analyzeCoords(lat, lng, addressData) {
           city: a.city || a.town || a.village || a.municipality || a.county || '',
           state: a.state || a.region || '',
           country: a.country || '',
+          country_code: a.country_code || '',
           cep: a.postcode || '',
           fullAddress: (data && data.display_name) ? data.display_name : ''
         };
       } catch (e) { addressData = null; }
       if (!addressData || !addressData.fullAddress) {
-        addressData = { street: '', neighborhood: '', city: '', state: '', country: '', cep: '',
+        addressData = { street: '', neighborhood: '', city: '', state: '', country: '', country_code: '', cep: '',
           fullAddress: 'Local no mapa (' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')' };
       }
     }
@@ -719,7 +722,8 @@ async function geocodeQuery(q) {
       displayName: j[0].display_name || q,
       city: a.city || a.town || a.village || a.municipality || '',
       state: a.state || '',
-      country: a.country || ''
+      country: a.country || '',
+      country_code: a.country_code || ''
     };
   } catch (e) { return null; }
 }
@@ -892,6 +896,17 @@ async function _doGeneratePDF() {
     return;
   }
   showLoading('Gerando relatorio PDF...');
+  var countryCode = (currentData.address.country_code || '').toLowerCase();
+  var countryName = currentData.address.country || 'Brasil';
+  var city = currentData.address.city || currentData.address.town || currentData.address.village || currentData.address.municipality || currentData.address.county || '';
+  var state = currentData.address.state || '';
+  var localLabel = [city, state].filter(Boolean).join(' - ') || countryName;
+  var flagUrl = countryCode ? 'https://flagcdn.com/64x48/' + countryCode + '.png' : '';
+  var flagImg = document.getElementById('pdf-country-flag');
+  if (flagUrl) { flagImg.src = flagUrl; flagImg.style.display = 'inline-block'; }
+  else { flagImg.style.display = 'none'; }
+  document.getElementById('pdf-pm-city').textContent = localLabel;
+  document.getElementById('pdf-pc-city').textContent = localLabel;
   document.getElementById('pdf-title').textContent = 'Relatorio de Seguranca - Portal Seguranca Global';
   document.getElementById('pdf-address').textContent = currentData.address.fullAddress + ' | ' + new Date().toLocaleDateString('pt-BR');
   document.getElementById('pdf-score').textContent = currentData.safetyScore;
