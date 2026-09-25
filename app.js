@@ -1102,7 +1102,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Escolha no mapa (opcional)', p: 'Clique no botao do mapa para selecionar um ponto com o toque.' },
         { h: '3. Veja o Safety Score', p: 'O sistema calcula uma nota de seguranca baseada em dados abertos e estatisticas.' },
         { h: '4. Compartilhe ou baixe o PDF', p: 'Envie o relatorio por WhatsApp, email ou faca o download gratuito.' },
-        { h: '5. Importante', p: 'Nao consultamos CPF, CNPJ, RG ou dados pessoais. Use apenas enderecos.' }
+        { h: '5. Importante', p: 'Nao consultamos CPF, CNPJ, RG ou dados pessoais. Use apenas enderecos.' },
+        { h: '6. Caminhada Segura', p: 'Na pagina Caminhada Segura, toque em iniciar, envie o link por WhatsApp e o responsavel acompanha sua rota em tempo real, com botao de emergencia.' },
+        { h: '7. Central de Noticias', p: 'A pagina Noticias traz artigos e manchetes atualizadas automaticamente sobre seguranca: camaras, protecao pessoal, pets, bikes, motos e carros.' }
       ]
     },
     en: {
@@ -1112,7 +1114,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Pick on the map (optional)', p: 'Click the map button to select a point by touch.' },
         { h: '3. See the Safety Score', p: 'The system calculates a safety score based on open data and statistics.' },
         { h: '4. Share or download PDF', p: 'Send the report via WhatsApp, email or download it for free.' },
-        { h: '5. Important', p: 'We do not query SSN, tax ID, ID cards or personal data. Use addresses only.' }
+        { h: '5. Important', p: 'We do not query SSN, tax ID, ID cards or personal data. Use addresses only.' },
+        { h: '6. Safe Walk', p: 'On the Safe Walk page, tap start, send the link via WhatsApp and a guardian follows your route in real time, with an emergency button.' },
+        { h: '7. News Center', p: 'The News page brings articles and automatically updated headlines about security: cameras, personal protection, pets, bikes, motorcycles and cars.' }
       ]
     },
     es: {
@@ -1122,7 +1126,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Elija en el mapa (opcional)', p: 'Toque el boton del mapa para seleccionar un punto.' },
         { h: '3. Vea la Puntuacion de Seguridad', p: 'El sistema calcula una puntuacion basada en datos abiertos y estadisticas.' },
         { h: '4. Comparta o descargue el PDF', p: 'Envie el informe por WhatsApp, email o descarguelo gratis.' },
-        { h: '5. Importante', p: 'No consultamos DNI, NIF, CIF ni datos personales. Use solo direcciones.' }
+        { h: '5. Importante', p: 'No consultamos DNI, NIF, CIF ni datos personales. Use solo direcciones.' },
+        { h: '6. Caminata Segura', p: 'En la pagina Caminata Segura, toque iniciar, envie el enlace por WhatsApp y un responsable sigue su ruta en tiempo real, con boton de emergencia.' },
+        { h: '7. Central de Noticias', p: 'La pagina Noticias trae articulos y titulares actualizados automaticamente: camaras, proteccion personal, mascotas, bicis, motos y coches.' }
       ]
     },
     fr: {
@@ -1132,7 +1138,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Choisir sur la carte (facultatif)', p: 'Touchez le bouton de la carte pour selectionner un point.' },
         { h: '3. Consultez le Safety Score', p: 'Le systeme calcule un score de securite base sur des donnees ouvertes.' },
         { h: '4. Partagez ou telechargez le PDF', p: 'Envoyez le rapport par WhatsApp, email ou telechargez-le gratuitement.' },
-        { h: '5. Important', p: 'Nous ne consultons pas les numeros de securite sociale, SIRET ou donnees personnelles.' }
+        { h: '5. Important', p: 'Nous ne consultons pas les numeros de securite sociale, SIRET ou donnees personnelles.' },
+        { h: '6. Marche sure', p: 'Sur la page Marche sure, touchez demarrer, envoyez le lien par WhatsApp et un proche suit votre trajet en temps reel, avec bouton d\'urgence.' },
+        { h: '7. Centre de nouvelles', p: 'La page Nouvelles propose des articles et des titres mis a jour automatiquement : cameras, protection personnelle, animaux, velos, motos et voitures.' }
       ]
     },
     de: {
@@ -1142,7 +1150,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Auf Karte wahlen (optional)', p: 'Tippen Sie auf die Karte, um einen Punkt auszuwahlen.' },
         { h: '3. Safety Score anzeigen', p: 'Das System berechnet einen Sicherheitswert basierend auf offenen Daten.' },
         { h: '4. Teilen oder PDF herunterladen', p: 'Senden Sie den Bericht uber WhatsApp, E-Mail oder laden Sie ihn kostenlos herunter.' },
-        { h: '5. Wichtig', p: 'Wir fragen keine Sozialversicherungsnummern, Steuernummern oder personenbezogene Daten ab.' }
+        { h: '5. Wichtig', p: 'Wir fragen keine Sozialversicherungsnummern, Steuernummern oder personenbezogene Daten ab.' },
+        { h: '6. Sicherer Spaziergang', p: 'Auf der Seite Sicherer Spaziergang starten Sie die Freigabe, senden den Link per WhatsApp, und eine Vertrauensperson verfolgt Ihre Route in Echtzeit – mit Notfallknopf.' },
+        { h: '7. News-Center', p: 'Die News-Seite bietet Artikel und automatisch aktualisierte Schlagzeilen: Kameras, Personenschutz, Haustiere, Fahrräder, Motorräder und Autos.' }
       ]
     },
     it: {
@@ -1152,7 +1162,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Scegli sulla mappa (opzionale)', p: 'Tocca il pulsante mappa per selezionare un punto.' },
         { h: '3. Vedi il Safety Score', p: 'Il sistema calcola un punteggio di sicurezza basato su dati aperti.' },
         { h: '4. Condividi o scarica il PDF', p: 'Invia il rapporto via WhatsApp, email o scaricalo gratuitamente.' },
-        { h: '5. Importante', p: 'Non consultiamo codici fiscali, partite IVA o dati personali. Usa solo indirizzi.' }
+        { h: '5. Importante', p: 'Non consultiamo codici fiscali, partite IVA o dati personali. Usa solo indirizzi.' },
+        { h: '6. Camminata Sicura', p: 'Nella pagina Camminata Sicura, tocca avvia, invia il link via WhatsApp e un familiare segue il tuo percorso in tempo reale, con pulsante di emergenza.' },
+        { h: '7. Centro Notizie', p: 'La pagina Notizie offre articoli e titoli aggiornati automaticamente: telecamere, protezione personale, animali, bici, moto e auto.' }
       ]
     },
     zh: {
@@ -1162,7 +1174,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. 在地图上选择（可选）', p: '点击地图按钮选择地点。' },
         { h: '3. 查看安全评分', p: '系统根据公开数据和统计数据计算安全评分。' },
         { h: '4. 分享或下载PDF', p: '通过WhatsApp、邮件发送报告或免费下载。' },
-        { h: '5. 重要提示', p: '我们不查询身份证、税号或个人数据。请仅使用地址。' }
+        { h: '5. 重要提示', p: '我们不查询身份证、税号或个人数据。请仅使用地址。' },
+        { h: '6. 安全步行', p: '在“安全步行”页面点击开始，通过WhatsApp发送链接，家人即可实时查看您的路线，并配有紧急求救按钮。' },
+        { h: '7. 新闻中心', p: '新闻页面提供文章和自动更新的安全资讯：摄像头、人身保护、宠物、自行车、摩托车和汽车。' }
       ]
     },
     ja: {
@@ -1172,7 +1186,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. 地図で選択（任意）', p: '地図ボタンをタップしてポイントを選択します。' },
         { h: '3. セーフティスコアを見る', p: 'システムは公開データと統計に基づいて安全スコアを計算します。' },
         { h: '4. 共有またはPDFダウンロード', p: 'WhatsApp、メールで送信するか、無料でダウンロードしてください。' },
-        { h: '5. 重要', p: '個人番号、法人番号、個人データは照会しません。住所のみをご利用ください。' }
+        { h: '5. 重要', p: '個人番号、法人番号、個人データは照会しません。住所のみをご利用ください。' },
+        { h: '6. 安全ウォーキング', p: '「安全ウォーキング」ページで開始をタップし、WhatsAppでリンクを送ると、保護者がリアルタイムでルートを確認できます。緊急ボタン付き。' },
+        { h: '7. ニュースセンター', p: 'ニュースページでは、カメラ・身辺安全・ペット・自転車・バイク・自動車に関する記事と自動更新の見出しを提供します。' }
       ]
     },
     ar: {
@@ -1182,7 +1198,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. اختر على الخريطة (اختياري)', p: 'اضغط على زر الخريطة لتحديد نقطة.' },
         { h: '3. شاهد درجة الأمان', p: 'يحسب النظام درجة أمان بناءً على البيانات المفتوحة والإحصائيات.' },
         { h: '4. شارك أو حمّل PDF', p: 'أرسل التقرير عبر واتساب أو البريد الإلكتروني أو حمّله مجانًا.' },
-        { h: '5. مهم', p: 'لا نستعلم عن أرقام الهوية أو الضريبة أو البيانات الشخصية. استخدم العناوين فقط.' }
+        { h: '5. مهم', p: 'لا نستعلم عن أرقام الهوية أو الضريبة أو البيانات الشخصية. استخدم العناوين فقط.' },
+        { h: '6. المشي الآمن', p: 'في صفحة المشي الآمن، اضغط ابدأ وأرسل الرابط عبر واتساب، وسيتابع أحد المسؤولين مسارك في الوقت الفعلي، مع زر طوارئ.' },
+        { h: '7. مركز الأخبار', p: 'توفر صفحة الأخبار مقالات وعناوين تُحدَّث تلقائيًا: كاميرات، حماية شخصية، حيوانات أليفة، دراجات، دراجات نارية وسيارات.' }
       ]
     },
     ru: {
@@ -1192,7 +1210,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. Выберите на карте (необязательно)', p: 'Нажмите кнопку карты, чтобы выбрать точку.' },
         { h: '3. Посмотрите Safety Score', p: 'Система рассчитывает оценку безопасности на основе открытых данных.' },
         { h: '4. Поделитесь или скачайте PDF', p: 'Отправьте отчет через WhatsApp, email или скачайте бесплатно.' },
-        { h: '5. Важно', p: 'Мы не запрашиваем ИНН, ОГРН или персональные данные. Используйте только адреса.' }
+        { h: '5. Важно', p: 'Мы не запрашиваем ИНН, ОГРН или персональные данные. Используйте только адреса.' },
+        { h: '6. Безопасная прогулка', p: 'На странице «Безопасная прогулка» нажмите старт и отправьте ссылку через WhatsApp — близкий человек увидит ваш маршрут в реальном времени, есть кнопка SOS.' },
+        { h: '7. Центр новостей', p: 'Страница новостей содержит статьи и автоматически обновляемые заголовки: камеры, личная защита, питомцы, велосипеды, мотоциклы и автомобили.' }
       ]
     },
     ko: {
@@ -1202,7 +1222,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. 지도에서 선택(선택사항)', p: '지도 버튼을 눌러 지점을 선택하세요.' },
         { h: '3. 안전 점수 보기', p: '시스템은 공개 데이터와 통계를 기반으로 안전 점수를 계산합니다.' },
         { h: '4. 공유 또는 PDF 다운로드', p: 'WhatsApp, 이메일로 보고서를 본거나 묣으로 다운로드하세요.' },
-        { h: '5. 중요', p: '주민등록번호, 사업자번호 또는 개인 데이터는 조회하지 않습니다. 주소만 사용하세요.' }
+        { h: '5. 중요', p: '주민등록번호, 사업자번호 또는 개인 데이터는 조회하지 않습니다. 주소만 사용하세요.' },
+        { h: '6. 안전 산책', p: '안전 산책 페이지에서 시작을 누ubc88 타륳 WhatsApp으로 링크를 보내면 보호자가 실시간으로 경로를 확인할 수 있습니다. 긴급 버튼도 있습니다.' },
+        { h: '7. 뉴스 센터', p: '뉴스 페이지에서는 카메라, 개인 보호, 반려동물, 자전거, 오토바이, 자동차에 관한 기사와 자동 업데이트 헤드라인을 제공합니다.' }
       ]
     },
     hi: {
@@ -1212,7 +1234,9 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '2. नक्शे पर चुनें (वैकल्पिक)', p: 'बिंदु चुनने के लिए नक्शा बटन दबाएं।' },
         { h: '3. सुरक्षा स्कोर देखें', p: 'सिस्टम खुले डेटा और आंकड़ों के आधार पर सुरक्षा स्कोर की गणना करता है।' },
         { h: '4. साझा करें या PDF डाउनलोड करें', p: 'WhatsApp, ईमेल के माध्यम से रिपोर्ट भेजें या मुफ्त में डाउनलोड करें।' },
-        { h: '5. महत्वपूर्ण', p: 'हम आधार, पैन या व्यक्तिगत डेटा की जांच नहीं करते। केवल पते का उपयोग करें।' }
+        { h: '5. महत्वपूर्ण', p: 'हम आधार, पैन या व्यक्तिगत डेटा की जांच नहीं करते। केवल पते का उपयोग करें।' },
+        { h: '6. सुर्षित सैर', p: 'सुर्षित सैर पेज पर शुरू करें दबाएं और WhatsApp पर लिंक भेजें — अभिभावक आपके रास्ते को रीयल-टाइम में देख सकते हैं। आपातकालीन बटन भी है।' },
+        { h: '7. समाचार केंद्र', p: 'समाचार पेज पर लेख और स्वतः अपडेट होने वाली खबरें मिलती हैं: कैमरे, व्यक्तिगत सुरक्षा, पालतू, साइकिल, मोटरसाइकिल और कारें।' }
       ]
     }
   };
