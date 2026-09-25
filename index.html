@@ -973,6 +973,10 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   display: inline-block; margin-top: 8px; font-size: 9px; font-weight: 800; letter-spacing: .12em;
   color: #7c5e10; border: 1px solid #c9a227; border-radius: 4px; padding: 3px 8px; text-transform: uppercase;
 }
+#pdf-report .pdf-law { border-left: 3px solid #c9a227; background: #f8f9fb; border-radius: 0 6px 6px 0; padding: 10px 14px; margin-bottom: 10px; }
+#pdf-report .pdf-law .art { font-size: 11px; font-weight: 800; color: #0c1730; letter-spacing: .04em; }
+#pdf-report .pdf-law .txt { font-size: 10.5px; color: #333; line-height: 1.55; font-style: italic; margin-top: 3px; }
+#pdf-report .pdf-law .base { font-size: 9.5px; color: #666; margin-top: 3px; }
 #pdf-report .pdf-signature { margin-top: 34px; text-align: center; }
 #pdf-report .pdf-signature .line { width: 340px; margin: 0 auto 6px; border-top: 1.5px solid #0c1730; }
 #pdf-report .pdf-signature .who { font-size: 11.5px; font-weight: 700; color: #0c1730; }
@@ -1861,18 +1865,44 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="pdf-dateline" id="pdf-dateline">--</div>
 
   <div class="pdf-section">
-    <h3>6. Condicoes e Responsabilidades deste Documento</h3>
+    <h3>6. Fundamentacao Constitucional</h3>
+    <p class="pdf-note">A disponibilizacao deste documento ao solicitante considera os seguintes dispositivos da Constituicao da Republica Federativa do Brasil de 1988, relacionados ao acesso a informacao e ao direito social a seguranca. Esta fundamentacao nao transforma o Portal Seguranca Global em orgao publico, nao substitui pedido formal pela Lei de Acesso a Informacao e nao confere a este relatorio presuncao de documento oficial estatal:</p>
+    <div class="pdf-law">
+      <div class="art">Art. 5&ordm;, XIV, Constituicao Federal de 1988</div>
+      <div class="txt">&eacute; assegurado a todos, independentemente do pagamento de taxas, o acesso a informacao.</div>
+      <div class="base">Fundamenta o acesso a informacoes, observadas as hipoteses legais de sigilo e a protecao da fonte.</div>
+    </div>
+    <div class="pdf-law">
+      <div class="art">Art. 5&ordm;, XXXIII, Constituicao Federal de 1988</div>
+      <div class="txt">todos tem direito a receber dos orgaos publicos informacoes de seu interesse particular, ou de interesse coletivo ou geral, que serao prestadas no prazo da lei, sob pena de responsabilidade.</div>
+      <div class="base">Aplica-se a informacoes de interesse particular, coletivo ou geral prestadas por orgaos publicos, nos termos da lei.</div>
+    </div>
+    <div class="pdf-law">
+      <div class="art">Art. 6&ordm;, Constituicao Federal de 1988</div>
+      <div class="txt">Sao direitos sociais a educacao, a saude, a alimentacao, o trabalho, a moradia, o transporte, o lazer, a seguranca, a previdencia social, a protecao a maternidade e a infancia, a assistencia aos desamparados.</div>
+      <div class="base">A seguranca e direito social garantido a todos, e este documento contribui para o seu exercicio.</div>
+    </div>
+    <div class="pdf-law">
+      <div class="art">Art. 144, caput, Constituicao Federal de 1988</div>
+      <div class="txt">A seguranca publica, dever do Estado, direito e responsabilidade de todos, e exercida para a preservacao da ordem publica e da incolumidade das pessoas e do patrimonio.</div>
+      <div class="base">Reconhece a seguranca publica como dever do Estado e tambem como direito e responsabilidade de todos.</div>
+    </div>
+  </div>
+
+  <div class="pdf-section">
+    <h3>7. Condicoes e Responsabilidades deste Documento</h3>
     <div class="pdf-clauses">
       <p>Este documento e gerado eletronicamente pelo Portal Seguranca Global a partir de dados publicos, estatisticas abertas e modelos estatisticos do perimetro analisado, nao havendo consulta a dados pessoais, CPF, CNPJ, RG ou antecedentes criminais de qualquer pessoa ou empresa.</p>
       <p>As informacoes aqui contidas possuem finalidade exclusivamente informativa e preventiva, nao substituindo consultoria profissional de seguranca, boletins oficiais de ocorrencia ou documentos emitidos por orgaos publicos.</p>
       <p>E vedada a utilizacao deste documento para perseguicao, assedio, vigilancia ilegal de terceiros, discriminacao ou qualquer finalidade ilicita, respondendo o usuario civil e criminalmente pelo uso indevido.</p>
       <p>A autenticidade deste documento pode ser verificada a qualquer tempo por meio do QR Code e do numero de protocolo impressos na secao de autenticacao, junto ao site oficial do emissor.</p>
+      <p>A disponibilizacao deste documento ao solicitante considera o direito constitucional de acesso a informacao (art. 5&ordm;, XIV e XXXIII, da Constituicao Federal de 1988) e o direito social a seguranca (art. 6&ordm;), sem transformar o Portal Seguranca Global em orgao publico ou conferir a este relatorio presuncao de documento oficial estatal.</p>
       <p>O emissor reserva-se o direito de invalidar documentos adulterados, reproduzidos fora do site oficial ou cujo protocolo nao corresponda aos registros de emissao.</p>
     </div>
   </div>
 
   <div class="pdf-section">
-    <h3>7. Autenticacao do Documento</h3>
+    <h3>8. Autenticacao do Documento</h3>
     <div class="pdf-auth">
       <img id="pdf-qr" src="" alt="QR Code de verificacao" crossorigin="anonymous">
       <div class="info">
