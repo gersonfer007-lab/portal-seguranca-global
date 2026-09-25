@@ -1080,7 +1080,15 @@ async function _doGeneratePDF() {
 
   // ---- Identificacao, protocolo, periodo ----
   document.getElementById('pdf-protocol').textContent = protocol;
-  document.getElementById('pdf-emitted').textContent = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  var emittedStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('pdf-emitted').textContent = emittedStr;
+  document.getElementById('pdf-protocol-2').textContent = protocol;
+  document.getElementById('pdf-emitted-2').textContent = emittedStr;
+  var mesesExtenso = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var cidadeData = city || stateName || countryName;
+  document.getElementById('pdf-dateline').textContent = cidadeData + ', ' + now.getDate() + ' de ' + mesesExtenso[now.getMonth()] + ' de ' + now.getFullYear() + '.';
+  var qrData = 'https://portalsegurancaglobal.com.br/verificar/' + protocol;
+  document.getElementById('pdf-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=4&color=12-23-53&data=' + encodeURIComponent(qrData);
   document.getElementById('pdf-address').textContent = addr.fullAddress;
   document.getElementById('pdf-coords').textContent = 'Ponto central: Lat ' + lat.toFixed(5) + ' | Lng ' + lng.toFixed(5) + (addr.cep ? ' | CEP ' + addr.cep : '');
   var fim = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -1112,7 +1120,9 @@ async function _doGeneratePDF() {
     const pageW = pdf.internal.pageSize.getWidth();
     const pageHmm = pdf.internal.pageSize.getHeight();
     const pxPerPage = Math.floor(canvas.width * pageHmm / pageW);
-    let pos = 0, page = 0;
+    // Fatia o relatorio em paginas
+    const slices = [];
+    let pos = 0;
     while (pos < canvas.height) {
       const sliceH = Math.min(pxPerPage, canvas.height - pos);
       const pageCanvas = document.createElement('canvas');
@@ -1122,11 +1132,24 @@ async function _doGeneratePDF() {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
       ctx.drawImage(canvas, 0, pos, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-      const imgData = pageCanvas.toDataURL('image/jpeg', .95);
-      if (page > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, sliceH * pageW / canvas.width);
+      slices.push({ data: pageCanvas.toDataURL('image/jpeg', .95), hMm: sliceH * pageW / canvas.width });
       pos += sliceH;
-      page++;
+    }
+    // Monta o documento com moldura e rodape de pagina
+    for (let p = 0; p < slices.length; p++) {
+      if (p > 0) pdf.addPage();
+      pdf.addImage(slices[p].data, 'JPEG', 0, 0, pageW, slices[p].hMm);
+      // Moldura do documento
+      pdf.setDrawColor(201, 162, 39);
+      pdf.setLineWidth(0.7);
+      pdf.rect(5, 5, pageW - 10, pageHmm - 10);
+      pdf.setDrawColor(12, 23, 53);
+      pdf.setLineWidth(0.25);
+      pdf.rect(6.5, 6.5, pageW - 13, pageHmm - 13);
+      // Rodape de pagina
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(110, 110, 110);
+      pdf.text('Protocolo ' + protocol + '  |  Pagina ' + (p + 1) + ' de ' + slices.length + '  |  portalsegurancaglobal.com.br  |  Documento gerado eletronicamente', pageW / 2, pageHmm - 3.2, { align: 'center' });
     }
     var fileName = 'PortalSegurancaGlobal_Relatorio_' + protocol + '.pdf';
     var pdfBlob = pdf.output('blob');

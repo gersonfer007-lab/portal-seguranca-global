@@ -938,6 +938,45 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-force .city { font-size: 11px; color: #666; }
 #pdf-report .pdf-footer { margin-top: 28px; padding: 16px 40px 0; border-top: 2px solid #c9a227; font-size: 10.5px; color: #888; text-align: center; line-height: 1.7; }
 #pdf-report .pdf-footer .verify { font-weight: 700; color: #0c1730; }
+/* Elementos de documento oficial */
+#pdf-report { position: absolute; }
+#pdf-report .pdf-watermark {
+  position: absolute; left: 50%; width: 460px; opacity: .045; z-index: 0; pointer-events: none;
+  transform: translateX(-50%);
+}
+#pdf-report .pdf-wm-1 { top: 260px; }
+#pdf-report .pdf-wm-2 { top: 1250px; }
+#pdf-report .pdf-body, #pdf-report .pdf-top-band, #pdf-report .pdf-footer { position: relative; z-index: 1; }
+#pdf-report .pdf-dateline {
+  text-align: right; font-size: 12.5px; color: #1a2235; margin: 4px 0 18px; font-style: italic;
+}
+#pdf-report .pdf-clauses { counter-reset: clause; margin-top: 4px; }
+#pdf-report .pdf-clauses p {
+  font-size: 10.5px; color: #333; line-height: 1.55; margin: 0 0 7px; text-align: justify;
+  padding-left: 26px; position: relative;
+}
+#pdf-report .pdf-clauses p::before {
+  counter-increment: clause; content: counter(clause) ".";
+  position: absolute; left: 0; font-weight: 800; color: #0c1730;
+}
+#pdf-report .pdf-auth {
+  display: flex; align-items: center; gap: 20px; margin-top: 6px;
+  border: 2px solid #0c1730; border-radius: 10px; padding: 16px 20px;
+  background: repeating-linear-gradient(-45deg, #fdfdf8, #fdfdf8 12px, #f7f3e3 12px, #f7f3e3 24px);
+}
+#pdf-report .pdf-auth img { width: 108px; height: 108px; flex-shrink: 0; border: 1px solid #d8d2bd; border-radius: 6px; background:#fff; padding: 4px; }
+#pdf-report .pdf-auth .info { flex: 1; }
+#pdf-report .pdf-auth .t { font-size: 12px; font-weight: 800; color: #0c1730; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+#pdf-report .pdf-auth .row { font-size: 10.5px; color: #333; line-height: 1.6; }
+#pdf-report .pdf-auth .row b { font-family: 'JetBrains Mono', monospace; color: #0c1730; }
+#pdf-report .pdf-auth .classif {
+  display: inline-block; margin-top: 8px; font-size: 9px; font-weight: 800; letter-spacing: .12em;
+  color: #7c5e10; border: 1px solid #c9a227; border-radius: 4px; padding: 3px 8px; text-transform: uppercase;
+}
+#pdf-report .pdf-signature { margin-top: 34px; text-align: center; }
+#pdf-report .pdf-signature .line { width: 340px; margin: 0 auto 6px; border-top: 1.5px solid #0c1730; }
+#pdf-report .pdf-signature .who { font-size: 11.5px; font-weight: 700; color: #0c1730; }
+#pdf-report .pdf-signature .what { font-size: 10px; color: #777; margin-top: 2px; }
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
@@ -1716,6 +1755,8 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- PDF Report Template (hidden) -->
 <div id="pdf-report">
+  <img class="pdf-watermark pdf-wm-1" src="brasao-sh.png" alt="" crossorigin="anonymous">
+  <img class="pdf-watermark pdf-wm-2" src="brasao-sh.png" alt="" crossorigin="anonymous">
   <div class="pdf-top-band">
     <img class="pdf-brasao" src="brasao-sh.png" alt="Brasao Portal Seguranca Global" crossorigin="anonymous">
     <div class="pdf-top-text">
@@ -1733,7 +1774,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
   <div class="pdf-body">
   <div class="pdf-section">
-    <h3>Identificacao do Local Analisado</h3>
+    <h3>1. Identificacao do Local Analisado</h3>
     <div class="pdf-flags-row">
       <div class="pdf-flag-box">
         <img id="pdf-country-flag" src="" alt="Bandeira do pais" crossorigin="anonymous">
@@ -1758,7 +1799,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>Perimetro da Varredura</h3>
+    <h3>2. Perimetro da Varredura</h3>
     <p class="pdf-note" id="pdf-perimeter-desc">--</p>
     <div class="pdf-stat-grid">
       <div class="pdf-stat"><div class="val">1,5 km</div><div class="lbl">Raio de analise</div></div>
@@ -1783,7 +1824,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>Indicadores Principais</h3>
+    <h3>3. Indicadores Principais</h3>
     <div class="pdf-period">Periodo de referencia dos dados: <b id="pdf-period">--</b> &mdash; estatisticas consolidadas dos ultimos 12 meses, combinadas com dados publicos de seguranca da regiao.</div>
     <div class="pdf-stat-grid">
       <div class="pdf-stat"><div class="val" id="pdf-crime">--</div><div class="lbl">Indice Criminal</div></div>
@@ -1793,7 +1834,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>Forcas de Seguranca da Regiao</h3>
+    <h3>4. Forcas de Seguranca da Regiao</h3>
     <div class="pdf-force-box">
       <div class="pdf-force">
         <div class="badge pm">PM</div>
@@ -1809,11 +1850,43 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>Estatisticas do Perimetro (raio de 1,5 km)</h3>
+    <h3>5. Estatisticas do Perimetro (raio de 1,5 km)</h3>
     <div class="pdf-stat-grid">
       <div class="pdf-stat"><div class="val" id="pdf-occ">--</div><div class="lbl">Ocorrencias/mes</div></div>
       <div class="pdf-stat"><div class="val" id="pdf-cam">--</div><div class="lbl">Cameras</div></div>
       <div class="pdf-stat"><div class="val" id="pdf-com">--</div><div class="lbl">Comercios</div></div>
+    </div>
+  </div>
+
+  <div class="pdf-dateline" id="pdf-dateline">--</div>
+
+  <div class="pdf-section">
+    <h3>6. Condicoes e Responsabilidades deste Documento</h3>
+    <div class="pdf-clauses">
+      <p>Este documento e gerado eletronicamente pelo Portal Seguranca Global a partir de dados publicos, estatisticas abertas e modelos estatisticos do perimetro analisado, nao havendo consulta a dados pessoais, CPF, CNPJ, RG ou antecedentes criminais de qualquer pessoa ou empresa.</p>
+      <p>As informacoes aqui contidas possuem finalidade exclusivamente informativa e preventiva, nao substituindo consultoria profissional de seguranca, boletins oficiais de ocorrencia ou documentos emitidos por orgaos publicos.</p>
+      <p>E vedada a utilizacao deste documento para perseguicao, assedio, vigilancia ilegal de terceiros, discriminacao ou qualquer finalidade ilicita, respondendo o usuario civil e criminalmente pelo uso indevido.</p>
+      <p>A autenticidade deste documento pode ser verificada a qualquer tempo por meio do QR Code e do numero de protocolo impressos na secao de autenticacao, junto ao site oficial do emissor.</p>
+      <p>O emissor reserva-se o direito de invalidar documentos adulterados, reproduzidos fora do site oficial ou cujo protocolo nao corresponda aos registros de emissao.</p>
+    </div>
+  </div>
+
+  <div class="pdf-section">
+    <h3>7. Autenticacao do Documento</h3>
+    <div class="pdf-auth">
+      <img id="pdf-qr" src="" alt="QR Code de verificacao" crossorigin="anonymous">
+      <div class="info">
+        <div class="t">Verificacao de Autenticidade</div>
+        <div class="row">Protocolo: <b id="pdf-protocol-2">--</b></div>
+        <div class="row">Emissao: <b id="pdf-emitted-2">--</b></div>
+        <div class="row">Aponte a camera do celular para o QR Code ou acesse <b>portalsegurancaglobal.com.br</b> e informe o protocolo.</div>
+        <div class="classif">Documento publico &middot; Uso informativo</div>
+      </div>
+    </div>
+    <div class="pdf-signature">
+      <div class="line"></div>
+      <div class="who">Portal Seguranca Global</div>
+      <div class="what">Documento emitido e assinado eletronicamente &mdash; dispensada assinatura manuscrita</div>
     </div>
   </div>
   </div>
