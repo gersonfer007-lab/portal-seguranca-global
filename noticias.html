@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Notícias de Segurança | Portal Segurança Global</title>
+<meta name="description" content="Notícias, análises e tendências em segurança: câmeras com IA, proteção pessoal, segurança automotiva, carros conectados e proteção urbana colaborativa.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Central de Notícias de Segurança | Portal Segurança Global">
+<meta property="og:description" content="Câmeras com IA, apps de proteção pessoal e as tendências de segurança urbana — explicadas de forma clara.">
+<link rel="canonical" href="https://portalsegurancaglobal.com.br/noticias.html">
+<style>
+:root {
+  --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: #1a2235; --bg-card-hover: #1f2a40;
+  --border: #2a3550; --text-primary: #e8ecf4; --text-secondary: #8b95a8; --text-muted: #5a6478;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,.25);
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --radius: 12px; --radius-lg: 16px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; }
+a { color: var(--accent); }
+.header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em; text-decoration: none; color: var(--text-primary); }
+.header-badge { background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
+.header-nav { display: flex; align-items: center; gap: 1.2rem; font-size: .85rem; }
+.header-nav a { color: var(--text-secondary); text-decoration: none; font-weight: 600; transition: color .2s; }
+.header-nav a:hover, .header-nav a.active { color: var(--accent); }
+.page { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.2rem; }
+.hero { text-align: center; margin-bottom: 2.2rem; }
+.hero h1 { font-size: 2.1rem; font-weight: 800; letter-spacing: -.03em; }
+.hero .sub { color: var(--text-secondary); font-size: 1rem; margin-top: .5rem; }
+.hero .badge { display: inline-block; background: var(--accent); color: #fff; font-size: .62rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .7rem; }
+.article { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.8rem; margin-bottom: 1.5rem; scroll-margin-top: 80px; }
+.article:hover { border-color: rgba(59,130,246,.4); }
+.art-meta { display: flex; align-items: center; gap: 10px; margin-bottom: .7rem; flex-wrap: wrap; }
+.tag { font-size: .62rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; }
+.tag.tec { background: rgba(59,130,246,.15); color: #60a5fa; }
+.tag.deb { background: rgba(234,179,8,.15); color: #facc15; }
+.tag.pro { background: rgba(34,197,94,.15); color: #4ade80; }
+.tag.ten { background: rgba(239,68,68,.15); color: #f87171; }
+  .tag.aut { background: rgba(249,115,22,.15); color: #fb923c; }
+.art-date { font-size: .72rem; color: var(--text-muted); }
+.article h2 { font-size: 1.3rem; font-weight: 800; line-height: 1.35; margin-bottom: .9rem; }
+.article p { color: var(--text-secondary); font-size: .92rem; line-height: 1.7; margin-bottom: .9rem; }
+.article p:last-child { margin-bottom: 0; }
+.article strong { color: var(--text-primary); }
+.sources { font-size: .74rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: .8rem; margin-top: 1rem; }
+.sources a { color: var(--accent); text-decoration: none; }
+.newsletter { background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(99,102,241,.08)); border: 1px solid rgba(59,130,246,.25); border-radius: var(--radius-lg); padding: 1.6rem; text-align: center; margin-top: 2rem; }
+.newsletter h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .4rem; }
+.newsletter p { color: var(--text-secondary); font-size: .85rem; margin-bottom: 1rem; }
+.nl-form { display: flex; gap: .6rem; max-width: 420px; margin: 0 auto; }
+.nl-form input[type=email] { flex: 1; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: .9rem; outline: none; }
+.nl-form input[type=email]:focus { border-color: var(--accent); }
+.nl-form button { padding: .75rem 1.4rem; border-radius: 10px; border: none; background: var(--gradient-accent); color: #fff; font-weight: 700; font-size: .9rem; cursor: pointer; }
+.nl-note { font-size: .72rem; color: var(--text-muted); margin-top: .7rem; }
+.footer { text-align: center; padding: 2rem; font-size: .75rem; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 2rem; }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+.ok-msg { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.35); color: #4ade80; border-radius: 10px; padding: .8rem 1rem; font-size: .88rem; margin-bottom: 1rem; display: none; }
+@media (max-width: 700px) {
+  .header { padding: 0 .9rem; }
+  .header-brand { font-size: .95rem; }
+  .header-nav { gap: .8rem; font-size: .78rem; }
+  .page { padding: 1.6rem .9rem; }
+  .hero h1 { font-size: 1.5rem; }
+  .article { padding: 1.2rem; }
+  .article h2 { font-size: 1.1rem; }
+  .nl-form { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a class="header-brand" href="index.html">&#128737; PORTAL SEGURANÇA GLOBAL <span class="header-badge">Intel</span></a>
+  <nav class="header-nav">
+    <a href="index.html">Consulta</a>
+    <a href="noticias.html" class="active">Notícias</a>
+    <a href="quem-somos.html">Quem Somos</a>
+  </nav>
+</header>
+
+<main class="page">
+
+  <div class="hero">
+    <span class="badge">Atualiza&ccedil;&atilde;o autom&aacute;tica</span>
+    <h1>Central de Notícias de Segurança</h1>
+    <p class="sub">Câmeras inteligentes, proteção pessoal, segurança automotiva e as tendências que estão mudando a segurança no Brasil e no mundo</p>
+  </div>
+
+  <div class="ok-msg" id="ok-msg">&#9989; Inscrição confirmada! Você receberá as próximas novidades por e-mail.</div>
+
+  <article class="article" id="cameras-ia-2026">
+    <div class="art-meta">
+      <span class="tag tec">Tecnologia</span>
+      <span class="art-date">Setembro de 2026 &bull; 4 min de leitura</span>
+    </div>
+    <h2>Câmeras com IA: a nova geração que distingue pessoas de veículos</h2>
+    <p><strong>O que mudou:</strong> as câmeras de segurança lançadas em 2026 contam com inteligência artificial embarcada capaz de classificar o que enxergam — humano ou veículo. Com a Detecção de Movimento Inteligente, o alerta no seu celular passa a significar algo real, e não um gato atravessando o quintal ou a folha de uma árvore balançando ao vento.</p>
+    <p><strong>Recursos que valem o investimento:</strong> cerca virtual e linha virtual (delimitam áreas proibidas), ajuste automático de imagem para dia e noite, detecção de permanência (alguém parado tempo demais em uma área) e buscas inteligentes que encontram um evento específico em horas de gravação em segundos.</p>
+    <p><strong>Cenário brasileiro:</strong> o setor de segurança eletrônica com IA cresce 37% ao ano no país. Fabricantes nacionais já oferecem linhas completas com IA embarcada a preços acessíveis para residências e pequenos comércios.</p>
+    <p><strong>Dica prática:</strong> antes de comprar, verifique se a câmera tem classificação de alvo (humano/veículo) nativa — não apenas "detecção de movimento", que é tecnologia antiga e gera falsos alarmes.</p>
+    <div class="sources">Fontes: linhas 2026 de fabricantes nacionais (Intelbras VIP com IA) &bull; dados do setor de segurança eletrônica.</div>
+  </article>
+
+  <article class="article" id="preditivo-privacidade">
+    <div class="art-meta">
+      <span class="tag deb">Debate</span>
+      <span class="art-date">Setembro de 2026 &bull; 5 min de leitura</span>
+    </div>
+    <h2>Policiamento preditivo: câmeras que ajudam a prever crimes — e o debate sobre privacidade</h2>
+    <p><strong>Como funciona:</strong> em vez de apenas gravar, o sistema aprende o padrão normal do ambiente (fluxo de pessoas, horários, veículos) e emite alertas quando algo foge da rotina — um carro parado tempo demais, uma aglomeração inesperada, movimento em horário incomum.</p>
+    <p><strong>No Brasil:</strong> estados como Goiás expandem redes com reconhecimento facial e leitura de placas — o programa "IA Contra o Crime" chega a 202 municípios com mais de 4,4 mil câmeras. São Paulo lança app de leitura de placas em celular e helicóptero com câmeras de monitoramento.</p>
+    <p><strong>O outro lado:</strong> especialistas alertam que a tecnologia pode restringir o direito de ir e vir e concentrar vigilância em áreas pobres. Uma portaria de 2025 já exige revisão humana em decisões da polícia, e o Congresso discute regras para ferramentas de IA de alto risco.</p>
+    <p><strong>A posição do Portal:</strong> tecnologia só é legítima com transparência, controle humano e respeito à LGPD. Cobramos dos fornecedores e gestores públicos clareza sobre o que é coletado, como é usado e quem fiscaliza.</p>
+    <div class="sources">Fontes: <a href="https://g1.globo.com/tecnologia/noticia/2026/08/09/cameras-com-ia-prometem-prever-crimes-antes-que-acontecam-mas-acendem-alerta-sobre-privacidade.ghtml" target="_blank" rel="noopener">G1 — Tecnologia</a> &bull; <a href="https://www.jornalopcao.com.br/seguranca-publica/ia-contra-o-crime-chega-a-202-municipios-e-tera-mais-de-44-mil-novas-cameras-em-goias-867870/" target="_blank" rel="noopener">Jornal Opção</a></div>
+  </article>
+
+  <article class="article" id="apps-protecao-pessoal">
+    <div class="art-meta">
+      <span class="tag pro">Proteção</span>
+      <span class="art-date">Setembro de 2026 &bull; 4 min de leitura</span>
+    </div>
+    <h2>Apps de proteção pessoal: sua segurança no bolso</h2>
+    <p><strong>SP Mulher Segura:</strong> o governo de São Paulo oferece app gratuito para vítimas de violência doméstica — permite registrar ocorrência e acionar a Polícia Militar direto do celular, com mais agilidade e discrição.</p>
+    <p><strong>Ferramentas para qualquer pessoa:</strong> apps de compartilhamento de localização em tempo real com familiares, botões de emergência que avisam contatos de confiança com um toque e alertas de áreas de risco no trajeto.</p>
+    <p><strong>Dica prática:</strong> configure o compartilhamento de localização com uma pessoa de confiança antes de sair à noite ou viajar; combine um "código de emergência" com a família — uma palavra que, enviada por mensagem, significa "me ligue agora com uma desculpa" ou "preciso de ajuda".</p>
+    <p><strong>No trabalho:</strong> empresas de entregas e transporte por aplicativo também adotam botões de pânico integrados, com geolocalização automática — conheça os recursos do seu app antes de precisar deles.</p>
+    <div class="sources">Fontes: <a href="https://www.tjsp.jus.br/Noticias/Noticia?codigoNoticia=113287" target="_blank" rel="noopener">TJSP</a> &bull; <a href="https://www.correiobraziliense.com.br/aqui/2026/06/09/3-aplicativos-de-seguranca-que-ajudam-a-aumentar-sua-protecao/" target="_blank" rel="noopener">Correio Braziliense</a></div>
+  </article>
+
+  <article class="article" id="protecao-colaborativa">
+    <div class="art-meta">
+      <span class="tag ten">Tendência</span>
+      <span class="art-date">Setembro de 2026 &bull; 5 min de leitura</span>
+    </div>
+    <h2>Proteção urbana colaborativa: vizinhos conectados deixam de ser ilhas</h2>
+    <p><strong>O conceito:</strong> a maior tendência de 2026 não é um gadget: é a colaboração. Cada edifício deixa de ser uma "ilha" isolada e vira um nó de uma rede de proteção urbana. Câmeras de condomínios, comércios e ruas passam a operar de forma integrada, ampliando drasticamente a capacidade de resposta a incidentes.</p>
+    <p><strong>Números:</strong> o setor de segurança eletrônica com IA cresce 37% ao ano no Brasil, puxado por esse modelo colaborativo — que também fortalece laços entre vizinhos e cria senso de comunidade.</p>
+    <p><strong>Câmeras passivas viram ativas:</strong> startups brasileiras desenvolvem IA que aprende o padrão do bairro e transforma milhares de horas de vídeo em alertas úteis — um operador consegue acompanhar mil telas sem se perder em notificações irrelevantes.</p>
+    <p><strong>Como participar:</strong> conheça seus vizinhos, participe da associação de moradores e incentive o condomínio a integrar câmeras com a rede local — sempre respeitando a privacidade e a LGPD.</p>
+    <div class="sources">Fontes: <a href="https://www.gabriel.com.br/blog/ia-seguranca-eletronica-brasil-2026" target="_blank" rel="noopener">Gabriel Segurança Eletrônica</a> &bull; <a href="https://agencia.fapesp.br/inteligencia-artificial-converte-cameras-de-seguranca-em-sistemas-de-monitoramento-ativo/58213" target="_blank" rel="noopener">Agência FAPESP</a></div>
+  </article>
+
+
+  <article class="article" id="carros-conectados-ia-2026">
+    <div class="art-meta">
+      <span class="tag aut">Automotivo</span>
+      <span class="art-date">Setembro de 2026 &bull; 5 min de leitura</span>
+    </div>
+    <h2>Carros conectados com IA: seu veículo virou um assistente de segurança</h2>
+    <p><strong>O momento:</strong> o carro conectado deixou de ser futurismo. A Volkswagen chegou a <strong>100 mil carros conectados</strong> nas ruas do Brasil e lançou o <strong>OTTO</strong>, a primeira inteligência artificial generativa desenvolvida por uma montadora no país — um assistente que entende o contexto do veículo em tempo real e responde perguntas sobre autonomia, consumo e diagnóstico.</p>
+    <p><strong>Vigilância ativa:</strong> a Chevrolet ampliou o OnStar com um serviço inédito de <strong>monitoramento ativo</strong>: notificações inteligentes inspiradas em apps bancários alertam o dono sobre comandos executados, falhas identificadas ou qualquer evento relevante no veículo — com personalização dos tipos de aviso e até atendimento por WhatsApp.</p>
+    <p><strong>Conforto com segurança:</strong> a nova linha Audi Q5 (2026) traz o <strong>Audi connect</strong> de série, com mais de 30 funcionalidades de navegação inteligente e assistência semiautônoma à condução, elevando a proteção a bordo.</p>
+    <p><strong>Por que isso importa para você:</strong> carros conectados avisam sobre tentativa de invasão, reboque sem autorização e até comportamento anômalo do veículo — direto no seu celular. Na hora de trocar de carro, a conectividade virou item de segurança tão importante quanto o airbag.</p>
+    <div class="sources">Fontes: <a href="https://www.vwnews.com.br/news/2926" target="_blank" rel="noopener">Volkswagen do Brasil</a> &bull; <a href="https://news.chevrolet.com.br/newsroom.detail.html/Pages/news/br/pt/2025/may/0522-onstar.html" target="_blank" rel="noopener">Chevrolet OnStar</a> &bull; <a href="https://valor.globo.com/conteudo-de-marca/audi/noticia/2026/08/07/audi-do-brasil-lanca-versao-2026-do-q5-com-novas-tecnologias-conectadas.ghtml" target="_blank" rel="noopener">Valor Econômico</a></div>
+  </article>
+
+  <article class="article" id="ciberseguranca-carros">
+    <div class="art-meta">
+      <span class="tag aut">Automotivo</span>
+      <span class="tag deb">Debate</span>
+      <span class="art-date">Setembro de 2026 &bull; 4 min de leitura</span>
+    </div>
+    <h2>Carro conectado também é alvo de hackers: a era da cibersegurança automotiva</h2>
+    <p><strong>O outro lado da conexão:</strong> quanto mais o carro conversa com a internet — atualizações remotas, aplicativos, comandos por voz — maior a superfície de ataque. Especialistas do setor alertam que a evolução dos veículos conectados depende diretamente do reforço na <strong>cibersegurança</strong> dos sistemas que controlam funções essenciais do transporte.</p>
+    <p><strong>O que está em jogo:</strong> atualizações remotas (OTA) mal protegidas podem, em tese, permitir invasões; dados de localização e rotas são alvo de interesse criminoso; e o mesmo app que tranca as portas de longe pode ser explorado se o celular do dono for comprometido.</p>
+    <p><strong>Como se proteger:</strong> mantenha o software do carro sempre atualizado (as montadoras corrigem falhas por atualização remota); use senhas fortes e únicas no app do veículo; ative a autenticação em dois fatores quando disponível; e desconfie de Bluetooth/Wi-Fi abertos ao emparelhar dispositivos.</p>
+    <p><strong>Tendência:</strong> a segurança digital do veículo está virando critério de compra — e item de avaliação das seguradoras.</p>
+    <div class="sources">Fontes: <a href="https://fenati.org.br/tecnologia-carros-inteligentes-ciberseguranca/" target="_blank" rel="noopener">FENATI</a> &bull; mercado de carros conectados 2026.</div>
+  </article>
+
+  <article class="article" id="rastreadores-2026">
+    <div class="art-meta">
+      <span class="tag aut">Automotivo</span>
+      <span class="tag pro">Prote&ccedil;&atilde;o</span>
+      <span class="art-date">Setembro de 2026 &bull; 5 min de leitura</span>
+    </div>
+    <h2>Rastreadores com bloqueio remoto: a diferença entre perder e recuperar o carro</h2>
+    <p><strong>O cenário:</strong> no Brasil, um veículo é roubado ou furtado a cada poucos minutos — e as pick-ups lideram o crescimento dos roubos, justamente por serem alvo de quadrilhas especializadas em carga e desmanche.</p>
+    <p><strong>O que a tecnologia oferece:</strong> os rastreadores veiculares atuais vão muito além do "GPS escondido": localização em tempo real no celular, alertas de movimento, histórico de rotas e, principalmente, o <strong>bloqueio remoto do motor</strong>, que imobiliza o veículo em segurança assim que a central confirma o roubo. Modelos com esses recursos partem de cerca de <strong>R$ 185</strong>, segundo levantamento da Autoesporte.</p>
+    <p><strong>Guerra eletrônica:</strong> as quadrutas usam <strong>jammers</strong> — aparelhos que bloqueiam o sinal de celular e GPS. A resposta do mercado são sistemas <strong>antijammer</strong>, que detectam a interferência e acionam protocolos alternativos de comunicação para manter o rastreamento ativo mesmo sob ataque.</p>
+    <p><strong>Rastreador ou alarme?</strong> São funções diferentes: o alarme espanta o ladrão amador; o rastreador recupera o carro do profissional. O uso combinado de alarme + bloqueador + rastreamento é o que mais aumenta as chances de recuperação.</p>
+    <p><strong>Dica prática:</strong> prefira empresas com central de monitoramento 24h e equipes próprias de recuperação — e verifique se o plano cobre o valor do veículo em caso de não recuperação.</p>
+    <div class="sources">Fontes: <a href="https://autoesporte.globo.com/servicos/seguros/noticia/2026/09/4-rastreadores-carro-partir-de-r-185.ghtml" target="_blank" rel="noopener">Autoesporte</a> &bull; <a href="https://carros.ig.com.br/2026-07-28/rastreador-ou-alarme-protege-carro.html" target="_blank" rel="noopener">IG Carros</a> &bull; <a href="https://revistaapolice.com.br/2026/01/pick-ups-impulsionam-alta-de-roubos-e-furtos-de-veiculos/" target="_blank" rel="noopener">Revista Apólice</a> &bull; <a href="https://www.grupotracker.com.br/solucoes/recuperacao-de-veiculos-roubados" target="_blank" rel="noopener">Grupo Tracker</a></div>
+  </article>
+
+  <article class="article" id="furto-eletronico-veiculos">
+    <div class="art-meta">
+      <span class="tag aut">Automotivo</span>
+      <span class="tag ten">Tend&ecirc;ncia</span>
+      <span class="art-date">Setembro de 2026 &bull; 4 min de leitura</span>
+    </div>
+    <h2>Relay attack e furto eletrônico: como as quadrutas roubam carros sem quebrar vidro</h2>
+    <p><strong>A nova modalidade:</strong> as quadrilhas abandonaram o pé de cabra. O <strong>relay attack</strong> (ataque de retransmissão) amplifica o sinal da chave de proximidade do carro — mesmo que ela esteja dentro da sua casa — e abre o veículo como se o dono estivesse ao lado. O carro sai da garagem sem um arranhão e sem disparar alarme.</p>
+    <p><strong>Soluções que surgem:</strong> o mercado brasileiro desenvolve sistemas que chegam a impedir <strong>até 99,7% das tentativas de furto eletrônico</strong>, com bloqueadores inteligentes que identificam comandos que não vieram do dono, chaves com detecção de movimento (dormem quando paradas) e cofres de chave que bloqueiam o sinal.</p>
+    <p><strong>Proteção que custa pouco:</strong> guardar a chave em lata metálica fechada ou bolsa com bloqueio de sinal (faraday) já dificulta muito o relay attack — solução simples e barata.</p>
+    <p><strong>Sinal de alerta:</strong> se o seu carro destrava sozinho ou o alarme dispara sem motivo aparente, pode ser tentativa de ataque eletrônico em curso — verifique o veículo e acione a polícia se houver movimento suspeito na rua.</p>
+    <div class="sources">Fontes: <a href="https://cqcs.com.br/noticia/solucao-inovadora-safecar-impede-ate-997-das-tentativas-de-furto-de-veiculos/" target="_blank" rel="noopener">CQCS</a> &bull; Anu&aacute;rio Brasileiro de Seguran&ccedil;a P&uacute;blica (2025).</div>
+  </article>
+
+
+<style>
+/* ===== FEED AUTOMÁTICO ===== */
+.auto-feed { margin-top: 2.5rem; }
+.feed-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.feed-header h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.02em; }
+.feed-live { display: inline-flex; align-items: center; gap: 6px; background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.3); font-size: .62rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
+.feed-live .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: feedpulse 2s infinite; }
+@keyframes feedpulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+#feed-grid-noticias { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .9rem; }
+.feed-item { display: flex; flex-direction: column; gap: .35rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.05rem 1.15rem; text-decoration: none; transition: border-color .25s, transform .25s; }
+.feed-item:hover { border-color: var(--accent); transform: translateY(-3px); }
+.fi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fi-date { font-size: .7rem; color: var(--text-muted); }
+.feed-item h3 { font-size: .92rem; font-weight: 700; line-height: 1.4; color: var(--text-primary); }
+.fi-src { font-size: .68rem; color: var(--text-muted); font-style: italic; }
+.fi-arrow { font-size: .76rem; color: var(--accent); font-weight: 600; margin-top: auto; }
+.feed-note { margin-top: .9rem; font-size: .72rem; color: var(--text-muted); text-align: center; line-height: 1.6; }
+.feed-loading { grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: .85rem; padding: 1.4rem; }
+</style>
+<section class="auto-feed" id="auto-feed">
+  <div class="feed-header">
+    <span style="font-size:1.4rem;">&#128246;</span>
+    <h2>&Uacute;ltimas do Brasil e do Mundo</h2>
+    <span class="feed-live"><span class="dot"></span> Atualiza&ccedil;&atilde;o autom&aacute;tica</span>
+  </div>
+  <div id="feed-grid-noticias"><p class="feed-loading">Carregando as &uacute;ltimas not&iacute;cias...</p></div>
+  <p class="feed-note">Manchetes buscadas automaticamente do Google Not&iacute;cias a cada visita &mdash; seguran&ccedil;a p&uacute;blica, c&acirc;meras, prote&ccedil;&atilde;o pessoal e seguran&ccedil;a automotiva. O conte&uacute;do abre no site da fonte.</p>
+</section>
+
+  <!-- NEWSLETTER -->
+  <div class="newsletter" id="newsletter">
+    <h2>&#128233; Receba as próximas notícias por e-mail</h2>
+    <p>Artigos, análises e dicas práticas de proteção. Sem spam, só o que importa.</p>
+    <form class="nl-form" action="https://formsubmit.co/contato@portalsegurancaglobal.com.br" method="POST">
+      <input type="email" name="email" required placeholder="Seu melhor e-mail" aria-label="Seu e-mail">
+      <input type="hidden" name="_subject" value="Novo inscrito na newsletter - Portal Segurança Global">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://portalsegurancaglobal.com.br/noticias.html?inscrito=1">
+      <button type="submit">Inscrever-se</button>
+    </form>
+    <p class="nl-note">Seus dados ficam seguros e você pode sair da lista quando quiser.</p>
+  </div>
+
+</main>
+
+<footer class="footer">
+  Portal Segurança Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
+  <a href="index.html">Consulta</a> &bull; <a href="noticias.html">Notícias</a> &bull; <a href="quem-somos.html">Quem Somos</a><br>
+  Conteúdo informativo baseado em fontes públicas. Não fabricamos equipamentos nem operamos serviços de monitoramento.
+</footer>
+
+<script>
+// Mostra mensagem de sucesso se voltar do FormSubmit com ?inscrito=1
+if (new URLSearchParams(location.search).get('inscrito') === '1') {
+  document.getElementById('ok-msg').style.display = 'block';
+  setTimeout(function(){ document.getElementById('newsletter').scrollIntoView({behavior:'smooth'}); }, 300);
+}
+</script>
+
+<script>
+(function(){
+  var FEEDS = [
+    {q: 'seguranca publica cameras vigilancia', label: 'Seguran&ccedil;a', tag: 'tec', when: '7d'},
+    {q: 'roubo furto veiculos rastreador', label: 'Automotivo', tag: 'aut', when: '14d'},
+    {q: 'tecnologia automotiva carro conectado seguranca', label: 'Automotivo', tag: 'aut', when: '14d'},
+    {q: 'aplicativo protecao seguranca pessoal mulher', label: 'Prote&ccedil;&atilde;o', tag: 'pro'}
+  ];
+  var PROXY_RAW = 'https://api.allorigins.win/raw?url=';
+  var PROXY_JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+  var cacheBust = '&_t=' + encodeURIComponent(new Date().toISOString().slice(0,13));
+
+  function feedUrl(f){
+    var q = encodeURIComponent(f.q + (f.when ? ' when:' + f.when : ''));
+    return 'https://news.google.com/rss/search?q=' + q + '&hl=pt-BR&gl=BR&ceid=BR:pt-419';
+  }
+
+  function fetchViaAllOrigins(f){
+    var url = PROXY_RAW + encodeURIComponent(feedUrl(f)) + cacheBust;
+    return fetch(url).then(function(r){ return r.text(); }).then(function(xml){
+      return parseXml(xml, f);
+    });
+  }
+
+  function fetchViaRss2Json(f){
+    var url = PROXY_JSON + encodeURIComponent(feedUrl(f));
+    return fetch(url).then(function(r){ return r.json(); }).then(function(j){
+      if (!j || !j.items) return [];
+      return j.items.map(function(it){
+        return {title: it.title, link: it.link, date: it.pubDate, label: f.label, tag: f.tag, source: (j.feed && j.feed.title) || ''};
+      });
+    });
+  }
+
+  function parseXml(xml, f){
+    try {
+      var doc = new DOMParser().parseFromString(xml, 'text/xml');
+      var items = doc.querySelectorAll('item');
+      var out = [];
+      for (var i = 0; i < items.length; i++) {
+        var t = items[i].querySelector('title');
+        var l = items[i].querySelector('link');
+        var d = items[i].querySelector('pubDate');
+        var s = items[i].querySelector('source');
+        if (!t) continue;
+        var title = t.textContent;
+        var src = s ? s.textContent : '';
+        // Google News anexa " - Fonte" ao título
+        if (!src && title.lastIndexOf(' - ') > 10) {
+          src = title.slice(title.lastIndexOf(' - ') + 3);
+          title = title.slice(0, title.lastIndexOf(' - '));
+        }
+        out.push({title: title, link: l ? l.textContent : '#', date: d ? d.textContent : '', label: f.label, tag: f.tag, source: src});
+      }
+      return out;
+    } catch(e) { return []; }
+  }
+
+  function fmtDate(iso){
+    try {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short'});
+    } catch(e) { return ''; }
+  }
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  window.psgCarregarFeed = function(gridId, limite){
+    var grid = document.getElementById(gridId);
+    if (!grid) return;
+    var jobs = FEEDS.map(function(f){
+      return fetchViaAllOrigins(f).catch(function(){ return fetchViaRss2Json(f); }).catch(function(){ return []; });
+    });
+    Promise.all(jobs).then(function(results){
+      var all = [];
+      var seen = {};
+      results.forEach(function(list){
+        list.forEach(function(n){
+          var key = n.title.toLowerCase().slice(0, 80);
+          if (!seen[key]) { seen[key] = true; all.push(n); }
+        });
+      });
+      all.sort(function(a, b){ return new Date(b.date) - new Date(a.date); });
+      if (!all.length) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.85rem;padding:1rem;">N&atilde;o foi poss&iacute;vel carregar as &uacute;ltimas not&iacute;cias agora. Volte em instantes.</p>';
+        return;
+      }
+      grid.innerHTML = all.slice(0, limite).map(function(n){
+        return '<a class="feed-item" href="' + esc(n.link) + '" target="_blank" rel="noopener noreferrer">' +
+          '<div class="fi-top"><span class="news-tag ' + esc(n.tag) + '">' + n.label + '</span>' +
+          '<span class="fi-date">' + fmtDate(n.date) + '</span></div>' +
+          '<h3>' + esc(n.title) + '</h3>' +
+          (n.source ? '<span class="fi-src">' + esc(n.source) + '</span>' : '') +
+          '<span class="fi-arrow">Ler na fonte &rarr;</span></a>';
+      }).join('');
+    }).catch(function(){
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.85rem;padding:1rem;">N&atilde;o foi poss&iacute;vel carregar as &uacute;ltimas not&iacute;cias agora.</p>';
+    });
+  };
+
+  if (document.readyState !== 'loading') { iniciar(); } else { document.addEventListener('DOMContentLoaded', iniciar); }
+  function iniciar(){
+    var n = document.getElementById('feed-grid-noticias');
+    if (n) window.psgCarregarFeed('feed-grid-noticias', 12);
+    var i = document.getElementById('feed-grid-index');
+    if (i) window.psgCarregarFeed('feed-grid-index', 3);
+  }
+})();
+</script>
+</body>
+</html>

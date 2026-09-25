@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Portal Seguranca Global</title>
+<title>Portal Segurança Global | Consulta de Segurança Mundial</title>
+
+<meta name="description" content="Consulte a segurança de qualquer endereço do mundo: índice criminal, infraestrutura, câmeras e movimentação urbana, com dados atualizados regularmente. Cobertura global baseada em fontes públicas.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Portal Segurança Global">
+<meta property="og:title" content="Portal Segurança Global | Consulta de Segurança Mundial">
+<meta property="og:description" content="Veja se o lugar que você procura é realmente seguro. Análise de segurança com dados atualizados regularmente, cobertura global.">
+<meta property="og:url" content="https://portalsegurancaglobal.com.br/">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+
 
 <!-- SECURITY HEADERS -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
@@ -1321,9 +1331,14 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <header class="header">
   <div class="header-brand">
     <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
-    <span>PORTAL SEGURANCA GLOBAL</span>
+    <span>PORTAL SEGURANÇA GLOBAL</span>
     <span class="header-badge">Intel</span>
   </div>
+  <nav class="header-nav" style="display:flex;align-items:center;gap:1.2rem;font-size:.85rem;">
+    <a href="index.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Consulta</a>
+    <a href="noticias.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Notícias</a>
+    <a href="quem-somos.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Quem Somos</a>
+  </nav>
   <div class="header-status">
     <span class="dot"></span>
     <span>Base de dados atualizada</span>
@@ -1348,7 +1363,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BRASAO -->
 <section class="emblem-section">
   <img src="brasao-sh.png" alt="Portal Seguranca Global" class="emblem-img">
-  <div class="emblem-title">Busca em tempo real em qualquer endere&ccedil;o do mundo</div>
+  <div class="emblem-title">Busca de seguran&ccedil;a em qualquer endere&ccedil;o do mundo</div>
   <div class="emblem-tagline">Veja se o lugar que voc&ecirc; procura &eacute; realmente seguro</div>
   <div class="emblem-subtitle">portalsegurancaglobal.com.br</div>
   <div class="emblem-divider"></div>
@@ -1357,7 +1372,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BANDEIRAS LATERAIS FIXAS (descem com a pagina toda) -->
 <!-- ESQUERDA (Americas + Europa) -->
 <div class="flags-column left" id="flags-left">
-  <div class="flag-un-logo"><img loading="lazy" decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
+  <div class="flag-un-logo"><span style="font-size:1.5rem;line-height:1;display:flex;align-items:center;justify-content:center;width:36px;height:36px;" title="Cobertura global">&#127760;</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
@@ -1398,7 +1413,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
 <div class="flags-column right" id="flags-right">
-  <div class="flag-un-logo"><img loading="lazy" decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/UN_emblem_blue.svg/200px-UN_emblem_blue.svg.png" alt="ONU"></div>
+  <div class="flag-un-logo"><span style="font-size:1.5rem;line-height:1;display:flex;align-items:center;justify-content:center;width:36px;height:36px;" title="Cobertura global">&#127760;</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
   <div class="flag-item"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
@@ -1439,13 +1454,17 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- INTEGRATED AGENCIES NETWORK -->
 <section class="agencies-banner" style="max-width:1200px;margin:0 auto 1.5rem;padding:0 1rem;">
-  <img src="agencies-network.png" alt="Portal Seguranca Global - Rede Integrada de Orgaos de Seguranca" style="width:100%;border-radius:12px;border:1px solid rgba(0,157,255,.18);box-shadow:0 4px 24px rgba(0,0,0,.45);">
+  <div style="width:100%;border-radius:12px;border:1px solid rgba(59,130,246,.25);box-shadow:0 4px 24px rgba(0,0,0,.45);background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(99,102,241,.08));padding:1.1rem 1.4rem;text-align:center;">
+    <div style="font-weight:800;font-size:1.05rem;letter-spacing:-.01em;">Portal Segurança Global &mdash; Inteligência Colaborativa de Segurança</div>
+    <div style="font-size:.8rem;color:var(--text-secondary);margin-top:.3rem;">Cobertura em 190+ pa&iacute;ses &bull; Dados de fontes p&uacute;blicas e modelos estat&iacute;sticos</div>
+    <div style="font-size:.72rem;color:var(--text-muted);margin-top:.45rem;">Portal privado e independente &mdash; sem v&iacute;nculo com &oacute;rg&atilde;os governamentais, polícias ou entidades internacionais.</div>
+  </div>
 </section>
 
 <!-- SEARCH -->
 <section class="search-section" id="search-section">
-  <h1 class="search-title">Consulte a Seguranca de Qualquer Lugar do Mundo</h1>
-  <p class="search-subtitle">Analise em tempo real baseada em dados de criminalidade, infraestrutura e movimentacao urbana â€” cobertura global</p>
+  <h1 class="search-title">Consulte a Segurança de Qualquer Lugar do Mundo</h1>
+  <p class="search-subtitle">Análise com dados atualizados regularmente baseada em criminalidade, infraestrutura e movimentação urbana — cobertura global</p>
   <div class="search-box">
     <input type="text" id="search-input" placeholder="CEP ou endereço..." autocomplete="off">
     <button id="search-btn">
@@ -1705,7 +1724,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="manual-card">
     <div class="manual-header">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      <h2 id="manual-title">Manual de Instrucoes</h2>
+      <h2 id="manual-title">Manual de Instruções</h2>
       <select class="manual-lang-select" id="manual-lang">
         <option value="pt">Portugues</option>
         <option value="en">English</option>
@@ -1938,17 +1957,254 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 </div>
 
+
+<!-- ===== CENTRAL DE NOTÍCIAS (prévia) — blog completo em /noticias.html ===== -->
+<style>
+.news-section { max-width: 1200px; margin: 0 auto 2rem; padding: 0 1rem; }
+.news-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+.news-header h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+.news-header .news-badge { background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
+.news-header .news-all { margin-left: auto; font-size: .82rem; font-weight: 700; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 6px 14px; border-radius: 20px; transition: background .2s; }
+.news-header .news-all:hover { background: var(--accent-glow); }
+.news-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .9rem; }
+.news-item { display: flex; flex-direction: column; gap: .35rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.05rem 1.15rem; text-decoration: none; transition: border-color .25s, transform .25s; }
+.news-item:hover { border-color: var(--accent); transform: translateY(-3px); }
+.news-item .ni-top { display: flex; align-items: center; gap: 8px; }
+.news-tag { font-size: .6rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; }
+.news-tag.tec { background: rgba(59,130,246,.15); color: #60a5fa; }
+.news-tag.deb { background: rgba(234,179,8,.15); color: #facc15; }
+.news-tag.pro { background: rgba(34,197,94,.15); color: #4ade80; }
+.news-tag.ten { background: rgba(239,68,68,.15); color: #f87171; }
+.news-tag.aut { background: rgba(249,115,22,.15); color: #fb923c; }
+.news-date { font-size: .7rem; color: var(--text-muted); }
+.news-item h3 { font-size: .95rem; font-weight: 700; line-height: 1.4; color: var(--text-primary); }
+.news-item .ni-arrow { font-size: .78rem; color: var(--accent); font-weight: 600; margin-top: auto; }
+.news-note { margin-top: .9rem; font-size: .74rem; color: var(--text-muted); text-align: center; }
+@media (max-width: 640px) { .news-header h2 { font-size: 1.2rem; } .news-header .news-all { margin-left: 0; } }
+</style>
+<section class="news-section" id="news-section">
+  <div class="news-header">
+    <span style="font-size:1.5rem;">&#128240;</span>
+    <h2>Central de Not&iacute;cias de Seguran&ccedil;a</h2>
+    <span class="news-badge">Atualiza&ccedil;&atilde;o autom&aacute;tica</span>
+    <a class="news-all" href="noticias.html">Ver todas as not&iacute;cias &rarr;</a>
+  </div>
+  <div class="news-list">
+    <a class="news-item" href="noticias.html#cameras-ia-2026">
+      <div class="ni-top"><span class="news-tag tec">Tecnologia</span><span class="news-date">Set 2026</span></div>
+      <h3>C&acirc;meras com IA: a nova gera&ccedil;&atilde;o que distingue pessoas de ve&iacute;culos</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#preditivo-privacidade">
+      <div class="ni-top"><span class="news-tag deb">Debate</span><span class="news-date">Set 2026</span></div>
+      <h3>Policiamento preditivo: c&acirc;meras que ajudam a prever crimes &mdash; e o debate sobre privacidade</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#apps-protecao-pessoal">
+      <div class="ni-top"><span class="news-tag pro">Prote&ccedil;&atilde;o</span><span class="news-date">Set 2026</span></div>
+      <h3>Apps de prote&ccedil;&atilde;o pessoal: sua seguran&ccedil;a no bolso</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#protecao-colaborativa">
+      <div class="ni-top"><span class="news-tag ten">Tend&ecirc;ncia</span><span class="news-date">Set 2026</span></div>
+      <h3>Prote&ccedil;&atilde;o urbana colaborativa: vizinhos conectados deixam de ser ilhas</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#carros-conectados-ia-2026">
+      <div class="ni-top"><span class="news-tag aut">Automotivo</span><span class="news-date">Set 2026</span></div>
+      <h3>Carros conectados com IA: seu ve&iacute;culo virou um assistente de seguran&ccedil;a</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#rastreadores-2026">
+      <div class="ni-top"><span class="news-tag aut">Automotivo</span><span class="news-date">Set 2026</span></div>
+      <h3>Rastreadores com bloqueio remoto: a diferen&ccedil;a entre perder e recuperar o carro</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+  </div>
+
+  <!-- FEED AUTOMÁTICO (mini) -->
+  <div style="margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.8rem;flex-wrap:wrap;">
+      <span style="font-size:1.1rem;">&#128246;</span>
+      <strong style="font-size:1.02rem;">&Uacute;ltimas do Brasil e do Mundo</strong>
+      <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3);font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.08em;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:feedpulse2 2s infinite;"></span> Auto
+      </span>
+    </div>
+    <div id="feed-grid-index" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.7rem;">
+      <p style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.82rem;padding:.8rem;">Carregando as &uacute;ltimas not&iacute;cias...</p>
+    </div>
+    <style>
+    @keyframes feedpulse2 { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+    #feed-grid-index .feed-item { display:flex;flex-direction:column;gap:.3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.95rem 1.05rem;text-decoration:none;transition:border-color .25s,transform .25s; }
+    #feed-grid-index .feed-item:hover { border-color:var(--accent);transform:translateY(-3px); }
+    #feed-grid-index .fi-top { display:flex;align-items:center;justify-content:space-between;gap:8px; }
+    #feed-grid-index .fi-date { font-size:.68rem;color:var(--text-muted); }
+    #feed-grid-index .feed-item h3 { font-size:.9rem;font-weight:700;line-height:1.4;color:var(--text-primary); }
+    #feed-grid-index .fi-src { font-size:.66rem;color:var(--text-muted);font-style:italic; }
+    #feed-grid-index .fi-arrow { font-size:.74rem;color:var(--accent);font-weight:600;margin-top:auto; }
+    </style>
+    <p style="margin-top:.6rem;font-size:.7rem;color:var(--text-muted);text-align:center;">Manchetes do Google Not&iacute;cias, atualizadas automaticamente a cada visita.</p>
+  </div>
+
+  <p class="news-note">Conte&uacute;do informativo baseado em fontes p&uacute;blicas. O Portal Seguran&ccedil;a Global n&atilde;o fabrica equipamentos nem opera servi&ccedil;os de monitoramento.</p>
+</section>
+<!-- NEWSLETTER -->
+<style>
+.nl-section { max-width: 720px; margin: 0 auto 2rem; padding: 0 1rem; }
+.nl-box { background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(99,102,241,.08)); border: 1px solid rgba(59,130,246,.25); border-radius: var(--radius-lg); padding: 1.6rem; text-align: center; }
+.nl-box h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .35rem; }
+.nl-box p { color: var(--text-secondary); font-size: .85rem; margin-bottom: 1rem; }
+.nl-form { display: flex; gap: .6rem; max-width: 420px; margin: 0 auto; }
+.nl-form input[type=email] { flex: 1; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: .9rem; outline: none; }
+.nl-form input[type=email]:focus { border-color: var(--accent); }
+.nl-form button { padding: .75rem 1.4rem; border-radius: 10px; border: none; background: var(--gradient-accent); color: #fff; font-weight: 700; font-size: .9rem; cursor: pointer; }
+.nl-note { font-size: .72rem; color: var(--text-muted); margin-top: .7rem; }
+@media (max-width: 640px) { .nl-form { flex-direction: column; } }
+</style>
+<section class="nl-section" id="newsletter">
+  <div class="nl-box">
+    <h2>&#128233; Receba novidades de seguran&ccedil;a</h2>
+    <p>Artigos, an&aacute;lises e dicas pr&aacute;ticas de prote&ccedil;&atilde;o. Sem spam, s&oacute; o que importa.</p>
+    <form class="nl-form" action="https://formsubmit.co/contato@portalsegurancaglobal.com.br" method="POST">
+      <input type="email" name="email" required placeholder="Seu melhor e-mail" aria-label="Seu e-mail">
+      <input type="hidden" name="_subject" value="Novo inscrito na newsletter - Portal Segurança Global">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://portalsegurancaglobal.com.br/?inscrito=1#newsletter">
+      <button type="submit">Inscrever-se</button>
+    </form>
+    <p class="nl-note">Seus dados ficam seguros e voc&ecirc; pode sair da lista quando quiser.</p>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer">
-  Portal Seguranca Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
-  Cobertura mundial. Dados baseados em fontes publicas. Nao substitui avaliacao profissional.<br><br>
+  Portal Segurança Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
+  Cobertura mundial. Dados baseados em fontes públicas. Não substitui avaliação profissional.<br><br>
   <strong>&copy; 2026 Portal de Seguran&ccedil;a Global. Todos os direitos reservados.</strong><br>
-  &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.
+  &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.<br><br>
+  <a href="index.html" style="color:var(--text-secondary);text-decoration:none;">Consulta</a> &bull;
+  <a href="noticias.html" style="color:var(--text-secondary);text-decoration:none;">Not&iacute;cias</a> &bull;
+  <a href="quem-somos.html" style="color:var(--text-secondary);text-decoration:none;">Quem Somos</a>
 </footer>
 
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
 <script defer src="app.js"></script>
+<script>
+(function(){
+  var FEEDS = [
+    {q: 'seguranca publica cameras vigilancia', label: 'Seguran&ccedil;a', tag: 'tec', when: '7d'},
+    {q: 'roubo furto veiculos rastreador', label: 'Automotivo', tag: 'aut', when: '14d'},
+    {q: 'tecnologia automotiva carro conectado seguranca', label: 'Automotivo', tag: 'aut', when: '14d'},
+    {q: 'aplicativo protecao seguranca pessoal mulher', label: 'Prote&ccedil;&atilde;o', tag: 'pro'}
+  ];
+  var PROXY_RAW = 'https://api.allorigins.win/raw?url=';
+  var PROXY_JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+  var cacheBust = '&_t=' + encodeURIComponent(new Date().toISOString().slice(0,13));
+
+  function feedUrl(f){
+    var q = encodeURIComponent(f.q + (f.when ? ' when:' + f.when : ''));
+    return 'https://news.google.com/rss/search?q=' + q + '&hl=pt-BR&gl=BR&ceid=BR:pt-419';
+  }
+
+  function fetchViaAllOrigins(f){
+    var url = PROXY_RAW + encodeURIComponent(feedUrl(f)) + cacheBust;
+    return fetch(url).then(function(r){ return r.text(); }).then(function(xml){
+      return parseXml(xml, f);
+    });
+  }
+
+  function fetchViaRss2Json(f){
+    var url = PROXY_JSON + encodeURIComponent(feedUrl(f));
+    return fetch(url).then(function(r){ return r.json(); }).then(function(j){
+      if (!j || !j.items) return [];
+      return j.items.map(function(it){
+        return {title: it.title, link: it.link, date: it.pubDate, label: f.label, tag: f.tag, source: (j.feed && j.feed.title) || ''};
+      });
+    });
+  }
+
+  function parseXml(xml, f){
+    try {
+      var doc = new DOMParser().parseFromString(xml, 'text/xml');
+      var items = doc.querySelectorAll('item');
+      var out = [];
+      for (var i = 0; i < items.length; i++) {
+        var t = items[i].querySelector('title');
+        var l = items[i].querySelector('link');
+        var d = items[i].querySelector('pubDate');
+        var s = items[i].querySelector('source');
+        if (!t) continue;
+        var title = t.textContent;
+        var src = s ? s.textContent : '';
+        // Google News anexa " - Fonte" ao título
+        if (!src && title.lastIndexOf(' - ') > 10) {
+          src = title.slice(title.lastIndexOf(' - ') + 3);
+          title = title.slice(0, title.lastIndexOf(' - '));
+        }
+        out.push({title: title, link: l ? l.textContent : '#', date: d ? d.textContent : '', label: f.label, tag: f.tag, source: src});
+      }
+      return out;
+    } catch(e) { return []; }
+  }
+
+  function fmtDate(iso){
+    try {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short'});
+    } catch(e) { return ''; }
+  }
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  window.psgCarregarFeed = function(gridId, limite){
+    var grid = document.getElementById(gridId);
+    if (!grid) return;
+    var jobs = FEEDS.map(function(f){
+      return fetchViaAllOrigins(f).catch(function(){ return fetchViaRss2Json(f); }).catch(function(){ return []; });
+    });
+    Promise.all(jobs).then(function(results){
+      var all = [];
+      var seen = {};
+      results.forEach(function(list){
+        list.forEach(function(n){
+          var key = n.title.toLowerCase().slice(0, 80);
+          if (!seen[key]) { seen[key] = true; all.push(n); }
+        });
+      });
+      all.sort(function(a, b){ return new Date(b.date) - new Date(a.date); });
+      if (!all.length) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.85rem;padding:1rem;">N&atilde;o foi poss&iacute;vel carregar as &uacute;ltimas not&iacute;cias agora. Volte em instantes.</p>';
+        return;
+      }
+      grid.innerHTML = all.slice(0, limite).map(function(n){
+        return '<a class="feed-item" href="' + esc(n.link) + '" target="_blank" rel="noopener noreferrer">' +
+          '<div class="fi-top"><span class="news-tag ' + esc(n.tag) + '">' + n.label + '</span>' +
+          '<span class="fi-date">' + fmtDate(n.date) + '</span></div>' +
+          '<h3>' + esc(n.title) + '</h3>' +
+          (n.source ? '<span class="fi-src">' + esc(n.source) + '</span>' : '') +
+          '<span class="fi-arrow">Ler na fonte &rarr;</span></a>';
+      }).join('');
+    }).catch(function(){
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.85rem;padding:1rem;">N&atilde;o foi poss&iacute;vel carregar as &uacute;ltimas not&iacute;cias agora.</p>';
+    });
+  };
+
+  if (document.readyState !== 'loading') { iniciar(); } else { document.addEventListener('DOMContentLoaded', iniciar); }
+  function iniciar(){
+    var n = document.getElementById('feed-grid-noticias');
+    if (n) window.psgCarregarFeed('feed-grid-noticias', 12);
+    var i = document.getElementById('feed-grid-index');
+    if (i) window.psgCarregarFeed('feed-grid-index', 3);
+  }
+})();
+</script>
 </body>
 </html>
