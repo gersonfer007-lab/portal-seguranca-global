@@ -866,34 +866,78 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 /* PDF REPORT (hidden, used for generation) */
 #pdf-report {
   position: absolute; left: -9999px; top: 0;
-  width: 800px; background: #fff; color: #111; padding: 40px;
+  width: 800px; background: #fff; color: #111; padding: 0 0 40px;
   font-family: 'Inter', sans-serif;
 }
 #pdf-report h1 { font-size: 24px; color: #1a2235; margin-bottom: 4px; }
 #pdf-report .pdf-subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
-#pdf-report .pdf-score-box {
-  background: linear-gradient(135deg, #1a2235, #2a3550);
-  color: #fff; padding: 24px; border-radius: 12px; text-align: center;
-  margin-bottom: 24px;
+#pdf-report .pdf-top-band {
+  display: flex; align-items: center; gap: 20px;
+  background: linear-gradient(135deg, #0c1730 0%, #14294f 60%, #1a3a6e 100%);
+  padding: 22px 32px; margin-bottom: 26px;
+  border-bottom: 4px solid #c9a227;
 }
-#pdf-report .pdf-score-number { font-size: 64px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-#pdf-report .pdf-score-label { font-size: 14px; opacity: .7; }
+#pdf-report .pdf-brasao { width: 84px; height: 84px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); flex-shrink: 0; }
+#pdf-report .pdf-top-text { flex: 1; }
+#pdf-report .pdf-org { font-size: 19px; font-weight: 900; color: #fff; letter-spacing: .12em; }
+#pdf-report .pdf-doc-title { font-size: 13px; font-weight: 700; color: #c9a227; letter-spacing: .08em; text-transform: uppercase; margin-top: 3px; }
+#pdf-report .pdf-doc-sub { font-size: 10.5px; color: rgba(255,255,255,.65); margin-top: 4px; line-height: 1.4; }
+#pdf-report .pdf-protocol { text-align: right; border-left: 1px solid rgba(255,255,255,.2); padding-left: 16px; flex-shrink: 0; }
+#pdf-report .pdf-protocol .lbl { font-size: 9px; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .1em; }
+#pdf-report .pdf-protocol .val { font-size: 13px; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace; margin: 2px 0 6px; }
+#pdf-report .pdf-body { padding: 0 40px; }
+#pdf-report .pdf-score-box {
+  background: linear-gradient(135deg, #0c1730, #1a3a6e);
+  color: #fff; padding: 22px; border-radius: 12px; text-align: center;
+  margin-bottom: 22px; border: 1px solid #c9a227;
+}
+#pdf-report .pdf-score-number { font-size: 62px; font-weight: 900; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+#pdf-report .pdf-score-label { font-size: 14px; opacity: .8; margin-top: 4px; }
 #pdf-report .pdf-section { margin-bottom: 20px; }
-#pdf-report .pdf-section h3 { font-size: 16px; color: #1a2235; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px; }
+#pdf-report .pdf-section h3 {
+  font-size: 15px; color: #0c1730; border-bottom: 2px solid #c9a227; padding-bottom: 6px; margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: .06em;
+}
 #pdf-report .pdf-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-#pdf-report .pdf-stat { background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; }
-#pdf-report .pdf-stat .val { font-size: 24px; font-weight: 800; color: #1a2235; }
-#pdf-report .pdf-stat .lbl { font-size: 11px; color: #666; text-transform: uppercase; }
+#pdf-report .pdf-stat { background: #f3f4f6; padding: 14px; border-radius: 8px; text-align: center; border: 1px solid #e5e7eb; }
+#pdf-report .pdf-stat .val { font-size: 22px; font-weight: 800; color: #0c1730; }
+#pdf-report .pdf-stat .lbl { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+#pdf-report .pdf-flags-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+#pdf-report .pdf-flag-box {
+  background: #f8f9fb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+}
+#pdf-report .pdf-flag-box img { width: 56px; height: 40px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+#pdf-report .pdf-flag-box span { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: .1em; }
+#pdf-report .pdf-flag-box b { font-size: 12px; color: #0c1730; line-height: 1.2; }
+#pdf-report .pdf-city-seal {
+  width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0c1730, #1a3a6e); color: #c9a227; font-weight: 900; font-size: 17px;
+  border: 2px solid #c9a227; letter-spacing: .04em;
+}
+#pdf-report .pdf-address-line { font-size: 13px; font-weight: 700; color: #1a2235; line-height: 1.5; }
+#pdf-report .pdf-coord-line { font-size: 11px; color: #666; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+#pdf-report .pdf-note { font-size: 12px; color: #444; line-height: 1.6; margin-bottom: 12px; }
+#pdf-report .pdf-period {
+  font-size: 11px; color: #0c1730; background: #fbf6e7; border: 1px solid #e7d9a8; border-radius: 6px;
+  padding: 8px 12px; margin-bottom: 12px; line-height: 1.5;
+}
+#pdf-report .pdf-limits { width: 100%; border-collapse: collapse; margin-top: 12px; }
+#pdf-report .pdf-limits td {
+  border: 1px solid #e5e7eb; padding: 9px 12px; font-size: 11.5px; color: #333; width: 50%;
+  background: #fafbfc; line-height: 1.5;
+}
+#pdf-report .pdf-limits .dir { font-weight: 800; color: #0c1730; text-transform: uppercase; font-size: 10px; letter-spacing: .06em; }
+#pdf-report .pdf-limits .coord { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #777; }
 #pdf-report .pdf-force-box { display: flex; gap: 16px; align-items: stretch; margin-top: 12px; }
-#pdf-report .pdf-force { flex: 1; background: #f3f4f6; border-radius: 8px; padding: 16px; text-align: center; }
+#pdf-report .pdf-force { flex: 1; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-align: center; }
 #pdf-report .pdf-force .badge { width: 48px; height: 48px; margin: 0 auto 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 13px; }
 #pdf-report .pdf-force .pm { background: linear-gradient(135deg,#1a4d8f,#3b82f6); }
 #pdf-report .pdf-force .pc { background: linear-gradient(135deg,#7c2d12,#f97316); }
 #pdf-report .pdf-force .name { font-size: 12px; font-weight: 700; color: #1a2235; margin-bottom: 4px; }
 #pdf-report .pdf-force .city { font-size: 11px; color: #666; }
-#pdf-report .pdf-flag { width: 40px; height: 30px; border-radius: 4px; object-fit: cover; margin-right: 12px; vertical-align: middle; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-#pdf-report .pdf-header-row { display: flex; align-items: center; margin-bottom: 8px; }
-#pdf-report .pdf-footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #999; text-align: center; }
+#pdf-report .pdf-footer { margin-top: 28px; padding: 16px 40px 0; border-top: 2px solid #c9a227; font-size: 10.5px; color: #888; text-align: center; line-height: 1.7; }
+#pdf-report .pdf-footer .verify { font-weight: 700; color: #0c1730; }
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
@@ -1672,19 +1716,84 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- PDF Report Template (hidden) -->
 <div id="pdf-report">
-  <div class="pdf-header-row">
-    <img id="pdf-country-flag" class="pdf-flag" src="" alt="Bandeira" style="display:none;">
-    <div>
-      <h1 id="pdf-title">Relatorio de Seguranca</h1>
-      <div class="pdf-subtitle" id="pdf-address">--</div>
+  <div class="pdf-top-band">
+    <img class="pdf-brasao" src="brasao-sh.png" alt="Brasao Portal Seguranca Global" crossorigin="anonymous">
+    <div class="pdf-top-text">
+      <div class="pdf-org">PORTAL SEGURANCA GLOBAL</div>
+      <div class="pdf-doc-title">Relatorio Oficial de Analise de Seguranca</div>
+      <div class="pdf-doc-sub">Inteligencia e estatistica aplicadas a protecao de pessoas, familias e patrimonios</div>
+    </div>
+    <div class="pdf-protocol">
+      <div class="lbl">Protocolo</div>
+      <div class="val" id="pdf-protocol">--</div>
+      <div class="lbl">Emitido em</div>
+      <div class="val" id="pdf-emitted" style="font-size:11px;">--</div>
     </div>
   </div>
+
+  <div class="pdf-body">
+  <div class="pdf-section">
+    <h3>Identificacao do Local Analisado</h3>
+    <div class="pdf-flags-row">
+      <div class="pdf-flag-box">
+        <img id="pdf-country-flag" src="" alt="Bandeira do pais" crossorigin="anonymous">
+        <span>Pais</span>
+        <b id="pdf-country-name">--</b>
+      </div>
+      <div class="pdf-flag-box">
+        <img id="pdf-state-flag" src="" alt="Bandeira do estado" crossorigin="anonymous" style="display:none;">
+        <div class="pdf-city-seal" id="pdf-state-seal" style="display:none;">--</div>
+        <span>Estado</span>
+        <b id="pdf-state-name">--</b>
+      </div>
+      <div class="pdf-flag-box">
+        <img id="pdf-city-flag" src="" alt="Bandeira do municipio" crossorigin="anonymous" style="display:none;">
+        <div class="pdf-city-seal" id="pdf-city-seal">--</div>
+        <span>Municipio</span>
+        <b id="pdf-city-name">--</b>
+      </div>
+    </div>
+    <div class="pdf-address-line" id="pdf-address">--</div>
+    <div class="pdf-coord-line" id="pdf-coords">--</div>
+  </div>
+
+  <div class="pdf-section">
+    <h3>Perimetro da Varredura</h3>
+    <p class="pdf-note" id="pdf-perimeter-desc">--</p>
+    <div class="pdf-stat-grid">
+      <div class="pdf-stat"><div class="val">1,5 km</div><div class="lbl">Raio de analise</div></div>
+      <div class="pdf-stat"><div class="val">7,07 km&sup2;</div><div class="lbl">Area coberta</div></div>
+      <div class="pdf-stat"><div class="val">9,42 km</div><div class="lbl">Perimetro total</div></div>
+    </div>
+    <table class="pdf-limits">
+      <tr>
+        <td><div class="dir">Limite Norte</div><div id="pdf-limit-n">--</div><div class="coord" id="pdf-limit-n-coord">--</div></td>
+        <td><div class="dir">Limite Sul</div><div id="pdf-limit-s">--</div><div class="coord" id="pdf-limit-s-coord">--</div></td>
+      </tr>
+      <tr>
+        <td><div class="dir">Limite Leste</div><div id="pdf-limit-e">--</div><div class="coord" id="pdf-limit-e-coord">--</div></td>
+        <td><div class="dir">Limite Oeste</div><div id="pdf-limit-w">--</div><div class="coord" id="pdf-limit-w-coord">--</div></td>
+      </tr>
+    </table>
+  </div>
+
   <div class="pdf-score-box">
     <div class="pdf-score-number" id="pdf-score">--</div>
     <div class="pdf-score-label" id="pdf-score-label">Safety Score</div>
   </div>
+
   <div class="pdf-section">
-    <h3>Forcas de Seguranca</h3>
+    <h3>Indicadores Principais</h3>
+    <div class="pdf-period">Periodo de referencia dos dados: <b id="pdf-period">--</b> &mdash; estatisticas consolidadas dos ultimos 12 meses, combinadas com dados publicos de seguranca da regiao.</div>
+    <div class="pdf-stat-grid">
+      <div class="pdf-stat"><div class="val" id="pdf-crime">--</div><div class="lbl">Indice Criminal</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-infra">--</div><div class="lbl">Infraestrutura</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-movement">--</div><div class="lbl">Movimentacao</div></div>
+    </div>
+  </div>
+
+  <div class="pdf-section">
+    <h3>Forcas de Seguranca da Regiao</h3>
     <div class="pdf-force-box">
       <div class="pdf-force">
         <div class="badge pm">PM</div>
@@ -1698,25 +1807,20 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       </div>
     </div>
   </div>
+
   <div class="pdf-section">
-    <h3>Indicadores Principais</h3>
-    <div class="pdf-stat-grid">
-      <div class="pdf-stat"><div class="val" id="pdf-crime">--</div><div class="lbl">Indice Criminal</div></div>
-      <div class="pdf-stat"><div class="val" id="pdf-infra">--</div><div class="lbl">Infraestrutura</div></div>
-      <div class="pdf-stat"><div class="val" id="pdf-movement">--</div><div class="lbl">Movimentacao</div></div>
-    </div>
-  </div>
-  <div class="pdf-section">
-    <h3>Estatisticas do Bairro</h3>
+    <h3>Estatisticas do Perimetro (raio de 1,5 km)</h3>
     <div class="pdf-stat-grid">
       <div class="pdf-stat"><div class="val" id="pdf-occ">--</div><div class="lbl">Ocorrencias/mes</div></div>
       <div class="pdf-stat"><div class="val" id="pdf-cam">--</div><div class="lbl">Cameras</div></div>
       <div class="pdf-stat"><div class="val" id="pdf-com">--</div><div class="lbl">Comercios</div></div>
     </div>
   </div>
+  </div>
+
   <div class="pdf-footer">
-    Gerado por Portal Seguranca Global &mdash; portalsegurancaglobal.com.br<br>
-    Cobertura mundial. Este relatorio e baseado em dados publicos e estimativas estatisticas. Nao substitui consultoria profissional.
+    <div class="verify">Verifique a autenticidade deste documento em portalsegurancaglobal.com.br</div>
+    Documento gerado eletronicamente pelo Portal Seguranca Global. Este relatorio e baseado em dados publicos e estimativas estatisticas do perimetro analisado. Nao substitui consultoria profissional nem boletins oficiais de ocorrencia.
   </div>
 </div>
 

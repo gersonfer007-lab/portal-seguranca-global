@@ -886,6 +886,74 @@ function ensurePdfLibs() {
   return _psgPdfLibsPromise;
 }
 
+// Bandeiras dos estados brasileiros (Wikimedia Commons / Special:FilePath)
+var PSG_BR_STATE_FLAGS = {
+  'acre': 'Bandeira do Acre.svg', 'ac': 'Bandeira do Acre.svg',
+  'alagoas': 'Bandeira de Alagoas.svg', 'al': 'Bandeira de Alagoas.svg',
+  'amapa': 'Bandeira do Amapá.svg', 'ap': 'Bandeira do Amapá.svg',
+  'amazonas': 'Bandeira do Amazonas.svg', 'am': 'Bandeira do Amazonas.svg',
+  'bahia': 'Bandeira da Bahia.svg', 'ba': 'Bandeira da Bahia.svg',
+  'ceara': 'Bandeira do Ceará.svg', 'ce': 'Bandeira do Ceará.svg',
+  'distrito federal': 'Bandeira do Distrito Federal (Brasil).svg', 'df': 'Bandeira do Distrito Federal (Brasil).svg',
+  'espirito santo': 'Bandeira do Espírito Santo.svg', 'es': 'Bandeira do Espírito Santo.svg',
+  'goias': 'Bandeira de Goiás.svg', 'go': 'Bandeira de Goiás.svg',
+  'maranhao': 'Bandeira do Maranhão.svg', 'ma': 'Bandeira do Maranhão.svg',
+  'mato grosso': 'Bandeira de Mato Grosso.svg', 'mt': 'Bandeira de Mato Grosso.svg',
+  'mato grosso do sul': 'Bandeira de Mato Grosso do Sul.svg', 'ms': 'Bandeira de Mato Grosso do Sul.svg',
+  'minas gerais': 'Bandeira de Minas Gerais.svg', 'mg': 'Bandeira de Minas Gerais.svg',
+  'para': 'Bandeira do Pará.svg', 'pa': 'Bandeira do Pará.svg',
+  'paraiba': 'Bandeira da Paraíba.svg', 'pb': 'Bandeira da Paraíba.svg',
+  'parana': 'Bandeira do Paraná.svg', 'pr': 'Bandeira do Paraná.svg',
+  'pernambuco': 'Bandeira de Pernambuco.svg', 'pe': 'Bandeira de Pernambuco.svg',
+  'piaui': 'Bandeira do Piauí.svg', 'pi': 'Bandeira do Piauí.svg',
+  'rio de janeiro': 'Bandeira do estado do Rio de Janeiro.svg', 'rj': 'Bandeira do estado do Rio de Janeiro.svg',
+  'rio grande do norte': 'Bandeira do Rio Grande do Norte.svg', 'rn': 'Bandeira do Rio Grande do Norte.svg',
+  'rio grande do sul': 'Bandeira do Rio Grande do Sul.svg', 'rs': 'Bandeira do Rio Grande do Sul.svg',
+  'rondonia': 'Bandeira de Rondônia.svg', 'ro': 'Bandeira de Rondônia.svg',
+  'roraima': 'Bandeira de Roraima.svg', 'rr': 'Bandeira de Roraima.svg',
+  'santa catarina': 'Bandeira de Santa Catarina.svg', 'sc': 'Bandeira de Santa Catarina.svg',
+  'sao paulo': 'Bandeira do estado de São Paulo.svg', 'sp': 'Bandeira do estado de São Paulo.svg',
+  'sergipe': 'Bandeira de Sergipe.svg', 'se': 'Bandeira de Sergipe.svg',
+  'tocantins': 'Bandeira do Tocantins.svg', 'to': 'Bandeira do Tocantins.svg'
+};
+var PSG_BR_STATE_NAMES = {
+  ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
+  es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',
+  pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',
+  rs:'Rio Grande do Sul',ro:'Rondônia',rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'
+};
+function _psgNorm(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+}
+function _psgCommonsUrl(fileName) {
+  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(fileName) + '?width=200';
+}
+function _psgWaitImg(img) {
+  return new Promise(function(resolve) {
+    if (!img || !img.src || img.style.display === 'none') return resolve();
+    if (img.complete && img.naturalWidth > 0) return resolve();
+    var done = function() { resolve(); };
+    img.addEventListener('load', done, { once: true });
+    img.addEventListener('error', done, { once: true });
+    setTimeout(done, 12000);
+  });
+}
+function _psgSleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+async function _psgReverseLabel(lat, lng) {
+  try {
+    var r = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&zoom=14&accept-language=pt');
+    if (!r.ok) return '';
+    var d = await r.json();
+    var a = d.address || {};
+    var bairro = a.suburb || a.neighbourhood || a.quarter || a.village || a.hamlet || '';
+    var cidade = a.city || a.town || a.municipality || a.village || '';
+    return [bairro, cidade].filter(function(v, i, arr) { return v && arr.indexOf(v) === i; }).join(' — ');
+  } catch (e) { return ''; }
+}
+function _psgMesAno(d) {
+  return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+}
+
 async function _doGeneratePDF() {
   showLoading('Preparando gerador de PDF...');
   try {
@@ -895,20 +963,99 @@ async function _doGeneratePDF() {
     alert('Nao foi possivel carregar o gerador de PDF. Verifique sua conexao e tente novamente.');
     return;
   }
-  showLoading('Gerando relatorio PDF...');
-  var countryCode = (currentData.address.country_code || '').toLowerCase();
-  var countryName = currentData.address.country || 'Brasil';
-  var city = currentData.address.city || currentData.address.town || currentData.address.village || currentData.address.municipality || currentData.address.county || '';
-  var state = currentData.address.state || '';
-  var localLabel = [city, state].filter(Boolean).join(' - ') || countryName;
-  var flagUrl = countryCode ? 'https://flagcdn.com/64x48/' + countryCode + '.png' : '';
+  var addr = currentData.address;
+  var countryCode = (addr.country_code || '').toLowerCase();
+  var countryName = addr.country || 'Brasil';
+  var city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+  var stateRaw = addr.state || '';
+  var stateName = PSG_BR_STATE_NAMES[_psgNorm(stateRaw)] || stateRaw;
+  var localLabel = [city, stateName].filter(Boolean).join(' - ') || countryName;
+  var now = new Date();
+  var protocol = 'PSG-' + now.getFullYear() + '-' + Date.now().toString(36).toUpperCase().slice(-8);
+
+  // ---- Perimetro da varredura (raio 1,5 km) ----
+  showLoading('Mapeando perimetro da varredura...');
+  var RAIO_KM = 1.5;
+  var lat = currentData.lat, lng = currentData.lng;
+  var dLat = RAIO_KM / 111.32;
+  var dLng = RAIO_KM / (111.32 * Math.cos(lat * Math.PI / 180) || 1);
+  var lims = [
+    { id: 'n', lat: lat + dLat, lng: lng },
+    { id: 's', lat: lat - dLat, lng: lng },
+    { id: 'e', lat: lat, lng: lng + dLng },
+    { id: 'w', lat: lat, lng: lng - dLng }
+  ];
+  for (var i = 0; i < lims.length; i++) {
+    var L = lims[i];
+    var label = await _psgReverseLabel(L.lat, L.lng);
+    document.getElementById('pdf-limit-' + L.id).textContent = label || 'Ponto limite do perimetro';
+    document.getElementById('pdf-limit-' + L.id + '-coord').textContent = 'Lat ' + L.lat.toFixed(5) + ' | Lng ' + L.lng.toFixed(5);
+    if (i < lims.length - 1) await _psgSleep(1100); // respeita 1 req/s do Nominatim
+  }
+  var bairro = addr.neighborhood || '';
+  var desc = 'A varredura parte do endereco pesquisado e se estende por 1,5 km em todas as direcoes, cobrindo '
+    + (bairro ? 'o bairro ' + bairro + ' e suas adjacencias' : 'a regiao central e suas adjacencias')
+    + (city ? ', no municipio de ' + city + (stateName ? ' (' + stateName + ')' : '') : '')
+    + '. Os limites Norte, Sul, Leste e Oeste abaixo indicam exatamente onde a analise comeca e onde termina; em pontos proximos a divisas, a varredura pode alcancar bairros ou municipios vizinhos.';
+  document.getElementById('pdf-perimeter-desc').textContent = desc;
+
+  // ---- Bandeiras ----
   var flagImg = document.getElementById('pdf-country-flag');
-  if (flagUrl) { flagImg.src = flagUrl; flagImg.style.display = 'inline-block'; }
+  if (countryCode) { flagImg.src = 'https://flagcdn.com/160x120/' + countryCode + '.png'; flagImg.style.display = 'block'; }
   else { flagImg.style.display = 'none'; }
+  document.getElementById('pdf-country-name').textContent = countryName;
+  document.getElementById('pdf-state-name').textContent = stateName || 'Nao identificado';
+  document.getElementById('pdf-city-name').textContent = city || localLabel;
+
+  var stateFlagImg = document.getElementById('pdf-state-flag');
+  var stateSeal = document.getElementById('pdf-state-seal');
+  var stateFile = PSG_BR_STATE_FLAGS[_psgNorm(stateRaw)];
+  if (countryCode === 'br' && stateFile) {
+    stateFlagImg.style.display = 'block';
+    stateSeal.style.display = 'none';
+    stateFlagImg.onerror = function() {
+      stateFlagImg.style.display = 'none';
+      stateSeal.textContent = (stateRaw || '').slice(0, 2).toUpperCase() || 'BR';
+      stateSeal.style.display = 'flex';
+    };
+    stateFlagImg.src = _psgCommonsUrl(stateFile);
+  } else {
+    stateFlagImg.style.display = 'none';
+    stateSeal.textContent = (stateRaw || countryCode || '--').slice(0, 2).toUpperCase();
+    stateSeal.style.display = 'flex';
+  }
+
+  var cityFlagImg = document.getElementById('pdf-city-flag');
+  var citySeal = document.getElementById('pdf-city-seal');
+  cityFlagImg.style.display = 'none';
+  citySeal.style.display = 'flex';
+  citySeal.textContent = (city || '?').replace(/[^A-Za-zÀ-ÿ ]/g, '').split(' ').filter(Boolean).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+  if (countryCode === 'br' && city) {
+    var uf = _psgNorm(stateRaw).length === 2 ? stateRaw.toUpperCase() : '';
+    var candidates = ['Bandeira da cidade de ' + city + '.svg', 'Bandeira de ' + city + (uf ? ' (' + uf + ')' : '') + '.svg', 'Bandeira de ' + city + '.svg'];
+    var ci = 0;
+    cityFlagImg.onerror = function() {
+      ci++;
+      if (ci < candidates.length) { cityFlagImg.src = _psgCommonsUrl(candidates[ci]); }
+      else { cityFlagImg.style.display = 'none'; citySeal.style.display = 'flex'; }
+    };
+    cityFlagImg.onload = function() {
+      if (cityFlagImg.naturalWidth > 0) { cityFlagImg.style.display = 'block'; citySeal.style.display = 'none'; }
+    };
+    cityFlagImg.src = _psgCommonsUrl(candidates[0]);
+  }
+
+  // ---- Identificacao, protocolo, periodo ----
+  document.getElementById('pdf-protocol').textContent = protocol;
+  document.getElementById('pdf-emitted').textContent = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('pdf-address').textContent = addr.fullAddress;
+  document.getElementById('pdf-coords').textContent = 'Ponto central: Lat ' + lat.toFixed(5) + ' | Lng ' + lng.toFixed(5) + (addr.cep ? ' | CEP ' + addr.cep : '');
+  var fim = new Date(now.getFullYear(), now.getMonth(), 1);
+  var inicio = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  document.getElementById('pdf-period').textContent = _psgMesAno(inicio) + ' a ' + _psgMesAno(fim);
+
   document.getElementById('pdf-pm-city').textContent = localLabel;
   document.getElementById('pdf-pc-city').textContent = localLabel;
-  document.getElementById('pdf-title').textContent = 'Relatorio de Seguranca - Portal Seguranca Global';
-  document.getElementById('pdf-address').textContent = currentData.address.fullAddress + ' | ' + new Date().toLocaleDateString('pt-BR');
   document.getElementById('pdf-score').textContent = currentData.safetyScore;
   document.getElementById('pdf-score-label').textContent = 'Safety Score - ' + (currentData.safetyScore >= 70 ? 'SEGURO' : currentData.safetyScore >= 40 ? 'MODERADO' : 'CRITICO');
   document.getElementById('pdf-crime').textContent = currentData.crimeScore + '/100';
@@ -917,18 +1064,38 @@ async function _doGeneratePDF() {
   document.getElementById('pdf-occ').textContent = currentData.totalOccurrences;
   document.getElementById('pdf-cam').textContent = currentData.cameras;
   document.getElementById('pdf-com').textContent = currentData.commerce;
+
+  // ---- Renderiza com todas as imagens carregadas ----
+  showLoading('Gerando relatorio PDF...');
   try {
-    const reportEl = document.getElementById('pdf-report');
+    var reportEl = document.getElementById('pdf-report');
+    var imgs = reportEl.querySelectorAll('img');
+    await Promise.all(Array.prototype.map.call(imgs, _psgWaitImg));
     reportEl.style.left = '0';
-    const canvas = await html2canvas(reportEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const canvas = await html2canvas(reportEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 15000 });
     reportEl.style.left = '-9999px';
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgData = canvas.toDataURL('image/jpeg', .95);
     const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = (canvas.height * pageW) / canvas.width;
-    pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
-    var fileName = 'PortalSegurancaGlobal_Relatorio_' + Date.now() + '.pdf';
+    const pageHmm = pdf.internal.pageSize.getHeight();
+    const pxPerPage = Math.floor(canvas.width * pageHmm / pageW);
+    let pos = 0, page = 0;
+    while (pos < canvas.height) {
+      const sliceH = Math.min(pxPerPage, canvas.height - pos);
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceH;
+      const ctx = pageCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(canvas, 0, pos, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      const imgData = pageCanvas.toDataURL('image/jpeg', .95);
+      if (page > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, sliceH * pageW / canvas.width);
+      pos += sliceH;
+      page++;
+    }
+    var fileName = 'PortalSegurancaGlobal_Relatorio_' + protocol + '.pdf';
     var pdfBlob = pdf.output('blob');
     hideLoading();
     // Download direto gratuito (sem paywall)
