@@ -1089,6 +1089,11 @@ async function _doGeneratePDF() {
   document.getElementById('pdf-dateline').textContent = cidadeData + ', ' + now.getDate() + ' de ' + mesesExtenso[now.getMonth()] + ' de ' + now.getFullYear() + '.';
   var qrData = 'https://portalsegurancaglobal.com.br/verificar/' + protocol;
   document.getElementById('pdf-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=4&color=12-23-53&data=' + encodeURIComponent(qrData);
+  // Microtexto de seguranca (topo e base do documento)
+  var microStr = 'PORTAL SEGURANCA GLOBAL \u2022 DOCUMENTO DE ANALISE DE SEGURANCA \u2022 ' + protocol + ' \u2022 EMISSAO ' + emittedStr + ' \u2022 ';
+  document.getElementById('pdf-micro-top').textContent = microStr + microStr + microStr;
+  document.getElementById('pdf-micro-bot').textContent = microStr + microStr + microStr;
+  var serial = 'SERIE B ' + (Math.floor(Math.random() * 899999999) + 100000000);
   document.getElementById('pdf-address').textContent = addr.fullAddress;
   document.getElementById('pdf-coords').textContent = 'Ponto central: Lat ' + lat.toFixed(5) + ' | Lng ' + lng.toFixed(5) + (addr.cep ? ' | CEP ' + addr.cep : '');
   var fim = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -1136,6 +1141,7 @@ async function _doGeneratePDF() {
       pos += sliceH;
     }
     // Monta o documento com moldura e rodape de pagina
+    var microLine = microStr + microStr; // microtexto carimbado por pagina
     for (let p = 0; p < slices.length; p++) {
       if (p > 0) pdf.addPage();
       pdf.addImage(slices[p].data, 'JPEG', 0, 0, pageW, slices[p].hMm);
@@ -1146,7 +1152,26 @@ async function _doGeneratePDF() {
       pdf.setDrawColor(12, 23, 53);
       pdf.setLineWidth(0.25);
       pdf.rect(6.5, 6.5, pageW - 13, pageHmm - 13);
+      // Marcas de canto (ouro)
+      pdf.setFillColor(201, 162, 39);
+      pdf.rect(7, 7, 2.2, 2.2, 'F');
+      pdf.rect(pageW - 9.2, 7, 2.2, 2.2, 'F');
+      pdf.rect(7, pageHmm - 9.2, 2.2, 2.2, 'F');
+      pdf.rect(pageW - 9.2, pageHmm - 9.2, 2.2, 2.2, 'F');
+      // Microtexto de seguranca (fonte minúscula, legível apenas com lupa)
+      pdf.setFont('courier', 'normal');
+      pdf.setFontSize(2.8);
+      pdf.setTextColor(26, 58, 110);
+      pdf.text(microLine, pageW / 2, 4.2, { align: 'center' });
+      pdf.text(microLine, pageW / 2, pageHmm - 2.6, { align: 'center' });
+      // Numero de serie na lateral (vermelho, como em cedulas)
+      pdf.setFont('courier', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(138, 31, 31);
+      pdf.text(serial, 8.2, pageHmm - 60, { angle: 90 });
+      pdf.text(serial, pageW - 5.2, 60, { angle: 90 });
       // Rodape de pagina
+      pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(7.5);
       pdf.setTextColor(110, 110, 110);
       pdf.text('Protocolo ' + protocol + '  |  Pagina ' + (p + 1) + ' de ' + slices.length + '  |  portalsegurancaglobal.com.br  |  Documento gerado eletronicamente', pageW / 2, pageHmm - 3.2, { align: 'center' });

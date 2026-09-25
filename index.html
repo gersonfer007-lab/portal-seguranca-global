@@ -977,6 +977,31 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-law .art { font-size: 11px; font-weight: 800; color: #0c1730; letter-spacing: .04em; }
 #pdf-report .pdf-law .txt { font-size: 10.5px; color: #333; line-height: 1.55; font-style: italic; margin-top: 3px; }
 #pdf-report .pdf-law .base { font-size: 9.5px; color: #666; margin-top: 3px; }
+/* Elementos de seguranca do documento */
+#pdf-report .pdf-security-bg {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-radial-gradient(circle at 50% 30%, rgba(26,58,110,.05) 0 1px, transparent 1px 24px),
+    repeating-radial-gradient(circle at 50% 75%, rgba(201,162,39,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(115deg, rgba(26,58,110,.04) 0 1px, transparent 1px 16px);
+}
+#pdf-report .pdf-microtext {
+  position: relative; z-index: 1; overflow: hidden; white-space: nowrap; text-align: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 4.2px; letter-spacing: 1.2px;
+  color: rgba(26,58,110,.6); padding: 5px 0;
+  border-top: 1px solid rgba(26,58,110,.25); border-bottom: 1px solid rgba(26,58,110,.25);
+}
+#pdf-report .pdf-seal {
+  width: 112px; height: 112px; border-radius: 50%; flex-shrink: 0; position: relative;
+  background: radial-gradient(circle at 32% 30%, #f6e3a1 0%, #d4af37 40%, #9a7b1e 74%, #6e5614 100%);
+  box-shadow: 0 3px 9px rgba(0,0,0,.35), inset 0 0 0 3px rgba(255,255,255,.22);
+  display: flex; align-items: center; justify-content: center;
+}
+#pdf-report .pdf-seal::before {
+  content: ''; position: absolute; left: 7px; top: 7px; right: 7px; bottom: 7px;
+  border-radius: 50%; border: 1.5px dashed rgba(255,248,220,.6);
+}
+#pdf-report .pdf-seal img { width: 56px; height: 56px; object-fit: contain; }
 #pdf-report .pdf-signature { margin-top: 34px; text-align: center; }
 #pdf-report .pdf-signature .line { width: 340px; margin: 0 auto 6px; border-top: 1.5px solid #0c1730; }
 #pdf-report .pdf-signature .who { font-size: 11.5px; font-weight: 700; color: #0c1730; }
@@ -1759,6 +1784,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
 <!-- PDF Report Template (hidden) -->
 <div id="pdf-report">
+  <div class="pdf-security-bg"></div>
   <img class="pdf-watermark pdf-wm-1" src="brasao-sh.png" alt="" crossorigin="anonymous">
   <img class="pdf-watermark pdf-wm-2" src="brasao-sh.png" alt="" crossorigin="anonymous">
   <div class="pdf-top-band">
@@ -1775,6 +1801,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <div class="val" id="pdf-emitted" style="font-size:11px;">--</div>
     </div>
   </div>
+  <div class="pdf-microtext" id="pdf-micro-top"></div>
 
   <div class="pdf-body">
   <div class="pdf-section">
@@ -1912,6 +1939,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <div class="row">Aponte a camera do celular para o QR Code ou acesse <b>portalsegurancaglobal.com.br</b> e informe o protocolo.</div>
         <div class="classif">Documento publico &middot; Uso informativo</div>
       </div>
+      <div class="pdf-seal"><img src="brasao-sh.png" alt="Selo do emissor" crossorigin="anonymous"></div>
     </div>
     <div class="pdf-signature">
       <div class="line"></div>
@@ -1920,6 +1948,8 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     </div>
   </div>
   </div>
+
+  <div class="pdf-microtext" id="pdf-micro-bot"></div>
 
   <div class="pdf-footer">
     <div class="verify">Verifique a autenticidade deste documento em portalsegurancaglobal.com.br</div>
