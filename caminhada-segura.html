@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caminhada Segura — Portal Segurança Global</title>
+<meta name="description" content="Compartilhe sua caminhada ou rota com quem você confia. O responsável acompanha sua localização em tempo real, direto do celular.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root {
+  --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: #1a2235; --bg-card-hover: #1f2a40;
+  --border: #2a3550; --text-primary: #e8ecf4; --text-secondary: #8b95a8; --text-muted: #5a6478;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,.25); --green: #22c55e; --yellow: #eab308;
+  --red: #ef4444; --orange: #f97316;
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-safe: linear-gradient(135deg, #22c55e, #10b981);
+  --radius-lg: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+.header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.5rem; background: rgba(10,14,26,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.header-brand { display: flex; align-items: center; gap: .7rem; font-size: .85rem; font-weight: 800; letter-spacing: .06em; }
+.header-badge { background: var(--gradient-accent); color: #fff; font-size: .56rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: .08em; text-transform: uppercase; }
+.header-nav { display: flex; align-items: center; gap: 1.2rem; font-size: .85rem; }
+.header-nav a { color: var(--text-secondary); text-decoration: none; font-weight: 600; transition: color .2s; }
+.header-nav a:hover, .header-nav a.active { color: var(--accent); }
+.header-status { display: flex; align-items: center; gap: .5rem; font-size: .72rem; color: var(--text-secondary); }
+.header-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+.page { max-width: 860px; margin: 0 auto; padding: 2.2rem 1.2rem 3rem; }
+.hero { text-align: center; margin-bottom: 2rem; }
+.hero h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; }
+.hero .sub { color: var(--text-secondary); font-size: .95rem; margin-top: .5rem; line-height: 1.6; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; font-size: .6rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .7rem; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.6rem; margin-bottom: 1.3rem; }
+.card h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: .8rem; display: flex; align-items: center; gap: 10px; }
+.muted { color: var(--text-secondary); font-size: .85rem; line-height: 1.7; }
+.footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .75rem; line-height: 1.8; }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+@media (max-width: 640px) {
+  .header-nav { gap: .7rem; font-size: .74rem; }
+  .header-status { display: none; }
+  .page { padding: 1.5rem .9rem 2.5rem; }
+  .hero h1 { font-size: 1.45rem; }
+  .card { padding: 1.2rem; }
+}
+#mapa { height: 340px; width: 100%; border-radius: 12px; border: 1px solid var(--border); z-index: 1; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .8rem; margin-bottom: 1.3rem; }
+.step { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; }
+.step .num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--gradient-accent); color: #fff; font-size: .8rem; font-weight: 800; margin-bottom: .5rem; }
+.step h3 { font-size: .92rem; font-weight: 700; margin-bottom: .3rem; }
+.step p { font-size: .78rem; color: var(--text-secondary); line-height: 1.6; }
+.consent { display: flex; gap: 10px; align-items: flex-start; background: rgba(234,179,8,.08); border: 1px solid rgba(234,179,8,.3); border-radius: 12px; padding: .9rem 1rem; margin: 1rem 0; }
+.consent input { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+.consent label { font-size: .8rem; color: var(--text-secondary); line-height: 1.6; cursor: pointer; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: .95rem 1.6rem; border: none; border-radius: 12px; font-size: .95rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: transform .15s, opacity .2s; }
+.btn:active { transform: scale(.97); }
+.btn-azul { background: var(--gradient-accent); color: #fff; }
+.btn-verde { background: var(--gradient-safe); color: #fff; }
+.btn-vermelho { background: var(--gradient-danger); color: #fff; font-size: 1.05rem; padding: 1.1rem 1.6rem; }
+.btn-fantasma { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.painel-ativo { display: none; }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .7rem; margin-bottom: 1rem; }
+.stat { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: .8rem; text-align: center; }
+.stat .v { font-size: 1.15rem; font-weight: 800; color: var(--accent); }
+.stat .l { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-top: .2rem; }
+.link-box { display: flex; gap: .5rem; margin: .9rem 0; flex-wrap: wrap; }
+.link-box input { flex: 1; min-width: 200px; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: .82rem; }
+.acoes { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: 1rem; }
+.msg-ok { display: none; text-align: center; padding: 2.5rem 1rem; }
+.msg-ok .icone { font-size: 3rem; margin-bottom: .8rem; }
+.aviso { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.25); border-radius: 12px; padding: .9rem 1rem; font-size: .78rem; color: var(--text-secondary); line-height: 1.7; margin-top: 1rem; }
+.sos-info { display: none; margin-top: .8rem; text-align: center; }
+@media (max-width: 640px) { .acoes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-brand">
+    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <span>PORTAL SEGURANÇA GLOBAL</span>
+    <span class="header-badge">Intel</span>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Consulta</a>
+    <a href="noticias.html">Notícias</a>
+    <a href="caminhada-segura.html" class="active">Caminhada Segura</a>
+    <a href="quem-somos.html">Quem Somos</a>
+  </nav>
+  <div class="header-status"><span class="dot"></span><span>Base de dados atualizada</span></div>
+</header>
+<div class="page">
+
+  <div class="hero">
+    <span class="badge"><span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;"></span> Tempo real</span>
+    <h1>&#127939; Caminhada Segura</h1>
+    <p class="sub">Compartilhe sua caminhada com quem você confia.<br>O responsável acompanha sua rota ao vivo, direto do celular dele.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step"><span class="num">1</span><h3>Você inicia</h3><p>Ative o acompanhamento antes de sair. O GPS do seu celular registra a rota.</p></div>
+    <div class="step"><span class="num">2</span><h3>Compartilha o link</h3><p>Envie o link de acompanhamento por WhatsApp para o responsável.</p></div>
+    <div class="step"><span class="num">3</span><h3>Ele acompanha</h3><p>Ao abrir o link, a pessoa vê sua posição no mapa, atualizada a cada poucos segundos.</p></div>
+  </div>
+
+  <div class="card" id="card-inicio">
+    <h2>&#9654; Iniciar acompanhamento</h2>
+    <p class="muted">Funciona direto no navegador do celular — não precisa instalar nada. Mantenha o celular com você e, se possível, com bateria carregada.</p>
+    <div class="consent">
+      <input type="checkbox" id="chk-consentimento">
+      <label for="chk-consentimento">Declaro que esta função será usada com <strong>consentimento</strong> da pessoa acompanhada (ou por pais/responsáveis monitorando filhos menores) e conheço a <a href="index.html" style="color:var(--accent);">política de uso do Portal</a>.</label>
+    </div>
+    <button class="btn btn-azul" id="btn-iniciar" disabled style="width:100%;">&#128205; Iniciar caminhada compartilhada</button>
+    <div class="aviso">
+      <strong>&#8505;&#65039; Transparência:</strong> sua posição é enviada com um código secreto e aleatório a um serviço público de mensagens temporárias, que apaga os dados após algumas horas. Nunca compartilhe seu link público de acompanhamento com estranhos. Monitorar adultos sem consentimento é crime (perseguição/stalking) e viola a LGPD.
+    </div>
+  </div>
+
+  <div class="painel-ativo" id="painel-ativo">
+    <div class="card">
+      <h2 style="color:var(--green);"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite;"></span> Caminhada em andamento</h2>
+      <div class="status-grid">
+        <div class="stat"><div class="v" id="st-tempo">00:00</div><div class="l">Tempo</div></div>
+        <div class="stat"><div class="v" id="st-envios">0</div><div class="l">Envios</div></div>
+        <div class="stat"><div class="v" id="st-status">OK</div><div class="l">Sinal GPS</div></div>
+      </div>
+      <div id="mapa"></div>
+      <p class="muted" style="margin-top:.8rem;font-size:.78rem;">Envie o link abaixo para o responsável acompanhar você:</p>
+      <div class="link-box">
+        <input type="text" id="inp-link" readonly>
+        <button class="btn btn-fantasma" id="btn-copiar">Copiar</button>
+        <a class="btn btn-verde" id="btn-whats" href="#" target="_blank" rel="noopener">&#128172; WhatsApp</a>
+      </div>
+      <div class="acoes">
+        <button class="btn btn-verde" id="btn-cheguei">&#9989; Cheguei bem</button>
+        <button class="btn btn-vermelho" id="btn-sos">&#128680; SOS — Pedir ajuda</button>
+      </div>
+      <div class="sos-info" id="sos-info">
+        <button class="btn btn-fantasma" id="btn-estou-bem">Estou bem — cancelar alerta</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg-ok card" id="msg-ok">
+    <div class="icone">&#127881;</div>
+    <h2 style="justify-content:center;">Chegou bem!</h2>
+    <p class="muted">O responsável foi avisado de que você chegou ao destino. O acompanhamento foi encerrado.</p>
+  </div>
+
+  <div class="card">
+    <h2>&#128220; Dicas para uma caminhada mais segura</h2>
+    <p class="muted">
+      &bull; Prefira ruas movimentadas e bem iluminadas; evite atalhos desertos.<br>
+      &bull; Fone de ouvido com volume baixo ou apenas um ouvido — mantenha a atenção no ambiente.<br>
+      &bull; Deixe alguém de confiança sabendo por onde vai caminhar (use esta função!).<br>
+      &bull; Em emergências, ligue <strong>190</strong> (Polícia) ou <strong>192</strong> (SAMU). O botão SOS avisa o responsável, mas não substitui os serviços de emergência.
+    </p>
+  </div>
+
+</div>
+<footer class="footer">
+  Portal Segurança Global &copy; 2026 — portalsegurancaglobal.com.br<br>
+  <a href="index.html">Consulta</a> &bull; <a href="noticias.html">Notícias</a> &bull; <a href="quem-somos.html">Quem Somos</a>
+</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  var topic=null, watchId=null, inicioTs=null, envios=0, ultimoEnvio=0, ultimaPos=null;
+  var mapa=null, rota=[], linha=null, ponto=null, timerRelogio=null, sosAtivo=false;
+
+  function $(id){ return document.getElementById(id); }
+
+  function base(){
+    if (location.origin && location.protocol.indexOf('http') === 0) return location.origin;
+    return 'https://portalsegurancaglobal.com.br';
+  }
+
+  function gerarCodigo(){
+    var c='abcdefghijklmnopqrstuvwxyz0123456789';
+    var a=new Uint8Array(22);
+    (window.crypto||window.msCrypto).getRandomValues(a);
+    var s='psg-';
+    for (var i=0;i<22;i++) s+=c[a[i]%c.length];
+    return s;
+  }
+
+  function publicar(obj){
+    obj.t=Date.now();
+    return fetch('https://ntfy.sh/'+topic, {method:'POST', body:JSON.stringify(obj)});
+  }
+
+  function distKm(a,b,c,d){
+    var R=6371, dLat=(c-a)*Math.PI/180, dLon=(d-b)*Math.PI/180;
+    var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+  }
+
+  function mapaInit(lat,lng){
+    mapa=L.map('mapa').setView([lat,lng],16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap'}).addTo(mapa);
+    linha=L.polyline([],{color:'#3b82f6',weight:4,opacity:.8}).addTo(mapa);
+    ponto=L.circleMarker([lat,lng],{radius:8,color:'#fff',weight:2,fillColor:'#3b82f6',fillOpacity:1}).addTo(mapa);
+  }
+
+  function aoReceberPos(p){
+    var lat=p.coords.latitude, lng=p.coords.longitude, agora=Date.now();
+    $('st-status').textContent='OK';
+    if (!mapa) mapaInit(lat,lng);
+    ponto.setLatLng([lat,lng]);
+    rota.push([lat,lng]);
+    linha.setLatLngs(rota);
+    mapa.panTo([lat,lng]);
+    var moveu=!ultimaPos || distKm(ultimaPos.lat,ultimaPos.lng,lat,lng)>0.03;
+    if (agora-ultimoEnvio>20000 || (moveu && agora-ultimoEnvio>8000)) {
+      ultimaPos={lat:lat,lng:lng};
+      ultimoEnvio=agora;
+      envios++;
+      $('st-envios').textContent=envios;
+      publicar({type:'pos',lat:lat,lng:lng});
+    }
+  }
+
+  function erroPos(e){
+    var m={1:'Permissão de localização negada. Libere o GPS nas configurações do navegador.',
+           2:'Posição indisponível. Verifique se o GPS está ativado.',
+           3:'Tempo esgotado aguardando o GPS. Tente novamente em local aberto.'};
+    $('st-status').textContent='Falha';
+    alert('Não foi possível obter sua localização: '+(m[e.code]||e.message));
+  }
+
+  $('chk-consentimento').addEventListener('change',function(){
+    $('btn-iniciar').disabled=!this.checked;
+  });
+
+  $('btn-iniciar').addEventListener('click',function(){
+    if (!navigator.geolocation) { alert('Seu navegador não suporta localização.'); return; }
+    if (location.protocol==='http:' && location.hostname!=='localhost') { alert('Abra o site em https://portalsegurancaglobal.com.br para o GPS funcionar.'); }
+    topic=gerarCodigo();
+    var link=base()+'/monitorar.html#'+topic;
+    $('inp-link').value=link;
+    $('btn-whats').href='https://wa.me/?text='+encodeURIComponent('Estou saindo e quero compartilhar minha caminhada com você. Acompanhe minha rota em tempo real: '+link);
+    $('card-inicio').style.display='none';
+    $('painel-ativo').style.display='block';
+    inicioTs=Date.now();
+    timerRelogio=setInterval(function(){
+      var s=Math.floor((Date.now()-inicioTs)/1000);
+      var mm=String(Math.floor(s/60)).padStart(2,'0'), ss=String(s%60).padStart(2,'0');
+      $('st-tempo').textContent=mm+':'+ss;
+    },1000);
+    publicar({type:'inicio'});
+    watchId=navigator.geolocation.watchPosition(aoReceberPos,erroPos,{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+    try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(function(){}); } catch(e){}
+  });
+
+  $('btn-copiar').addEventListener('click',function(){
+    var t=$('inp-link');
+    t.select();
+    try { navigator.clipboard.writeText(t.value); } catch(e){ document.execCommand('copy'); }
+    this.textContent='Copiado!';
+    var b=this; setTimeout(function(){ b.textContent='Copiar'; },2000);
+  });
+
+  $('btn-sos').addEventListener('click',function(){
+    sosAtivo=true;
+    if (ultimaPos) publicar({type:'sos',lat:ultimaPos.lat,lng:ultimaPos.lng});
+    else publicar({type:'sos'});
+    var maps=ultimaPos?('https://maps.google.com/?q='+ultimaPos.lat+','+ultimaPos.lng):$('inp-link').value;
+    window.open('https://wa.me/?text='+encodeURIComponent('EMERGÊNCIA! Preciso de ajuda. Minha localização: '+maps),'_blank');
+    $('sos-info').style.display='block';
+    this.textContent='SOS enviado!';
+    var b=this; setTimeout(function(){ b.innerHTML='&#128680; SOS — Pedir ajuda'; },3000);
+  });
+
+  $('btn-estou-bem').addEventListener('click',function(){
+    sosAtivo=false;
+    publicar({type:'ok'});
+    $('sos-info').style.display='none';
+  });
+
+  $('btn-cheguei').addEventListener('click',function(){
+    if (watchId!==null) navigator.geolocation.clearWatch(watchId);
+    if (timerRelogio) clearInterval(timerRelogio);
+    if (sosAtivo) publicar({type:'ok'});
+    if (ultimaPos) publicar({type:'cheguei',lat:ultimaPos.lat,lng:ultimaPos.lng});
+    else publicar({type:'cheguei'});
+    $('painel-ativo').style.display='none';
+    $('msg-ok').style.display='block';
+    window.scrollTo(0,0);
+  });
+})();
+</script>
+</body>
+</html>

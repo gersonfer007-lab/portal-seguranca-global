@@ -1337,6 +1337,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <nav class="header-nav" style="display:flex;align-items:center;gap:1.2rem;font-size:.85rem;">
     <a href="index.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Consulta</a>
     <a href="noticias.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Notícias</a>
+    <a href="caminhada-segura.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Caminhada Segura</a>
     <a href="quem-somos.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Quem Somos</a>
   </nav>
   <div class="header-status">
@@ -1975,6 +1976,9 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 .news-tag.deb { background: rgba(234,179,8,.15); color: #facc15; }
 .news-tag.pro { background: rgba(34,197,94,.15); color: #4ade80; }
 .news-tag.ten { background: rgba(239,68,68,.15); color: #f87171; }
+.news-tag.pet { background: rgba(236,72,153,.15); color: #f472b6; }
+.news-tag.bike { background: rgba(34,211,238,.14); color: #22d3ee; }
+.news-tag.moto { background: rgba(139,92,246,.15); color: #a78bfa; }
 .news-tag.aut { background: rgba(249,115,22,.15); color: #fb923c; }
 .news-date { font-size: .7rem; color: var(--text-muted); }
 .news-item h3 { font-size: .95rem; font-weight: 700; line-height: 1.4; color: var(--text-primary); }
@@ -1982,6 +1986,31 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 .news-note { margin-top: .9rem; font-size: .74rem; color: var(--text-muted); text-align: center; }
 @media (max-width: 640px) { .news-header h2 { font-size: 1.2rem; } .news-header .news-all { margin-left: 0; } }
 </style>
+<!-- CAMINHADA SEGURA -->
+<style>
+.walk-section { max-width: 1200px; margin: 0 auto 2rem; padding: 0 1rem; }
+.walk-box { display: flex; align-items: center; justify-content: space-between; gap: 1.4rem; flex-wrap: wrap; background: linear-gradient(135deg, rgba(34,197,94,.1), rgba(59,130,246,.08)); border: 1px solid rgba(34,197,94,.3); border-radius: var(--radius-lg); padding: 1.5rem 1.6rem; }
+.walk-box h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: .35rem; }
+.walk-box p { color: var(--text-secondary); font-size: .85rem; line-height: 1.6; max-width: 560px; }
+.walk-ctas { display: flex; gap: .7rem; flex-wrap: wrap; }
+.walk-btn { padding: .8rem 1.4rem; border-radius: 10px; font-size: .88rem; font-weight: 700; text-decoration: none; }
+.walk-btn.pri { background: var(--gradient-safe); color: #fff; }
+.walk-btn.sec { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+@media (max-width: 640px) { .walk-box { justify-content: center; text-align: center; } .walk-box p { max-width: 100%; } }
+</style>
+<section class="walk-section" id="walk-section">
+  <div class="walk-box">
+    <div>
+      <h2>&#127939; Caminhada Segura</h2>
+      <p>Saindo para caminhar ou quer acompanhar um filho? Compartilhe a rota pelo celular e o responsável acompanha em <strong>tempo real</strong>, com aviso de chegada e botão de emergência.</p>
+    </div>
+    <div class="walk-ctas">
+      <a href="caminhada-segura.html" class="walk-btn pri">Iniciar caminhada</a>
+      <a href="monitorar.html" class="walk-btn sec">Acompanhar alguém</a>
+    </div>
+  </div>
+</section>
+
 <section class="news-section" id="news-section">
   <div class="news-header">
     <span style="font-size:1.5rem;">&#128240;</span>
@@ -2018,6 +2047,26 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <a class="news-item" href="noticias.html#rastreadores-2026">
       <div class="ni-top"><span class="news-tag aut">Automotivo</span><span class="news-date">Set 2026</span></div>
       <h3>Rastreadores com bloqueio remoto: a diferen&ccedil;a entre perder e recuperar o carro</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#wearables-sos-2026">
+      <div class="ni-top"><span class="news-tag pro">Prote&ccedil;&atilde;o</span><span class="news-date">Set 2026</span></div>
+      <h3>Rel&oacute;gios que pedem socorro sozinhos: a seguran&ccedil;a que voc&ecirc; veste</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#pets-gps-2026">
+      <div class="ni-top"><span class="news-tag pet">Pets</span><span class="news-date">Set 2026</span></div>
+      <h3>Pets protegidos: coleiras GPS com cerca virtual e alerta de fuga</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#bikes-smart-2026">
+      <div class="ni-top"><span class="news-tag bike">Bikes</span><span class="news-date">Set 2026</span></div>
+      <h3>Bike protegida: trava dupla, rastreador escondido e mapa de risco</h3>
+      <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
+    </a>
+    <a class="news-item" href="noticias.html#motos-antifurto-2026">
+      <div class="ni-top"><span class="news-tag moto">Motos</span><span class="news-date">Set 2026</span></div>
+      <h3>Roubo de moto cresce 20% e a tecnologia responde com bloqueio</h3>
       <span class="ni-arrow">Ler not&iacute;cia completa &rarr;</span>
     </a>
   </div>
@@ -2085,6 +2134,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   &Eacute; proibida a reprodu&ccedil;&atilde;o total ou parcial deste sistema e de seus algoritmos.<br><br>
   <a href="index.html" style="color:var(--text-secondary);text-decoration:none;">Consulta</a> &bull;
   <a href="noticias.html" style="color:var(--text-secondary);text-decoration:none;">Not&iacute;cias</a> &bull;
+  <a href="caminhada-segura.html" style="color:var(--text-secondary);text-decoration:none;">Caminhada Segura</a> &bull;
   <a href="quem-somos.html" style="color:var(--text-secondary);text-decoration:none;">Quem Somos</a>
 </footer>
 
@@ -2098,7 +2148,10 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     {q: 'seguranca publica cameras vigilancia', label: 'Seguran&ccedil;a', tag: 'tec', when: '7d'},
     {q: 'roubo furto veiculos rastreador', label: 'Automotivo', tag: 'aut', when: '14d'},
     {q: 'tecnologia automotiva carro conectado seguranca', label: 'Automotivo', tag: 'aut', when: '14d'},
-    {q: 'aplicativo protecao seguranca pessoal mulher', label: 'Prote&ccedil;&atilde;o', tag: 'pro'}
+    {q: 'aplicativo protecao seguranca pessoal mulher', label: 'Prote&ccedil;&atilde;o', tag: 'pro'},
+    {q: 'coleira GPS pet cachorro gato perdido', label: 'Pets', tag: 'pet', when: '30d'},
+    {q: 'furto roubo bicicleta trava', label: 'Bikes', tag: 'bike', when: '30d'},
+    {q: 'roubo furto moto rastreador antifurto', label: 'Motos', tag: 'moto', when: '14d'}
   ];
   var PROXY_RAW = 'https://api.allorigins.win/raw?url=';
   var PROXY_JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';

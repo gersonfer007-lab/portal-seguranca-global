@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acompanhar Caminhada — Portal Segurança Global</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root {
+  --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: #1a2235; --bg-card-hover: #1f2a40;
+  --border: #2a3550; --text-primary: #e8ecf4; --text-secondary: #8b95a8; --text-muted: #5a6478;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,.25); --green: #22c55e; --yellow: #eab308;
+  --red: #ef4444; --orange: #f97316;
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-safe: linear-gradient(135deg, #22c55e, #10b981);
+  --radius-lg: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+.header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.5rem; background: rgba(10,14,26,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.header-brand { display: flex; align-items: center; gap: .7rem; font-size: .85rem; font-weight: 800; letter-spacing: .06em; }
+.header-badge { background: var(--gradient-accent); color: #fff; font-size: .56rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: .08em; text-transform: uppercase; }
+.header-nav { display: flex; align-items: center; gap: 1.2rem; font-size: .85rem; }
+.header-nav a { color: var(--text-secondary); text-decoration: none; font-weight: 600; transition: color .2s; }
+.header-nav a:hover, .header-nav a.active { color: var(--accent); }
+.header-status { display: flex; align-items: center; gap: .5rem; font-size: .72rem; color: var(--text-secondary); }
+.header-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+.page { max-width: 860px; margin: 0 auto; padding: 2.2rem 1.2rem 3rem; }
+.hero { text-align: center; margin-bottom: 2rem; }
+.hero h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; }
+.hero .sub { color: var(--text-secondary); font-size: .95rem; margin-top: .5rem; line-height: 1.6; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; font-size: .6rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .7rem; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.6rem; margin-bottom: 1.3rem; }
+.card h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: .8rem; display: flex; align-items: center; gap: 10px; }
+.muted { color: var(--text-secondary); font-size: .85rem; line-height: 1.7; }
+.footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .75rem; line-height: 1.8; }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+@media (max-width: 640px) {
+  .header-nav { gap: .7rem; font-size: .74rem; }
+  .header-status { display: none; }
+  .page { padding: 1.5rem .9rem 2.5rem; }
+  .hero h1 { font-size: 1.45rem; }
+  .card { padding: 1.2rem; }
+}
+#mapa { height: 340px; width: 100%; border-radius: 12px; border: 1px solid var(--border); z-index: 1; }
+.estado-badge { display: inline-flex; align-items: center; gap: 7px; font-size: .68rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: .07em; }
+.e-andando { background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.35); }
+.e-aguardando { background: rgba(234,179,8,.12); color: #facc15; border: 1px solid rgba(234,179,8,.35); }
+.e-sos { background: var(--gradient-danger); color: #fff; }
+.e-chegou { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
+.sos-banner { display: none; text-align: center; background: var(--gradient-danger); color: #fff; border-radius: 12px; padding: 1.1rem; font-weight: 800; font-size: 1.05rem; margin-bottom: 1rem; animation: sosblink 1s infinite; }
+@keyframes sosblink { 0%,100%{opacity:1;} 50%{opacity:.72;} }
+.stale-aviso { display: none; text-align: center; background: rgba(234,179,8,.1); border: 1px solid rgba(234,179,8,.35); color: #facc15; border-radius: 12px; padding: .8rem; font-size: .82rem; margin-bottom: 1rem; }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .7rem; margin-bottom: 1rem; }
+.stat { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: .8rem; text-align: center; }
+.stat .v { font-size: 1.05rem; font-weight: 800; color: var(--accent); }
+.stat .l { font-size: .66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-top: .2rem; }
+.form-codigo { display: flex; gap: .6rem; margin-top: 1rem; flex-wrap: wrap; }
+.form-codigo input { flex: 1; min-width: 220px; padding: .85rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: .9rem; }
+.nenhum { text-align: center; padding: 1.5rem 0; }
+.nenhum .icone { font-size: 2.6rem; margin-bottom: .8rem; }
+@media (max-width: 640px) { .page { padding-top: 1.4rem; } }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-brand">
+    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <span>PORTAL SEGURANÇA GLOBAL</span>
+    <span class="header-badge">Intel</span>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Consulta</a>
+    <a href="noticias.html">Notícias</a>
+    <a href="caminhada-segura.html" class="active">Caminhada Segura</a>
+    <a href="quem-somos.html">Quem Somos</a>
+  </nav>
+  <div class="header-status"><span class="dot"></span><span>Base de dados atualizada</span></div>
+</header>
+<div class="page">
+
+  <div class="hero">
+    <span class="badge"><span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;"></span> Acompanhamento ao vivo</span>
+    <h1>&#128225; Acompanhar Caminhada</h1>
+    <p class="sub">Painel do responsável — acompanhe a rota compartilhada com você, em tempo real.</p>
+  </div>
+
+  <div class="card" id="card-sem-codigo">
+    <div class="nenhum">
+      <div class="icone">&#128241;</div>
+      <h2 style="justify-content:center;">Nenhum acompanhamento aberto</h2>
+      <p class="muted">Peça para a pessoa iniciar uma <strong>Caminhada Segura</strong> e te enviar o link pelo WhatsApp.<br>O link abre esta página automaticamente com o código certo.</p>
+    </div>
+    <p class="muted" style="text-align:center;font-size:.8rem;margin-top:.4rem;">Ou cole aqui o código de acompanhamento recebido:</p>
+    <div class="form-codigo">
+      <input type="text" id="inp-codigo" placeholder="Ex.: psg-a1b2c3...">
+      <button class="btn btn-azul" id="btn-abrir">Acompanhar</button>
+    </div>
+  </div>
+
+  <div id="painel-monitor" style="display:none;">
+    <div class="sos-banner" id="sos-banner">&#128680; PEDIDO DE SOCORRO ENVIADO! Ligue para a pessoa ou acione 190.</div>
+    <div class="stale-aviso" id="stale-aviso">&#9888;&#65039; Sem atualização há mais de 2 minutos. Tente ligar para a pessoa.</div>
+    <div class="card">
+      <h2><span id="estado-dot" style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite;"></span> <span id="estado-texto">Aguardando primeiro sinal…</span> <span class="estado-badge e-aguardando" id="estado-badge" style="margin-left:auto;font-size:.62rem;">Conectando</span></h2>
+      <div class="status-grid">
+        <div class="stat"><div class="v" id="st-atualizado">—</div><div class="l">Última atualização</div></div>
+        <div class="stat"><div class="v" id="st-pontos">0</div><div class="l">Pontos recebidos</div></div>
+        <div class="stat"><div class="v" id="st-conexao">Conectando</div><div class="l">Conexão</div></div>
+      </div>
+      <div id="mapa"></div>
+      <p class="muted" style="margin-top:.8rem;font-size:.74rem;text-align:center;">Esta página atualiza sozinha. Mantenha-a aberta enquanto acompanha. Em emergências, ligue <strong>190</strong>.</p>
+    </div>
+  </div>
+
+</div>
+<footer class="footer">
+  Portal Segurança Global &copy; 2026 — portalsegurancaglobal.com.br<br>
+  <a href="index.html">Consulta</a> &bull; <a href="noticias.html">Notícias</a> &bull; <a href="caminhada-segura.html">Caminhada Segura</a> &bull; <a href="quem-somos.html">Quem Somos</a>
+</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  var hash=location.hash.replace('#','').trim();
+  if (hash.indexOf('psg-')>=0) hash=hash.slice(hash.indexOf('psg-'));
+  if (hash && /^[a-z0-9-]{4,64}$/.test(hash)) iniciar(hash);
+
+  function $(id){ return document.getElementById(id); }
+
+  $('btn-abrir').addEventListener('click',function(){
+    var v=$('inp-codigo').value.trim();
+    if (v.indexOf('psg-')>=0) v=v.slice(v.indexOf('psg-'));
+    if (!/^[a-z0-9-]{4,64}$/.test(v)) { alert('Código inválido. Use o link recebido por WhatsApp ou cole o código completo.'); return; }
+    location.hash=v;
+    iniciar(v);
+  });
+
+  function iniciar(topic){
+    $('card-sem-codigo').style.display='none';
+    $('painel-monitor').style.display='block';
+    var mapa=null, linha=null, ponto=null, rota=[], pontos=0, ultimoTs=null, sosAtivo=false;
+
+    function garantirMapa(lat,lng){
+      if (mapa) return;
+      mapa=L.map('mapa').setView([lat,lng],16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap'}).addTo(mapa);
+      linha=L.polyline([],{color:'#3b82f6',weight:4,opacity:.8}).addTo(mapa);
+      ponto=L.circleMarker([lat,lng],{radius:9,color:'#fff',weight:2,fillColor:'#22c55e',fillOpacity:1}).addTo(mapa);
+    }
+
+    function definirEstado(txt,badge,classe){
+      $('estado-texto').textContent=txt;
+      var b=$('estado-badge');
+      b.textContent=badge;
+      b.className='estado-badge '+classe;
+    }
+
+    function alertaSonoro(){
+      try {
+        var ctx=new (window.AudioContext||window.webkitAudioContext)();
+        for (var i=0;i<3;i++){
+          var o=ctx.createOscillator(), g=ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.frequency.value=880; g.gain.value=.25;
+          o.start(ctx.currentTime+i*0.35);
+          o.stop(ctx.currentTime+i*0.35+0.2);
+        }
+      } catch(e){}
+      if (navigator.vibrate) navigator.vibrate([300,150,300,150,300]);
+    }
+
+    function processar(m){
+      if (m.type==='pos'){
+        ultimoTs=m.t; pontos++;
+        $('st-pontos').textContent=pontos;
+        garantirMapa(m.lat,m.lng);
+        ponto.setLatLng([m.lat,m.lng]);
+        rota.push([m.lat,m.lng]);
+        linha.setLatLngs(rota);
+        mapa.panTo([m.lat,m.lng]);
+        if (!sosAtivo) definirEstado('Caminhando','Ao vivo','e-andando');
+      } else if (m.type==='inicio'){
+        ultimoTs=m.t;
+        definirEstado('Caminhada iniciada','Ao vivo','e-andando');
+      } else if (m.type==='sos'){
+        sosAtivo=true;
+        ultimoTs=m.t;
+        $('sos-banner').style.display='block';
+        $('sos-banner').textContent='PEDIDO DE SOCORRO ENVIADO! '+(m.lat?('Local no mapa: https://maps.google.com/?q='+m.lat+','+m.lng):'')+' — Ligue para a pessoa ou acione 190.';
+        ponto.setStyle({fillColor:'#ef4444'});
+        definirEstado('SOS — pedido de socorro','SOS','e-sos');
+        alertaSonoro();
+      } else if (m.type==='ok'){
+        sosAtivo=false;
+        $('sos-banner').style.display='none';
+        ponto.setStyle({fillColor:'#22c55e'});
+        definirEstado('Caminhando','Ao vivo','e-andando');
+      } else if (m.type==='cheguei'){
+        sosAtivo=false;
+        ultimoTs=m.t;
+        $('sos-banner').style.display='none';
+        definirEstado('Chegou bem ao destino','Chegou','e-chegou');
+        ponto.setStyle({fillColor:'#10b981'});
+      }
+    }
+
+    try {
+      var es=new EventSource('https://ntfy.sh/'+topic+'/sse?since=6h');
+      es.onopen=function(){ $('st-conexao').textContent='Conectado'; };
+      es.onerror=function(){ $('st-conexao').textContent='Reconectando…'; };
+      es.onmessage=function(ev){
+        try {
+          var d=JSON.parse(ev.data);
+          if (d.event!=='message'||!d.message) return;
+          processar(JSON.parse(d.message));
+        } catch(e){}
+      };
+    } catch(e){ $('st-conexao').textContent='Sem conexão'; }
+
+    setInterval(function(){
+      if (!ultimoTs) return;
+      var s=Math.floor((Date.now()-ultimoTs)/1000);
+      $('st-atualizado').textContent = s<60?('há '+s+'s'):('há '+Math.floor(s/60)+' min');
+      $('stale-aviso').style.display = s>120 ? 'block' : 'none';
+    },5000);
+  }
+})();
+</script>
+</body>
+</html>
