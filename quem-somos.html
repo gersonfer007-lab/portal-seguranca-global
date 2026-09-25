@@ -4,3 +4,154 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quem Somos | Portal Segurança Global</title>
+<meta name="description" content="Conheça o Portal Segurança Global: quem somos, nossa missão, fontes de dados e compromisso com a privacidade e a LGPD.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Quem Somos | Portal Segurança Global">
+<meta property="og:description" content="Transparência total: conheça a missão e as fontes do Portal Segurança Global.">
+<link rel="canonical" href="https://portalsegurancaglobal.com.br/quem-somos.html">
+<style>
+:root {
+  --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: #1a2235; --bg-card-hover: #1f2a40;
+  --border: #2a3550; --text-primary: #e8ecf4; --text-secondary: #8b95a8; --text-muted: #5a6478;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,.25);
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --radius: 12px; --radius-lg: 16px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; }
+a { color: var(--accent); }
+.header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em; text-decoration: none; color: var(--text-primary); }
+.header-badge { background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
+.header-nav { display: flex; align-items: center; gap: 1.2rem; font-size: .85rem; }
+.header-nav a { color: var(--text-secondary); text-decoration: none; font-weight: 600; transition: color .2s; }
+.header-nav a:hover, .header-nav a.active { color: var(--accent); }
+.page { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.2rem; }
+.hero { text-align: center; margin-bottom: 2.5rem; }
+.hero h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -.03em; }
+.hero .sub { color: var(--text-secondary); font-size: 1rem; margin-top: .5rem; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.6rem; margin-bottom: 1.4rem; }
+.card h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: .8rem; display: flex; align-items: center; gap: 10px; }
+.card p { color: var(--text-secondary); font-size: .95rem; margin-bottom: .8rem; }
+.card p:last-child { margin-bottom: 0; }
+.card strong { color: var(--text-primary); }
+.avatar { width: 84px; height: 84px; border-radius: 50%; background: var(--gradient-accent); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto .9rem; box-shadow: 0 0 30px var(--accent-glow); }
+.values { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .9rem; }
+.value { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+.value .ic { font-size: 1.4rem; margin-bottom: .4rem; }
+.value h3 { font-size: .95rem; font-weight: 700; margin-bottom: .25rem; }
+.value p { font-size: .8rem; color: var(--text-secondary); }
+.newsletter { background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(99,102,241,.08)); border: 1px solid rgba(59,130,246,.25); border-radius: var(--radius-lg); padding: 1.6rem; text-align: center; margin-top: 2rem; }
+.newsletter h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .4rem; }
+.newsletter p { color: var(--text-secondary); font-size: .85rem; margin-bottom: 1rem; }
+.nl-form { display: flex; gap: .6rem; max-width: 420px; margin: 0 auto; }
+.nl-form input { flex: 1; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: .9rem; outline: none; }
+.nl-form input:focus { border-color: var(--accent); }
+.nl-form button { padding: .75rem 1.4rem; border-radius: 10px; border: none; background: var(--gradient-accent); color: #fff; font-weight: 700; font-size: .9rem; cursor: pointer; }
+.nl-note { font-size: .72rem; color: var(--text-muted); margin-top: .7rem; }
+.footer { text-align: center; padding: 2rem; font-size: .75rem; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 2rem; }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+@media (max-width: 700px) {
+  .header { padding: 0 .9rem; }
+  .header-brand { font-size: .95rem; }
+  .header-nav { gap: .8rem; font-size: .78rem; }
+  .page { padding: 1.6rem .9rem; }
+  .hero h1 { font-size: 1.6rem; }
+  .nl-form { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a class="header-brand" href="index.html">&#128737; PORTAL SEGURANÇA GLOBAL <span class="header-badge">Intel</span></a>
+  <nav class="header-nav">
+    <a href="index.html">Consulta</a>
+    <a href="noticias.html">Notícias</a>
+    <a href="quem-somos.html" class="active">Quem Somos</a>
+  </nav>
+</header>
+
+<main class="page">
+
+  <div class="hero">
+    <h1>Quem Somos</h1>
+    <p class="sub">Transparência total sobre quem constrói e como funciona o Portal Segurança Global</p>
+  </div>
+
+  <div class="card">
+    <div class="avatar">&#128100;</div>
+    <h2 style="justify-content:center;">Gerson Fernandes</h2>
+    <p style="text-align:center;"><strong>Criador e responsável pelo Portal Segurança Global</strong></p>
+    <p>Gerson Fernandes é brasileiro, pesquisador apaixonado por tecnologia, segurança e pelo bem-estar das pessoas. Criou o Portal Segurança Global com um objetivo simples e direto: <strong>democratizar o acesso a informações de segurança</strong> para que qualquer pessoa possa avaliar um endereço antes de morar, trabalhar, viajar ou visitar.</p>
+    <p>É também escritor, autor dos livros <strong>"A Expansão da Consciência"</strong> e <strong>"Brasil: Alma em Transição"</strong>, nos quais explora a história e o futuro do país sob uma ótica de responsabilidade social e espiritualidade. Essa mesma visão humanista guia o Portal: tecnologia a serviço das pessoas, nunca contra elas.</p>
+  </div>
+
+  <div class="card">
+    <h2>&#127919; Nossa Missão</h2>
+    <p>Oferecer, de forma <strong>gratuita e acessível</strong>, uma estimativa de segurança para qualquer endereço do mundo, combinando dados públicos de criminalidade, infraestrutura urbana, iluminação, comércio e movimentação em um índice fácil de entender: o <strong>Safety Score</strong>.</p>
+    <p>Acreditamos que informação de qualidade é a primeira linha de defesa de qualquer pessoa.</p>
+  </div>
+
+  <div class="values">
+    <div class="value">
+      <div class="ic">&#128274;</div>
+      <h3>Privacidade</h3>
+      <p>Nunca consultamos CPF, CNPJ, RG ou qualquer dado pessoal. Respeitamos a LGPD.</p>
+    </div>
+    <div class="value">
+      <div class="ic">&#128202;</div>
+      <h3>Transparência</h3>
+      <p>Usamos apenas fontes públicas e modelos estatísticos, sempre informando os limites da análise.</p>
+    </div>
+    <div class="value">
+      <div class="ic">&#127758;</div>
+      <h3>Acesso Universal</h3>
+      <p>Interface em 11 idiomas e cobertura global, para brasileiros no exterior e estrangeiros no Brasil.</p>
+    </div>
+    <div class="value">
+      <div class="ic">&#129309;</div>
+      <h3>Independência</h3>
+      <p>Portal privado, sem vínculo com governos, polícias ou empresas de segurança.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.4rem;">
+    <h2>&#128220; Nossas Fontes de Dados</h2>
+    <p>O Safety Score é calculado a partir de <strong>fontes públicas e modelos estatísticos</strong>, incluindo:</p>
+    <p>&bull; Estatísticas oficiais de criminalidade divulgadas por órgãos públicos;<br>
+       &bull; Dados de infraestrutura urbana (iluminação, vias, comércio);<br>
+       &bull; Informações de movimentação e ocupação do solo;<br>
+       &bull; Geocodificação de endereços via serviços públicos de mapas.</p>
+    <p><strong>Importante:</strong> o resultado é uma <strong>estimativa estatística</strong>, atualizada regularmente. Ele não representa ocorrências em tempo real e não substitui a avaliação profissional de segurança, visitas ao local ou orientação das autoridades.</p>
+  </div>
+
+  <div class="card">
+    <h2>&#9878; Compromisso Legal</h2>
+    <p>O Portal opera em conformidade com a <strong>Constituição Federal (art. 5º, XXXIII)</strong>, a <strong>Lei de Acesso à Informação (LAI)</strong>, o <strong>Marco Civil da Internet</strong> e a <strong>LGPD</strong>. Nossos Termos de Uso proíbem expressamente o uso do Portal para perseguir, assediar ou vigiar pessoas.</p>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="newsletter" id="newsletter">
+    <h2>&#128233; Receba novidades de segurança</h2>
+    <p>Artigos, análises e dicas práticas de proteção. Sem spam, só o que importa.</p>
+    <form class="nl-form" action="https://formsubmit.co/contato@portalsegurancaglobal.com.br" method="POST">
+      <input type="email" name="email" required placeholder="Seu melhor e-mail" aria-label="Seu e-mail">
+      <input type="hidden" name="_subject" value="Novo inscrito na newsletter - Portal Segurança Global">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://portalsegurancaglobal.com.br/quem-somos.html?inscrito=1">
+      <button type="submit">Inscrever-se</button>
+    </form>
+    <p class="nl-note">Seus dados ficam seguros e você pode sair da lista quando quiser.</p>
+  </div>
+
+</main>
+
+<footer class="footer">
+  Portal Segurança Global &copy; 2026 &mdash; portalsegurancaglobal.com.br<br>
+  <a href="index.html">Consulta</a> &bull; <a href="noticias.html">Notícias</a> &bull; <a href="quem-somos.html">Quem Somos</a><br>
+  Dados baseados em fontes públicas. Não substitui avaliação profissional.
+</footer>
+
+</body>
+</html>
