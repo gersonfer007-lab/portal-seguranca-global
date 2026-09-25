@@ -925,6 +925,12 @@ var PSG_BR_STATE_NAMES = {
 function _psgNorm(s) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 }
+function _psgUF(stateRaw) {
+  var n = _psgNorm(stateRaw);
+  if (PSG_BR_STATE_NAMES[n]) return n.toUpperCase();
+  for (var k in PSG_BR_STATE_NAMES) { if (_psgNorm(PSG_BR_STATE_NAMES[k]) === n) return k.toUpperCase(); }
+  return '';
+}
 async function _psgResolveCommonsUrl(fileName) {
   try {
     var api = 'https://pt.wikipedia.org/w/api.php?action=query&titles=File:' + encodeURIComponent(fileName)
@@ -991,6 +997,18 @@ async function _doGeneratePDF() {
   var lat = currentData.lat, lng = currentData.lng;
   var dLat = RAIO_KM / 111.32;
   var dLng = RAIO_KM / (111.32 * Math.cos(lat * Math.PI / 180) || 1);
+  // Consulta o ponto central para identificar o bairro exato da pesquisa
+  var bairro = addr.neighborhood || '';
+  try {
+    var rc = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&zoom=18&accept-language=pt');
+    if (rc.ok) {
+      var dc = await rc.json();
+      var ac = dc.address || {};
+      bairro = bairro || ac.suburb || ac.neighbourhood || ac.quarter || ac.city_district || '';
+      if (!city) { city = ac.city || ac.town || ac.municipality || city; }
+    }
+  } catch (e) {}
+  await _psgSleep(1100);
   var lims = [
     { id: 'n', lat: lat + dLat, lng: lng },
     { id: 's', lat: lat - dLat, lng: lng },
@@ -1004,7 +1022,6 @@ async function _doGeneratePDF() {
     document.getElementById('pdf-limit-' + L.id + '-coord').textContent = 'Lat ' + L.lat.toFixed(5) + ' | Lng ' + L.lng.toFixed(5);
     if (i < lims.length - 1) await _psgSleep(1100); // respeita 1 req/s do Nominatim
   }
-  var bairro = addr.neighborhood || '';
   var desc = 'A varredura parte do endereco pesquisado e se estende por 1,5 km em todas as direcoes, cobrindo '
     + (bairro ? 'o bairro ' + bairro + ' e suas adjacencias' : 'a regiao central e suas adjacencias')
     + (city ? ', no municipio de ' + city + (stateName ? ' (' + stateName + ')' : '') : '')
@@ -1029,13 +1046,13 @@ async function _doGeneratePDF() {
     stateSeal.style.display = 'none';
     stateFlagImg.onerror = function() {
       stateFlagImg.style.display = 'none';
-      stateSeal.textContent = (stateRaw || '').slice(0, 2).toUpperCase() || 'BR';
+      stateSeal.textContent = _psgUF(stateRaw) || 'BR';
       stateSeal.style.display = 'flex';
     };
     stateFlagImg.src = stateUrl;
   } else {
     stateFlagImg.style.display = 'none';
-    stateSeal.textContent = (stateRaw || countryCode || '--').slice(0, 2).toUpperCase();
+    stateSeal.textContent = _psgUF(stateRaw) || (countryCode || '--').toUpperCase();
     stateSeal.style.display = 'flex';
   }
 
@@ -1070,8 +1087,8 @@ async function _doGeneratePDF() {
   var inicio = new Date(now.getFullYear(), now.getMonth() - 11, 1);
   document.getElementById('pdf-period').textContent = _psgMesAno(inicio) + ' a ' + _psgMesAno(fim);
 
-  document.getElementById('pdf-pm-city').textContent = localLabel;
-  document.getElementById('pdf-pc-city').textContent = localLabel;
+  document.getElementById('pdf-pm-city').textContent = [city, stateName].filter(Boolean).join(' - ') || countryName;
+  document.getElementById('pdf-pc-city').textContent = [city, stateName].filter(Boolean).join(' - ') || countryName;
   document.getElementById('pdf-score').textContent = currentData.safetyScore;
   document.getElementById('pdf-score-label').textContent = 'Safety Score - ' + (currentData.safetyScore >= 70 ? 'SEGURO' : currentData.safetyScore >= 40 ? 'MODERADO' : 'CRITICO');
   document.getElementById('pdf-crime').textContent = currentData.crimeScore + '/100';
