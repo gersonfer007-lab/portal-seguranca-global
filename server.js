@@ -23,7 +23,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https://*.basemaps.cartocdn.com", "https://*.tile.openstreetmap.org", "https://*.arcgisonline.com", "https://*.googleapis.com", "https://*.google.com", "https://flagcdn.com", "https://unpkg.com", "https://images.unsplash.com"],
-      connectSrc: ["'self'", "https://viacep.com.br", "https://nominatim.openstreetmap.org"],
+      connectSrc: ["'self'", "https://viacep.com.br", "https://nominatim.openstreetmap.org", "https://ntfy.sh", "https://api.allorigins.win", "https://api.rss2json.com"],
       frameSrc: ["https://www.google.com", "https://maps.google.com", "https://earth.google.com"],
       workerSrc: ["'self'", "blob:"],
       frameAncestors: ["'none'"],
