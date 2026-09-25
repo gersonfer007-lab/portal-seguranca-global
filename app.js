@@ -925,8 +925,20 @@ var PSG_BR_STATE_NAMES = {
 function _psgNorm(s) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 }
-function _psgCommonsUrl(fileName) {
-  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(fileName) + '?width=200';
+async function _psgResolveCommonsUrl(fileName) {
+  try {
+    var api = 'https://pt.wikipedia.org/w/api.php?action=query&titles=File:' + encodeURIComponent(fileName)
+      + '&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*';
+    var r = await fetch(api);
+    if (!r.ok) return '';
+    var d = await r.json();
+    var pages = (d.query && d.query.pages) || {};
+    for (var k in pages) {
+      var info = pages[k] && pages[k].imageinfo && pages[k].imageinfo[0];
+      if (info && info.thumburl) return info.thumburl;
+    }
+    return '';
+  } catch (e) { return ''; }
 }
 function _psgWaitImg(img) {
   return new Promise(function(resolve) {
@@ -1010,7 +1022,9 @@ async function _doGeneratePDF() {
   var stateFlagImg = document.getElementById('pdf-state-flag');
   var stateSeal = document.getElementById('pdf-state-seal');
   var stateFile = PSG_BR_STATE_FLAGS[_psgNorm(stateRaw)];
-  if (countryCode === 'br' && stateFile) {
+  var stateUrl = '';
+  if (countryCode === 'br' && stateFile) stateUrl = await _psgResolveCommonsUrl(stateFile);
+  if (stateUrl) {
     stateFlagImg.style.display = 'block';
     stateSeal.style.display = 'none';
     stateFlagImg.onerror = function() {
@@ -1018,7 +1032,7 @@ async function _doGeneratePDF() {
       stateSeal.textContent = (stateRaw || '').slice(0, 2).toUpperCase() || 'BR';
       stateSeal.style.display = 'flex';
     };
-    stateFlagImg.src = _psgCommonsUrl(stateFile);
+    stateFlagImg.src = stateUrl;
   } else {
     stateFlagImg.style.display = 'none';
     stateSeal.textContent = (stateRaw || countryCode || '--').slice(0, 2).toUpperCase();
@@ -1033,16 +1047,18 @@ async function _doGeneratePDF() {
   if (countryCode === 'br' && city) {
     var uf = _psgNorm(stateRaw).length === 2 ? stateRaw.toUpperCase() : '';
     var candidates = ['Bandeira da cidade de ' + city + '.svg', 'Bandeira de ' + city + (uf ? ' (' + uf + ')' : '') + '.svg', 'Bandeira de ' + city + '.svg'];
-    var ci = 0;
-    cityFlagImg.onerror = function() {
-      ci++;
-      if (ci < candidates.length) { cityFlagImg.src = _psgCommonsUrl(candidates[ci]); }
-      else { cityFlagImg.style.display = 'none'; citySeal.style.display = 'flex'; }
-    };
-    cityFlagImg.onload = function() {
-      if (cityFlagImg.naturalWidth > 0) { cityFlagImg.style.display = 'block'; citySeal.style.display = 'none'; }
-    };
-    cityFlagImg.src = _psgCommonsUrl(candidates[0]);
+    var cityUrl = '';
+    for (var ci = 0; ci < candidates.length; ci++) {
+      cityUrl = await _psgResolveCommonsUrl(candidates[ci]);
+      if (cityUrl) break;
+    }
+    if (cityUrl) {
+      cityFlagImg.onerror = function() { cityFlagImg.style.display = 'none'; citySeal.style.display = 'flex'; };
+      cityFlagImg.onload = function() {
+        if (cityFlagImg.naturalWidth > 0) { cityFlagImg.style.display = 'block'; citySeal.style.display = 'none'; }
+      };
+      cityFlagImg.src = cityUrl;
+    }
   }
 
   // ---- Identificacao, protocolo, periodo ----
