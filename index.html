@@ -2253,6 +2253,61 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 </section>
 
+<!-- RASTREAMENTO SEGURO -->
+<style>
+.track-section { max-width: 1200px; margin: 0 auto 2rem; padding: 0 1rem; }
+.track-header { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.track-header h2 { font-size: 1.3rem; font-weight: 800; }
+.track-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.1rem; }
+.track-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.4rem 1.5rem; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: .55rem; transition: all .2s; position: relative; overflow: hidden; }
+.track-card:hover { transform: translateY(-3px); border-color: rgba(59,130,246,.5); box-shadow: 0 8px 28px rgba(59,130,246,.18); }
+.track-card .tc-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+.track-card.carros .tc-icon { background: rgba(59,130,246,.14); }
+.track-card.pessoas .tc-icon { background: rgba(34,197,94,.14); }
+.track-card.pets .tc-icon { background: rgba(250,204,21,.14); }
+.track-card h3 { font-size: 1.05rem; font-weight: 800; }
+.track-card p { color: var(--text-secondary); font-size: .84rem; line-height: 1.6; flex: 1; }
+.track-card .tc-tag { display: inline-block; font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; width: fit-content; }
+.track-card.carros .tc-tag { background: rgba(59,130,246,.14); color: #93c5fd; }
+.track-card.pessoas .tc-tag { background: rgba(34,197,94,.14); color: #86efac; }
+.track-card.pets .tc-tag { background: rgba(250,204,21,.14); color: #fde047; }
+.track-card .tc-link { color: var(--accent); font-size: .82rem; font-weight: 700; }
+.track-note { margin-top: .9rem; font-size: .74rem; color: var(--text-muted); background: rgba(59,130,246,.06); border: 1px solid rgba(59,130,246,.18); border-radius: 10px; padding: .7rem .9rem; line-height: 1.5; }
+</style>
+<section class="track-section" id="rastreamento">
+  <div class="track-header">
+    <span style="font-size:1.5rem;">&#128225;</span>
+    <h2>Rastreamento Seguro: Carros, Pessoas e Pets</h2>
+  </div>
+  <div class="track-grid">
+    <a class="track-card carros" href="noticias.html#rastreadores-2026">
+      <div class="tc-icon">&#128663;</div>
+      <span class="tc-tag">Ve&iacute;culos</span>
+      <h3>Rastreie seu carro</h3>
+      <p><strong>Simples:</strong> um rastreador GPS veicular instalado por profissional (ou uma tag Bluetooth tipo SmartTag/AirTag escondida no carro) + aplicativo no celular mostra a posi&ccedil;&atilde;o em tempo real, com cerca virtual e alerta de movimento.</p>
+      <p><strong>Seguro:</strong> em caso de roubo, compartilhe a localiza&ccedil;&atilde;o direto com a pol&iacute;cia e a seguradora &mdash; nunca persiga o ve&iacute;culo sozinho.</p>
+      <span class="tc-link">Ver guia completo de rastreadores &rarr;</span>
+    </a>
+    <a class="track-card pessoas" href="noticias.html#wearables-sos-2026">
+      <div class="tc-icon">&#129333;</div>
+      <span class="tc-tag">Fam&iacute;lia</span>
+      <h3>Acompanhe quem voc&ecirc; ama</h3>
+      <p><strong>Simples:</strong> rel&oacute;gios infantis com GPS e bot&atilde;o SOS, wearables para idosos e o compartilhamento de localiza&ccedil;&atilde;o do pr&oacute;prio celular (Google Maps, Find My ou WhatsApp) por tempo determinado.</p>
+      <p><strong>Seguro:</strong> sempre <u>com o conhecimento e consentimento</u> da pessoa monitorada. Rastrear algu&eacute;m sem autoriza&ccedil;&atilde;o &eacute; crime (Lei 14.132/2021).</p>
+      <span class="tc-link">Conhecer os wearables com SOS &rarr;</span>
+    </a>
+    <a class="track-card pets" href="noticias.html#pets-gps-2026">
+      <div class="tc-icon">&#128062;</div>
+      <span class="tc-tag">Pets</span>
+      <h3>N&atilde;o perca seu pet</h3>
+      <p><strong>Simples:</strong> coleira ou pingente GPS leve, com bateria de dias e cerca virtual: se o pet sair da &aacute;rea definida, o celular toca na hora.</p>
+      <p><strong>Seguro:</strong> escolha dispositivos &agrave; prova d&rsquo;&aacute;gua e com col&aacute;rgio confort&aacute;vel; cadastre tamb&eacute;m a microchip do pet no banco nacional de animais.</p>
+      <span class="tc-link">Ver as melhores coleiras GPS &rarr;</span>
+    </a>
+  </div>
+  <p class="track-note">&#9878;&#65039; <strong>Importante:</strong> rastreamento &eacute; uma ferramenta de prote&ccedil;&atilde;o. Use apenas em bens seus ou com consentimento das pessoas. O uso indevido para vigiar parceiros, funcion&aacute;rios ou terceiros sem autoriza&ccedil;&atilde;o configura crime de persegui&ccedil;&atilde;o (stalking) e viola a LGPD.</p>
+</section>
+
 <section class="news-section" id="news-section">
   <div class="news-header">
     <span style="font-size:1.5rem;">&#128240;</span>
