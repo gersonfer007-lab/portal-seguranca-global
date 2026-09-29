@@ -146,7 +146,10 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 .flag-name {
   font-size: .45rem; color: var(--text-secondary); white-space: nowrap;
   font-weight: 500; letter-spacing: .02em; line-height: 1;
+  max-width: 108px; overflow: hidden; text-overflow: ellipsis;
 }
+.flags-column { overflow: hidden; }
+.flags-column .flag-item { max-width: 150px; overflow: hidden; }
 .flags-column.left .flag-name { text-align: left; }
 .flags-column.right { align-items: flex-end; }
 .flags-column.right .flag-item { flex-direction: row-reverse; }
@@ -1487,83 +1490,83 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- ESQUERDA (Americas + Europa) -->
 <div class="flags-column left" id="flags-left">
   <div class="flag-un-logo"><span style="font-size:1.5rem;line-height:1;display:flex;align-items:center;justify-content:center;width:36px;height:36px;" title="Cobertura global">&#127760;</span></div>
-  <div class="flag-item"> data-pais="br"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
-  <div class="flag-item"> data-pais="us"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
-  <div class="flag-item"> data-pais="gb"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
-  <div class="flag-item"> data-pais="fr"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/fr.png" alt="Franca"><span class="flag-name">Franca</span></div>
-  <div class="flag-item"> data-pais="de"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/de.png" alt="Alemanha"><span class="flag-name">Alemanha</span></div>
-  <div class="flag-item"> data-pais="it"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/it.png" alt="Italia"><span class="flag-name">Italia</span></div>
-  <div class="flag-item"> data-pais="es"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/es.png" alt="Espanha"><span class="flag-name">Espanha</span></div>
-  <div class="flag-item"> data-pais="pt"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pt.png" alt="Portugal"><span class="flag-name">Portugal</span></div>
-  <div class="flag-item"> data-pais="ca"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ca.png" alt="Canada"><span class="flag-name">Canada</span></div>
-  <div class="flag-item"> data-pais="mx"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/mx.png" alt="Mexico"><span class="flag-name">Mexico</span></div>
-  <div class="flag-item"> data-pais="ar"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ar.png" alt="Argentina"><span class="flag-name">Argentina</span></div>
-  <div class="flag-item"> data-pais="co"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/co.png" alt="Colombia"><span class="flag-name">Colombia</span></div>
-  <div class="flag-item"> data-pais="cl"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cl.png" alt="Chile"><span class="flag-name">Chile</span></div>
-  <div class="flag-item"> data-pais="pe"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pe.png" alt="Peru"><span class="flag-name">Peru</span></div>
-  <div class="flag-item"> data-pais="uy"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/uy.png" alt="Uruguai"><span class="flag-name">Uruguai</span></div>
-  <div class="flag-item"> data-pais="py"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/py.png" alt="Paraguai"><span class="flag-name">Paraguai</span></div>
-  <div class="flag-item"> data-pais="ve"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ve.png" alt="Venezuela"><span class="flag-name">Venezuela</span></div>
-  <div class="flag-item"> data-pais="bo"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/bo.png" alt="Bolivia"><span class="flag-name">Bolivia</span></div>
-  <div class="flag-item"> data-pais="ec"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ec.png" alt="Equador"><span class="flag-name">Equador</span></div>
-  <div class="flag-item"> data-pais="cu"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cu.png" alt="Cuba"><span class="flag-name">Cuba</span></div>
-  <div class="flag-item"> data-pais="pa"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pa.png" alt="Panama"><span class="flag-name">Panama</span></div>
-  <div class="flag-item"> data-pais="cr"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cr.png" alt="Costa Rica"><span class="flag-name">Costa Rica</span></div>
-  <div class="flag-item"> data-pais="nl"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/nl.png" alt="Holanda"><span class="flag-name">Holanda</span></div>
-  <div class="flag-item"> data-pais="be"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/be.png" alt="Belgica"><span class="flag-name">Belgica</span></div>
-  <div class="flag-item"> data-pais="se"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/se.png" alt="Suecia"><span class="flag-name">Suecia</span></div>
-  <div class="flag-item"> data-pais="dk"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/dk.png" alt="Dinamarca"><span class="flag-name">Dinamarca</span></div>
-  <div class="flag-item"> data-pais="fi"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/fi.png" alt="Finlandia"><span class="flag-name">Finlandia</span></div>
-  <div class="flag-item"> data-pais="at"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/at.png" alt="Austria"><span class="flag-name">Austria</span></div>
-  <div class="flag-item"> data-pais="pl"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pl.png" alt="Polonia"><span class="flag-name">Polonia</span></div>
-  <div class="flag-item"> data-pais="ua"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ua.png" alt="Ucrania"><span class="flag-name">Ucrania</span></div>
-  <div class="flag-item"> data-pais="gr"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gr.png" alt="Grecia"><span class="flag-name">Grecia</span></div>
-  <div class="flag-item"> data-pais="ie"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ie.png" alt="Irlanda"><span class="flag-name">Irlanda</span></div>
-  <div class="flag-item"> data-pais="cz"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cz.png" alt="Rep. Tcheca"><span class="flag-name">Rep. Tcheca</span></div>
-  <div class="flag-item"> data-pais="ro"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ro.png" alt="Romenia"><span class="flag-name">Romenia</span></div>
-  <div class="flag-item"> data-pais="hu"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/hu.png" alt="Hungria"><span class="flag-name">Hungria</span></div>
-  <div class="flag-item"> data-pais="hr"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/hr.png" alt="Croacia"><span class="flag-name">Croacia</span></div>
+  <div class="flag-item" data-pais="br"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/br.png" alt="Brasil"><span class="flag-name">Brasil</span></div>
+  <div class="flag-item" data-pais="us"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/us.png" alt="EUA"><span class="flag-name">Estados Unidos</span></div>
+  <div class="flag-item" data-pais="gb"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gb.png" alt="UK"><span class="flag-name">Reino Unido</span></div>
+  <div class="flag-item" data-pais="fr"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/fr.png" alt="Franca"><span class="flag-name">Franca</span></div>
+  <div class="flag-item" data-pais="de"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/de.png" alt="Alemanha"><span class="flag-name">Alemanha</span></div>
+  <div class="flag-item" data-pais="it"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/it.png" alt="Italia"><span class="flag-name">Italia</span></div>
+  <div class="flag-item" data-pais="es"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/es.png" alt="Espanha"><span class="flag-name">Espanha</span></div>
+  <div class="flag-item" data-pais="pt"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pt.png" alt="Portugal"><span class="flag-name">Portugal</span></div>
+  <div class="flag-item" data-pais="ca"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ca.png" alt="Canada"><span class="flag-name">Canada</span></div>
+  <div class="flag-item" data-pais="mx"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/mx.png" alt="Mexico"><span class="flag-name">Mexico</span></div>
+  <div class="flag-item" data-pais="ar"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ar.png" alt="Argentina"><span class="flag-name">Argentina</span></div>
+  <div class="flag-item" data-pais="co"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/co.png" alt="Colombia"><span class="flag-name">Colombia</span></div>
+  <div class="flag-item" data-pais="cl"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cl.png" alt="Chile"><span class="flag-name">Chile</span></div>
+  <div class="flag-item" data-pais="pe"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pe.png" alt="Peru"><span class="flag-name">Peru</span></div>
+  <div class="flag-item" data-pais="uy"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/uy.png" alt="Uruguai"><span class="flag-name">Uruguai</span></div>
+  <div class="flag-item" data-pais="py"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/py.png" alt="Paraguai"><span class="flag-name">Paraguai</span></div>
+  <div class="flag-item" data-pais="ve"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ve.png" alt="Venezuela"><span class="flag-name">Venezuela</span></div>
+  <div class="flag-item" data-pais="bo"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/bo.png" alt="Bolivia"><span class="flag-name">Bolivia</span></div>
+  <div class="flag-item" data-pais="ec"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ec.png" alt="Equador"><span class="flag-name">Equador</span></div>
+  <div class="flag-item" data-pais="cu"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cu.png" alt="Cuba"><span class="flag-name">Cuba</span></div>
+  <div class="flag-item" data-pais="pa"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pa.png" alt="Panama"><span class="flag-name">Panama</span></div>
+  <div class="flag-item" data-pais="cr"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cr.png" alt="Costa Rica"><span class="flag-name">Costa Rica</span></div>
+  <div class="flag-item" data-pais="nl"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/nl.png" alt="Holanda"><span class="flag-name">Holanda</span></div>
+  <div class="flag-item" data-pais="be"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/be.png" alt="Belgica"><span class="flag-name">Belgica</span></div>
+  <div class="flag-item" data-pais="se"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/se.png" alt="Suecia"><span class="flag-name">Suecia</span></div>
+  <div class="flag-item" data-pais="dk"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/dk.png" alt="Dinamarca"><span class="flag-name">Dinamarca</span></div>
+  <div class="flag-item" data-pais="fi"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/fi.png" alt="Finlandia"><span class="flag-name">Finlandia</span></div>
+  <div class="flag-item" data-pais="at"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/at.png" alt="Austria"><span class="flag-name">Austria</span></div>
+  <div class="flag-item" data-pais="pl"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pl.png" alt="Polonia"><span class="flag-name">Polonia</span></div>
+  <div class="flag-item" data-pais="ua"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ua.png" alt="Ucrania"><span class="flag-name">Ucrania</span></div>
+  <div class="flag-item" data-pais="gr"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gr.png" alt="Grecia"><span class="flag-name">Grecia</span></div>
+  <div class="flag-item" data-pais="ie"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ie.png" alt="Irlanda"><span class="flag-name">Irlanda</span></div>
+  <div class="flag-item" data-pais="cz"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cz.png" alt="Rep. Tcheca"><span class="flag-name">Rep. Tcheca</span></div>
+  <div class="flag-item" data-pais="ro"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ro.png" alt="Romenia"><span class="flag-name">Romenia</span></div>
+  <div class="flag-item" data-pais="hu"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/hu.png" alt="Hungria"><span class="flag-name">Hungria</span></div>
+  <div class="flag-item" data-pais="hr"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/hr.png" alt="Croacia"><span class="flag-name">Croacia</span></div>
 </div>
 
 <!-- DIREITA (Asia + Oceania + Africa + Oriente Medio) -->
 <div class="flags-column right" id="flags-right">
   <div class="flag-un-logo"><span style="font-size:1.5rem;line-height:1;display:flex;align-items:center;justify-content:center;width:36px;height:36px;" title="Cobertura global">&#127760;</span></div>
-  <div class="flag-item"> data-pais="jp"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
-  <div class="flag-item"> data-pais="cn"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
-  <div class="flag-item"> data-pais="kr"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
-  <div class="flag-item"> data-pais="in"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/in.png" alt="India"><span class="flag-name">India</span></div>
-  <div class="flag-item"> data-pais="au"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/au.png" alt="Australia"><span class="flag-name">Australia</span></div>
-  <div class="flag-item"> data-pais="ru"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ru.png" alt="Russia"><span class="flag-name">Russia</span></div>
-  <div class="flag-item"> data-pais="za"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/za.png" alt="Africa do Sul"><span class="flag-name">Africa do Sul</span></div>
-  <div class="flag-item"> data-pais="ng"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ng.png" alt="Nigeria"><span class="flag-name">Nigeria</span></div>
-  <div class="flag-item"> data-pais="eg"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/eg.png" alt="Egito"><span class="flag-name">Egito</span></div>
-  <div class="flag-item"> data-pais="il"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/il.png" alt="Israel"><span class="flag-name">Israel</span></div>
-  <div class="flag-item"> data-pais="sa"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/sa.png" alt="Arabia Saudita"><span class="flag-name">Arabia Saudita</span></div>
-  <div class="flag-item"> data-pais="tr"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/tr.png" alt="Turquia"><span class="flag-name">Turquia</span></div>
-  <div class="flag-item"> data-pais="ch"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ch.png" alt="Suica"><span class="flag-name">Suica</span></div>
-  <div class="flag-item"> data-pais="no"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/no.png" alt="Noruega"><span class="flag-name">Noruega</span></div>
-  <div class="flag-item"> data-pais="nz"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/nz.png" alt="Nova Zelandia"><span class="flag-name">Nova Zelandia</span></div>
-  <div class="flag-item"> data-pais="id"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/id.png" alt="Indonesia"><span class="flag-name">Indonesia</span></div>
-  <div class="flag-item"> data-pais="th"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/th.png" alt="Tailandia"><span class="flag-name">Tailandia</span></div>
-  <div class="flag-item"> data-pais="vn"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/vn.png" alt="Vietna"><span class="flag-name">Vietna</span></div>
-  <div class="flag-item"> data-pais="ph"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ph.png" alt="Filipinas"><span class="flag-name">Filipinas</span></div>
-  <div class="flag-item"> data-pais="my"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/my.png" alt="Malasia"><span class="flag-name">Malasia</span></div>
-  <div class="flag-item"> data-pais="sg"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/sg.png" alt="Singapura"><span class="flag-name">Singapura</span></div>
-  <div class="flag-item"> data-pais="pk"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pk.png" alt="Paquistao"><span class="flag-name">Paquistao</span></div>
-  <div class="flag-item"> data-pais="ae"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ae.png" alt="Emirados Arabes"><span class="flag-name">Emirados Arabes</span></div>
-  <div class="flag-item"> data-pais="qa"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/qa.png" alt="Qatar"><span class="flag-name">Qatar</span></div>
-  <div class="flag-item"> data-pais="ma"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ma.png" alt="Marrocos"><span class="flag-name">Marrocos</span></div>
-  <div class="flag-item"> data-pais="ke"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ke.png" alt="Kenya"><span class="flag-name">Kenya</span></div>
-  <div class="flag-item"> data-pais="et"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/et.png" alt="Etiopia"><span class="flag-name">Etiopia</span></div>
-  <div class="flag-item"> data-pais="gh"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gh.png" alt="Gana"><span class="flag-name">Gana</span></div>
-  <div class="flag-item"> data-pais="ao"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ao.png" alt="Angola"><span class="flag-name">Angola</span></div>
-  <div class="flag-item"> data-pais="mz"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/mz.png" alt="Mocambique"><span class="flag-name">Mocambique</span></div>
-  <div class="flag-item"> data-pais="ir"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ir.png" alt="Ira"><span class="flag-name">Ira</span></div>
-  <div class="flag-item"> data-pais="iq"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/iq.png" alt="Iraque"><span class="flag-name">Iraque</span></div>
-  <div class="flag-item"> data-pais="jo"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jo.png" alt="Jordania"><span class="flag-name">Jordania</span></div>
-  <div class="flag-item"> data-pais="bd"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/bd.png" alt="Bangladesh"><span class="flag-name">Bangladesh</span></div>
-  <div class="flag-item"> data-pais="tz"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/tz.png" alt="Tanzania"><span class="flag-name">Tanzania</span></div>
-  <div class="flag-item"> data-pais="kp"<img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kp.png" alt="Coreia do Norte"><span class="flag-name">Coreia do Norte</span></div>
+  <div class="flag-item" data-pais="jp"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jp.png" alt="Japao"><span class="flag-name">Japao</span></div>
+  <div class="flag-item" data-pais="cn"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/cn.png" alt="China"><span class="flag-name">China</span></div>
+  <div class="flag-item" data-pais="kr"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kr.png" alt="Coreia do Sul"><span class="flag-name">Coreia do Sul</span></div>
+  <div class="flag-item" data-pais="in"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/in.png" alt="India"><span class="flag-name">India</span></div>
+  <div class="flag-item" data-pais="au"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/au.png" alt="Australia"><span class="flag-name">Australia</span></div>
+  <div class="flag-item" data-pais="ru"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ru.png" alt="Russia"><span class="flag-name">Russia</span></div>
+  <div class="flag-item" data-pais="za"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/za.png" alt="Africa do Sul"><span class="flag-name">Africa do Sul</span></div>
+  <div class="flag-item" data-pais="ng"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ng.png" alt="Nigeria"><span class="flag-name">Nigeria</span></div>
+  <div class="flag-item" data-pais="eg"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/eg.png" alt="Egito"><span class="flag-name">Egito</span></div>
+  <div class="flag-item" data-pais="il"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/il.png" alt="Israel"><span class="flag-name">Israel</span></div>
+  <div class="flag-item" data-pais="sa"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/sa.png" alt="Arabia Saudita"><span class="flag-name">Arabia Saudita</span></div>
+  <div class="flag-item" data-pais="tr"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/tr.png" alt="Turquia"><span class="flag-name">Turquia</span></div>
+  <div class="flag-item" data-pais="ch"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ch.png" alt="Suica"><span class="flag-name">Suica</span></div>
+  <div class="flag-item" data-pais="no"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/no.png" alt="Noruega"><span class="flag-name">Noruega</span></div>
+  <div class="flag-item" data-pais="nz"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/nz.png" alt="Nova Zelandia"><span class="flag-name">Nova Zelandia</span></div>
+  <div class="flag-item" data-pais="id"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/id.png" alt="Indonesia"><span class="flag-name">Indonesia</span></div>
+  <div class="flag-item" data-pais="th"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/th.png" alt="Tailandia"><span class="flag-name">Tailandia</span></div>
+  <div class="flag-item" data-pais="vn"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/vn.png" alt="Vietna"><span class="flag-name">Vietna</span></div>
+  <div class="flag-item" data-pais="ph"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ph.png" alt="Filipinas"><span class="flag-name">Filipinas</span></div>
+  <div class="flag-item" data-pais="my"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/my.png" alt="Malasia"><span class="flag-name">Malasia</span></div>
+  <div class="flag-item" data-pais="sg"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/sg.png" alt="Singapura"><span class="flag-name">Singapura</span></div>
+  <div class="flag-item" data-pais="pk"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/pk.png" alt="Paquistao"><span class="flag-name">Paquistao</span></div>
+  <div class="flag-item" data-pais="ae"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ae.png" alt="Emirados Arabes"><span class="flag-name">Emirados Arabes</span></div>
+  <div class="flag-item" data-pais="qa"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/qa.png" alt="Qatar"><span class="flag-name">Qatar</span></div>
+  <div class="flag-item" data-pais="ma"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ma.png" alt="Marrocos"><span class="flag-name">Marrocos</span></div>
+  <div class="flag-item" data-pais="ke"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ke.png" alt="Kenya"><span class="flag-name">Kenya</span></div>
+  <div class="flag-item" data-pais="et"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/et.png" alt="Etiopia"><span class="flag-name">Etiopia</span></div>
+  <div class="flag-item" data-pais="gh"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/gh.png" alt="Gana"><span class="flag-name">Gana</span></div>
+  <div class="flag-item" data-pais="ao"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ao.png" alt="Angola"><span class="flag-name">Angola</span></div>
+  <div class="flag-item" data-pais="mz"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/mz.png" alt="Mocambique"><span class="flag-name">Mocambique</span></div>
+  <div class="flag-item" data-pais="ir"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/ir.png" alt="Ira"><span class="flag-name">Ira</span></div>
+  <div class="flag-item" data-pais="iq"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/iq.png" alt="Iraque"><span class="flag-name">Iraque</span></div>
+  <div class="flag-item" data-pais="jo"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/jo.png" alt="Jordania"><span class="flag-name">Jordania</span></div>
+  <div class="flag-item" data-pais="bd"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/bd.png" alt="Bangladesh"><span class="flag-name">Bangladesh</span></div>
+  <div class="flag-item" data-pais="tz"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/tz.png" alt="Tanzania"><span class="flag-name">Tanzania</span></div>
+  <div class="flag-item" data-pais="kp"><img loading="lazy" decoding="async" src="https://flagcdn.com/w80/kp.png" alt="Coreia do Norte"><span class="flag-name">Coreia do Norte</span></div>
 </div>
 
 <!-- INTEGRATED AGENCIES NETWORK -->
