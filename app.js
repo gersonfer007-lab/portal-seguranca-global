@@ -1602,3 +1602,25 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', openSharedQuery); }
   else { openSharedQuery(); }
 })();
+
+// ============================================================
+// NEWSLETTER — mensagem de sucesso ao voltar com ?inscrito=1
+// ============================================================
+(function() {
+  function showSubscriptionOk() {
+    var ok = false;
+    try { ok = new URLSearchParams(window.location.search).get('inscrito') === '1'; } catch (e) { return; }
+    if (!ok) return;
+    var box = document.querySelector('.nl-box');
+    if (!box) return;
+    var msg = document.createElement('div');
+    msg.className = 'nl-ok';
+    msg.setAttribute('role', 'status');
+    msg.innerHTML = '&#9989; Inscri&ccedil;&atilde;o recebida! Voc&ecirc; receber&aacute; as pr&oacute;ximas novidades por e-mail.';
+    msg.style.cssText = 'margin:1rem auto 0;max-width:420px;padding:.8rem 1rem;border-radius:10px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#4ade80;font-size:.85rem;font-weight:600;';
+    box.appendChild(msg);
+    if (box.scrollIntoView) { try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', showSubscriptionOk); }
+  else { showSubscriptionOk(); }
+})();
