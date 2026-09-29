@@ -243,6 +243,10 @@ function bindUI() {
   var shareNative = document.getElementById('share-native');
   if (shareNative) shareNative.addEventListener('click', nativeShare);
 
+  document.querySelectorAll('.share-net').forEach(function(btn) {
+    btn.addEventListener('click', function() { shareToNetwork(btn.getAttribute('data-share')); });
+  });
+
   var btnLoadGlobe = document.getElementById('btn-load-globe');
   if (btnLoadGlobe) btnLoadGlobe.addEventListener('click', loadGlobeOnDemand);
 
@@ -309,9 +313,9 @@ let satelliteTileLayer = null;
 let labelsLayer = null;
 
 const TILES = {
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  dark: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  labels: 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png'
+  labels: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
 };
 
 // ============================================================
@@ -1230,7 +1234,7 @@ function openShare() {
     + SHARE_SITE_URL + "?q=" + encodeURIComponent(currentData.address.fullAddress);
 
   document.getElementById('share-title').textContent = ui.title;
-  document.getElementById('share-subtitle').textContent = ui.sub;
+  document.getElementById('share-sub').textContent = ui.sub;
   document.getElementById('share-preview-text').textContent = msg;
   document.getElementById('share-copy-link-text').textContent = ui.copy;
   document.getElementById('share-copy-msg-text').textContent = ui.copyMsg;
@@ -1277,6 +1281,29 @@ function nativeShare() {
   } else {
     window.location.href = "mailto:?subject=" + encodeURIComponent(shareI18n[window.PSG_LANG || 'pt'].subject) + "&body=" + encodeURIComponent(msg);
   }
+}
+
+function shareToNetwork(net) {
+  if (!net || !currentData) return;
+  var lang = window.PSG_LANG || 'pt';
+  var ui = shareI18n[lang] || shareI18n.pt;
+  var url = SHARE_SITE_URL + "?q=" + encodeURIComponent(currentData.address.fullAddress);
+  var msg = document.getElementById('share-preview-text').textContent || '';
+  var textOnly = msg.split(url)[0].trim();
+  var href = null, sameWindow = false;
+  switch (net) {
+    case 'whatsapp': href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(msg); break;
+    case 'telegram': href = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(textOnly); break;
+    case 'twitter':  href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(textOnly) + '&url=' + encodeURIComponent(url); break;
+    case 'facebook': href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url); break;
+    case 'linkedin': href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url); break;
+    case 'reddit':   href = 'https://www.reddit.com/submit?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(ui.subject); break;
+    case 'email':    href = 'mailto:?subject=' + encodeURIComponent(ui.subject) + '&body=' + encodeURIComponent(msg); sameWindow = true; break;
+    case 'sms':      href = 'sms:?&body=' + encodeURIComponent(msg); sameWindow = true; break;
+  }
+  if (!href) return;
+  if (sameWindow) { window.location.href = href; }
+  else { window.open(href, '_blank', 'noopener'); }
 }
 
 // ============================================================
