@@ -739,7 +739,7 @@ function roadSelectedCountry() {
 function roadAttempts(q) {
   var raw = String(q);
   // Remove marcadores de km (confundem o geocodificador) mantendo o nome da via
-  var base = raw.replace(/\bkm\.?\s*\d+(\s*[-â€“]\s*\d+)?/gi, '').replace(/\s{2,}/g, ' ').replace(/^[\s,]+|[\s,]+$/g, '');
+  var base = raw.replace(/\bkm\.?\s*\d+(\s*[-\u2013]\s*\d+)?/gi, '').replace(/\s{2,}/g, ' ').replace(/^[\s,]+|[\s,]+$/g, '');
   var pais = roadSelectedCountry();
   var out = [];
   var push = function(s) { s = String(s).replace(/\s+/g, ' ').trim(); if (s && out.indexOf(s) === -1) out.push(s); };
@@ -1189,40 +1189,40 @@ function ensurePdfLibs() {
 var PSG_BR_STATE_FLAGS = {
   'acre': 'Bandeira do Acre.svg', 'ac': 'Bandeira do Acre.svg',
   'alagoas': 'Bandeira de Alagoas.svg', 'al': 'Bandeira de Alagoas.svg',
-  'amapa': 'Bandeira do AmapÃ¡.svg', 'ap': 'Bandeira do AmapÃ¡.svg',
+  'amapa': 'Bandeira do Amap\u00e1.svg', 'ap': 'Bandeira do Amap\u00e1.svg',
   'amazonas': 'Bandeira do Amazonas.svg', 'am': 'Bandeira do Amazonas.svg',
   'bahia': 'Bandeira da Bahia.svg', 'ba': 'Bandeira da Bahia.svg',
-  'ceara': 'Bandeira do CearÃ¡.svg', 'ce': 'Bandeira do CearÃ¡.svg',
+  'ceara': 'Bandeira do Cear\u00e1.svg', 'ce': 'Bandeira do Cear\u00e1.svg',
   'distrito federal': 'Bandeira do Distrito Federal (Brasil).svg', 'df': 'Bandeira do Distrito Federal (Brasil).svg',
-  'espirito santo': 'Bandeira do EspÃ­rito Santo.svg', 'es': 'Bandeira do EspÃ­rito Santo.svg',
-  'goias': 'Bandeira de GoiÃ¡s.svg', 'go': 'Bandeira de GoiÃ¡s.svg',
-  'maranhao': 'Bandeira do MaranhÃ£o.svg', 'ma': 'Bandeira do MaranhÃ£o.svg',
+  'espirito santo': 'Bandeira do Esp\u00edrito Santo.svg', 'es': 'Bandeira do Esp\u00edrito Santo.svg',
+  'goias': 'Bandeira de Goi\u00e1s.svg', 'go': 'Bandeira de Goi\u00e1s.svg',
+  'maranhao': 'Bandeira do Maranh\u00e3o.svg', 'ma': 'Bandeira do Maranh\u00e3o.svg',
   'mato grosso': 'Bandeira de Mato Grosso.svg', 'mt': 'Bandeira de Mato Grosso.svg',
   'mato grosso do sul': 'Bandeira de Mato Grosso do Sul.svg', 'ms': 'Bandeira de Mato Grosso do Sul.svg',
   'minas gerais': 'Bandeira de Minas Gerais.svg', 'mg': 'Bandeira de Minas Gerais.svg',
-  'para': 'Bandeira do ParÃ¡.svg', 'pa': 'Bandeira do ParÃ¡.svg',
-  'paraiba': 'Bandeira da ParaÃ­ba.svg', 'pb': 'Bandeira da ParaÃ­ba.svg',
-  'parana': 'Bandeira do ParanÃ¡.svg', 'pr': 'Bandeira do ParanÃ¡.svg',
+  'para': 'Bandeira do Par\u00e1.svg', 'pa': 'Bandeira do Par\u00e1.svg',
+  'paraiba': 'Bandeira da Para\u00edba.svg', 'pb': 'Bandeira da Para\u00edba.svg',
+  'parana': 'Bandeira do Paran\u00e1.svg', 'pr': 'Bandeira do Paran\u00e1.svg',
   'pernambuco': 'Bandeira de Pernambuco.svg', 'pe': 'Bandeira de Pernambuco.svg',
-  'piaui': 'Bandeira do PiauÃ­.svg', 'pi': 'Bandeira do PiauÃ­.svg',
+  'piaui': 'Bandeira do Piau\u00ed.svg', 'pi': 'Bandeira do Piau\u00ed.svg',
   'rio de janeiro': 'Bandeira do estado do Rio de Janeiro.svg', 'rj': 'Bandeira do estado do Rio de Janeiro.svg',
   'rio grande do norte': 'Bandeira do Rio Grande do Norte.svg', 'rn': 'Bandeira do Rio Grande do Norte.svg',
   'rio grande do sul': 'Bandeira do Rio Grande do Sul.svg', 'rs': 'Bandeira do Rio Grande do Sul.svg',
-  'rondonia': 'Bandeira de RondÃ´nia.svg', 'ro': 'Bandeira de RondÃ´nia.svg',
+  'rondonia': 'Bandeira de Rond\u00f4nia.svg', 'ro': 'Bandeira de Rond\u00f4nia.svg',
   'roraima': 'Bandeira de Roraima.svg', 'rr': 'Bandeira de Roraima.svg',
   'santa catarina': 'Bandeira de Santa Catarina.svg', 'sc': 'Bandeira de Santa Catarina.svg',
-  'sao paulo': 'Bandeira do estado de SÃ£o Paulo.svg', 'sp': 'Bandeira do estado de SÃ£o Paulo.svg',
+  'sao paulo': 'Bandeira do estado de S\u00e3o Paulo.svg', 'sp': 'Bandeira do estado de S\u00e3o Paulo.svg',
   'sergipe': 'Bandeira de Sergipe.svg', 'se': 'Bandeira de Sergipe.svg',
   'tocantins': 'Bandeira do Tocantins.svg', 'to': 'Bandeira do Tocantins.svg'
 };
 var PSG_BR_STATE_NAMES = {
-  ac:'Acre',al:'Alagoas',ap:'AmapÃ¡',am:'Amazonas',ba:'Bahia',ce:'CearÃ¡',df:'Distrito Federal',
-  es:'EspÃ­rito Santo',go:'GoiÃ¡s',ma:'MaranhÃ£o',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',
-  pa:'ParÃ¡',pb:'ParaÃ­ba',pr:'ParanÃ¡',pe:'Pernambuco',pi:'PiauÃ­',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',
-  rs:'Rio Grande do Sul',ro:'RondÃ´nia',rr:'Roraima',sc:'Santa Catarina',sp:'SÃ£o Paulo',se:'Sergipe',to:'Tocantins'
+  ac:'Acre',al:'Alagoas',ap:'Amap\u00e1',am:'Amazonas',ba:'Bahia',ce:'Cear\u00e1',df:'Distrito Federal',
+  es:'Esp\u00edrito Santo',go:'Goi\u00e1s',ma:'Maranh\u00e3o',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',
+  pa:'Par\u00e1',pb:'Para\u00edba',pr:'Paran\u00e1',pe:'Pernambuco',pi:'Piau\u00ed',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',
+  rs:'Rio Grande do Sul',ro:'Rond\u00f4nia',rr:'Roraima',sc:'Santa Catarina',sp:'S\u00e3o Paulo',se:'Sergipe',to:'Tocantins'
 };
 function _psgNorm(s) {
-  return (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').trim();
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x00-\x7F]/g, '').trim();
 }
 function _psgUF(stateRaw) {
   var n = _psgNorm(stateRaw);
@@ -1264,7 +1264,7 @@ async function _psgReverseLabel(lat, lng) {
     var a = d.address || {};
     var bairro = a.suburb || a.neighbourhood || a.quarter || a.village || a.hamlet || '';
     var cidade = a.city || a.town || a.municipality || a.village || '';
-    return [bairro, cidade].filter(function(v, i, arr) { return v && arr.indexOf(v) === i; }).join(' â€” ');
+    return [bairro, cidade].filter(function(v, i, arr) { return v && arr.indexOf(v) === i; }).join(' \u2014 ');
   } catch (e) { return ''; }
 }
 function _psgMesAno(d) {
@@ -1359,7 +1359,7 @@ async function _doGeneratePDF() {
   var citySeal = document.getElementById('pdf-city-seal');
   cityFlagImg.style.display = 'none';
   citySeal.style.display = 'flex';
-  citySeal.textContent = (city || '?').replace(/[^A-Za-zÃ€-Ã¿ ]/g, '').split(' ').filter(Boolean).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+  citySeal.textContent = (city || '?').replace(/[^A-Za-z\u00C0-\u00FF ]/g, '').split(' ').filter(Boolean).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
   if (countryCode === 'br' && city) {
     var uf = _psgNorm(stateRaw).length === 2 ? stateRaw.toUpperCase() : '';
     var candidates = ['Bandeira da cidade de ' + city + '.svg', 'Bandeira de ' + city + (uf ? ' (' + uf + ')' : '') + '.svg', 'Bandeira de ' + city + '.svg'];
@@ -1383,7 +1383,7 @@ async function _doGeneratePDF() {
   document.getElementById('pdf-emitted').textContent = emittedStr;
   document.getElementById('pdf-protocol-2').textContent = protocol;
   document.getElementById('pdf-emitted-2').textContent = emittedStr;
-  var mesesExtenso = ['janeiro','fevereiro','marÃ§o','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var mesesExtenso = ['janeiro','fevereiro','mar\u00e7o','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   var cidadeData = city || stateName || countryName;
   document.getElementById('pdf-dateline').textContent = cidadeData + ', ' + now.getDate() + ' de ' + mesesExtenso[now.getMonth()] + ' de ' + now.getFullYear() + '.';
   var qrData = 'https://portalsegurancaglobal.com.br/verificar/' + protocol;
@@ -1534,17 +1534,17 @@ var shareI18n = {
     score: 'Safety Score', at: 'em', cta: 'Consulte a seguranca de qualquer endereco do mundo:',
     copy: 'Copiar link', copyMsg: 'Copiar mensagem', copied: 'Copiado com sucesso!',
     native: 'Mais opcoes', email: 'E-mail', cancel: 'Fechar', preview: 'Previa da mensagem',
-    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analise de Seguranca â€” Portal Seguranca Global' },
+    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analise de Seguranca \u2014 Portal Seguranca Global' },
   en: { title: 'Share Result', sub: 'Send this safety analysis to those who need to know',
     score: 'Safety Score', at: 'at', cta: 'Check the safety of any address in the world:',
     copy: 'Copy link', copyMsg: 'Copy message', copied: 'Copied successfully!',
     native: 'More options', email: 'Email', cancel: 'Close', preview: 'Message preview',
-    safe: 'SAFE', mod: 'MODERATE', crit: 'CRITICAL', subject: 'Safety Analysis â€” Global Security Portal' },
+    safe: 'SAFE', mod: 'MODERATE', crit: 'CRITICAL', subject: 'Safety Analysis \u2014 Global Security Portal' },
   es: { title: 'Compartir Resultado', sub: 'Envie este analisis de seguridad a quien necesite saberlo',
     score: 'Safety Score', at: 'en', cta: 'Consulte la seguridad de cualquier direccion del mundo:',
     copy: 'Copiar enlace', copyMsg: 'Copiar mensaje', copied: 'Copiado con exito!',
     native: 'Mas opciones', email: 'Correo', cancel: 'Cerrar', preview: 'Vista previa del mensaje',
-    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analisis de Seguridad â€” Portal Seguridad Global' }
+    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analisis de Seguridad \u2014 Portal Seguridad Global' }
 };
 
 function openShare() {
@@ -1553,8 +1553,8 @@ function openShare() {
   var ui = shareI18n[lang] || shareI18n.pt;
   var scoreText = (currentData.safetyScore >= 70 ? ui.safe : currentData.safetyScore >= 40 ? ui.mod : ui.crit);
   var msg = "*" + ui.subject + "*\n\n"
-    + "ðŸ“ " + currentData.address.fullAddress + "\n"
-    + "ðŸ›¡ï¸ " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
+    + "\uD83D\uDCCD " + currentData.address.fullAddress + "\n"
+    + "\uD83D\uDEE1\uFE0F " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
     + ui.cta + "\n"
     + SHARE_SITE_URL + "?q=" + encodeURIComponent(currentData.address.fullAddress);
 
@@ -1962,7 +1962,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
-          _subject: 'Novo inscrito na newsletter - Portal SeguranÃ§a Global',
+          _subject: 'Novo inscrito na newsletter - Portal Seguran\u00e7a Global',
           _template: 'table',
           _captcha: 'false',
           email: email
@@ -2124,6 +2124,10 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
   var gpsRouteLayer = null, gpsPosMarker = null;
   var watchId = null, soundOn = true;
   var spokenSteps = {}, navStepIdx = 0, stepLis = [];
+  var hazards = [];             // radares/cameras/pedagios na rota
+  var gpsHazardLayer = null;
+  var summaryBase = '';
+  var hazardsFailed = false;    // true quando o Overpass nao respondeu
 
   function el(id) { return document.getElementById(id); }
   function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -2288,8 +2292,10 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         duration: rt.duration || 0
       };
       spokenSteps = {}; navStepIdx = 0;
+      hazards = [];
       renderRoute();
       drawRoute(o, d);
+      gpsLoadHazards();
       status('ok', 'Rota tracada com sucesso! Confira o resumo, veja no mapa e inicie a navegacao.');
     } catch (e) {
       status('err', 'Nao foi possivel calcular a rota agora (servico de rotas ocupado). Tente novamente em instantes.');
@@ -2299,10 +2305,10 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 
   function renderRoute() {
     if (!route) return;
-    summaryEl.innerHTML = 'Distancia total: <b>' + fmtDist(route.distance) + '</b> &bull; ' +
+    summaryBase = 'Distancia total: <b>' + fmtDist(route.distance) + '</b> &bull; ' +
       'Tempo estimado: <b>' + fmtDur(route.duration) + '</b> &bull; ' +
       route.steps.length + ' passos';
-    summaryEl.classList.add('show');
+    updateHazardSummary();
     var html = '';
     route.steps.forEach(function(s, i) {
       html += '<li><span class="gps-step-n">' + (i + 1) + '</span><span>' + esc(maneuverText(s)) +
@@ -2332,6 +2338,136 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
     try { if (stepLis[idx]) stepLis[idx].scrollIntoView({ block: 'nearest' }); } catch (e) {}
   }
 
+  // ---- AVISOS DE CAMERAS, RADARES E PEDAGIOS NA ROTA (OpenStreetMap) ----
+  function routeBBox() {
+    var minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+    route.coords.forEach(function(c) {
+      if (c[0] < minLat) minLat = c[0];
+      if (c[0] > maxLat) maxLat = c[0];
+      if (c[1] < minLng) minLng = c[1];
+      if (c[1] > maxLng) maxLng = c[1];
+    });
+    var pad = 0.012; // ~1,3 km de folga para cada lado da rota
+    return (minLat - pad) + ',' + (minLng - pad) + ',' + (maxLat + pad) + ',' + (maxLng + pad);
+  }
+
+  async function gpsLoadHazards() {
+    if (!route || !route.coords.length) return;
+    var bbox = routeBBox();
+    var q = '[out:json][timeout:40];(' +
+      'node["highway"="speed_camera"](' + bbox + ');' +
+      'node["barrier"="toll_booth"](' + bbox + ');' +
+      ');out body center 300;';
+    var endpoints = [
+      'https://overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter'
+    ];
+    var j = null;
+    for (var e = 0; e < endpoints.length && !j; e++) {
+      try {
+        var r = await fetch(endpoints[e], {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+          body: 'data=' + encodeURIComponent(q)
+        });
+        if (r.ok) j = await r.json();
+      } catch (err) { /* tenta o proximo espelho */ }
+    }
+    if (!j || !j.elements) { hazardsFailed = true; updateHazardSummary(); return; }
+    hazardsFailed = false;
+    // Mantem apenas os pontos a ate ~250 m da rota
+    var step = Math.max(1, Math.floor(route.coords.length / 1500));
+    var found = [];
+    (j.elements).forEach(function(elx) {
+      var tags = elx.tags || {};
+      if (elx.type !== 'node' || typeof elx.lat !== 'number' || typeof elx.lon !== 'number') return;
+      var kind = tags.highway === 'speed_camera' ? 'radar' : (tags.barrier === 'toll_booth' ? 'pedagio' : null);
+      if (!kind) return;
+      var best = Infinity, bestIdx = 0;
+      for (var i = 0; i < route.coords.length; i += step) {
+        var d = haversine({ lat: elx.lat, lng: elx.lon }, { lat: route.coords[i][0], lng: route.coords[i][1] });
+        if (d < best) { best = d; bestIdx = i; }
+      }
+      if (best > 250) return;
+      found.push({
+        lat: elx.lat, lng: elx.lon, kind: kind,
+        maxspeed: tags.maxspeed || '', name: tags.name || '',
+        prog: bestIdx, s1: false, s2: false
+      });
+    });
+    found.sort(function(a, b) { return a.prog - b.prog; });
+    hazards = found;
+    drawHazardMarkers();
+    updateHazardSummary();
+  }
+
+  function drawHazardMarkers() {
+    try {
+      if (typeof map === 'undefined' || !map || typeof L === 'undefined' || !hazards.length) return;
+      if (gpsHazardLayer) { try { map.removeLayer(gpsHazardLayer); } catch (e) {} }
+      gpsHazardLayer = L.layerGroup();
+      hazards.forEach(function(h) {
+        var ic = L.divIcon({
+          html: h.kind === 'radar' ? '&#128247;' : '&#128652;',
+          className: 'gps-hazard-icon',
+          iconSize: [22, 22], iconAnchor: [11, 11]
+        });
+        L.marker([h.lat, h.lng], {
+          icon: ic,
+          title: h.kind === 'radar' ? 'Radar / camera de velocidade' : 'Pedagio'
+        }).addTo(gpsHazardLayer);
+      });
+      gpsHazardLayer.addTo(map);
+    } catch (e) {}
+  }
+
+  function updateHazardSummary() {
+    if (!summaryEl) return;
+    var nr = 0, np = 0;
+    hazards.forEach(function(h) { if (h.kind === 'radar') nr++; else np++; });
+    var line = '';
+    if (nr) line += ' &#128247; <b>' + nr + '</b> radar(es)/camera(s) na rota';
+    if (np) line += (line ? ' &bull;' : '') + ' &#128652; <b>' + np + '</b> pedagio(s) na rota';
+    if (!line && hazards.length === 0 && !summaryBase) return;
+    if (!line) line = hazardsFailed ? ' &#9888; nao foi possivel verificar radares agora' : ' &#9989; nenhum radar ou pedagio cadastrado na rota';
+    summaryEl.innerHTML = summaryBase + '<br><span style="font-size:.78rem;">Avisos automaticos:' + line + '</span>';
+    summaryEl.classList.add('show');
+  }
+
+  function nearestRouteIdx(me) {
+    var best = Infinity, bi = 0;
+    var step = Math.max(1, Math.floor(route.coords.length / 2000));
+    for (var i = 0; i < route.coords.length; i += step) {
+      var d = haversine(me, { lat: route.coords[i][0], lng: route.coords[i][1] });
+      if (d < best) { best = d; bi = i; }
+    }
+    return bi;
+  }
+
+  function gpsSpeakHazard(h, d) {
+    var lbl = (typeof roadSpeedLabel === 'function') ? roadSpeedLabel(h.maxspeed) : null;
+    var lim = (h.kind === 'radar' && lbl && /^\d+/.test(lbl)) ? ', limite ' + lbl : '';
+    if (h.kind === 'radar') {
+      speak('Atencao: radar ou camera de velocidade a frente em ' + fmtDist(d) + lim);
+      status('info', '&#128247; <b>Radar/c&acirc;mera &agrave; frente</b> em ' + fmtDist(d) +
+        (lim ? ' &mdash; limite <b>' + esc(lbl) + '</b>' : '') + '. Reduza a velocidade.');
+    } else {
+      speak('Atencao: pedagio a frente em ' + fmtDist(d));
+      status('info', '&#128652; <b>Ped&aacute;gio &agrave; frente</b> em ' + fmtDist(d) + '. Prepare-se.');
+    }
+  }
+
+  function checkHazards(me, prog) {
+    for (var i = 0; i < hazards.length; i++) {
+      var h = hazards[i];
+      if (h.prog < prog - 5) continue; // ja ficou para tras
+      var dh = haversine(me, h);
+      if (dh > 1500) break; // ordenados pela rota: os proximos estao ainda mais longe
+      if (dh < 1500 && !h.s1) { h.s1 = true; gpsSpeakHazard(h, dh); }
+      else if (dh < 400 && !h.s2) { h.s2 = true; gpsSpeakHazard(h, dh); }
+    }
+  }
+
   function onNavFix(pos) {
     if (!route) return;
     var me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -2346,6 +2482,10 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
     } catch (e) {}
 
     var next = route.steps[navStepIdx + 1];
+
+    // Avisos de camaras/radares e pedagios a frente (dados do OpenStreetMap)
+    try { checkHazards(me, nearestRouteIdx(me)); } catch (e) {}
+
     if (!next) {
       // Ultimo trecho: distancia ate o destino
       var destPt = route.coords[route.coords.length - 1];
@@ -2393,6 +2533,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
     }
     stopNav();
     spokenSteps = {}; navStepIdx = 0;
+    hazards.forEach(function(h) { h.s1 = false; h.s2 = false; });
     highlightStep(1);
     speak(maneuverText(route.steps[0]));
     watchId = navigator.geolocation.watchPosition(onNavFix, function() {
