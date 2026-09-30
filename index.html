@@ -27,23 +27,21 @@
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(self)">
-<!-- PERFORMANCE: abrir conexao com os CDNs o quanto antes -->
+<!-- PERFORMANCE: abrir conexao com os servicos externos o quanto antes -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://flagcdn.com" crossorigin>
 <link rel="dns-prefetch" href="https://flagcdn.com">
-<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 <link rel="dns-prefetch" href="https://upload.wikimedia.org">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<!-- Leaflet (CSS sincrono: e critico para o layout do mapa) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script defer src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<!-- Chart.js -->
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Leaflet (hospedado no proprio portal: sem DNS/TLS extra) -->
+<link rel="stylesheet" href="vendor/leaflet.css">
+<script defer src="vendor/leaflet.js"></script>
+<script defer src="vendor/leaflet-heat.js"></script>
+<!-- Chart.js (hospedado no proprio portal) -->
+<script defer src="vendor/chart.umd.min.js"></script>
 <!-- jsPDF + html2canvas: carregados SOB DEMANDA (só ao gerar o PDF) -->
 <!-- PERFORMANCE: mapa e globo 3D sob demanda -->
 <style>
@@ -2723,7 +2721,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=20261001r21"></script>
+<script defer src="app.js?v=20261001r22"></script>
 <script>
 (function(){
   var EDICOES={
