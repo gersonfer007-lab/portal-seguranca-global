@@ -85,7 +85,8 @@ self.addEventListener('fetch', function(e) {
         return c.match(req).then(function(hit) {
           if (hit) return hit;
           return fetch(req).then(function(r) {
-            if (r && r.ok) { c.put(req, r.clone()); }
+            // tiles via <img> chegam como opaque (r.ok=false, mas validos)
+            if (r && (r.ok || r.type === 'opaque')) { c.put(req, r.clone()); }
             return r;
           }).catch(function() { return Response.error(); });
         });
@@ -101,7 +102,7 @@ self.addEventListener('fetch', function(e) {
         return c.match(req).then(function(hit) {
           if (hit) return hit;
           return fetch(req).then(function(r) {
-            if (r && r.ok) { c.put(req, r.clone()); }
+            if (r && (r.ok || r.type === 'opaque')) { c.put(req, r.clone()); }
             return r;
           }).catch(function() { return Response.error(); });
         });
@@ -113,6 +114,11 @@ self.addEventListener('fetch', function(e) {
   // 4) Mesma origem: network-first (atualizacoes do portal fluem),
   //    com fallback para o cache quando offline
   if (url.origin === self.location.origin) {
+    // Sonda de diagnostico do proprio service worker
+    if (url.pathname === '/swprobe') {
+      e.respondWith(new Response('SW_ALIVE', { headers: { 'Content-Type': 'text/plain' } }));
+      return;
+    }
     // Navegacao de pagina
     if (req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
       e.respondWith(
