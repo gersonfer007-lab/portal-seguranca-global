@@ -2110,3 +2110,355 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', start); }
   else { start(); }
 })();
+
+// ============================================================
+// GPS DE ESTRADAS — rota (OSRM) + navegacao guiada por voz
+// Origem: local analisado, texto livre ou geolocalizacao.
+// Destino: texto geocodificado via Nominatim.
+// ============================================================
+(function() {
+  var overlay, origemInput, destinoInput, summaryEl, stepsEl, statusEl;
+  var traceBtn, navStartBtn, navStopBtn, soundBtn;
+  var route = null;            // { coords:[[lat,lng]], steps:[], distance, duration }
+  var origemFix = null;        // {lat,lng} quando origem = minha localizacao
+  var gpsRouteLayer = null, gpsPosMarker = null;
+  var watchId = null, soundOn = true;
+  var spokenSteps = {}, navStepIdx = 0, stepLis = [];
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function status(kind, html) {
+    if (!statusEl) return;
+    statusEl.className = 'gps-status ' + kind;
+    statusEl.innerHTML = html;
+  }
+
+  function fmtDist(m) {
+    if (!isFinite(m)) return '-';
+    if (m < 1000) return Math.max(1, Math.round(m)) + ' m';
+    return (m / 1000).toFixed(m < 10000 ? 1 : 0).replace('.', ',') + ' km';
+  }
+  function fmtDur(s) {
+    var min = Math.round(s / 60);
+    if (min < 60) return min + ' min';
+    var h = Math.floor(min / 60), m = min % 60;
+    return h + ' h' + (m ? ' ' + m + ' min' : '');
+  }
+
+  function speak(txt) {
+    if (!soundOn || !('speechSynthesis' in window)) return;
+    try {
+      var u = new SpeechSynthesisUtterance(txt);
+      u.lang = 'pt-BR'; u.rate = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function haversine(a, b) {
+    var R = 6371000, rad = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var s = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+  }
+
+  // Traducao das manobras do OSRM para portugues do Brasil
+  function maneuverText(step) {
+    var m = (step && step.maneuver) || {};
+    var type = m.type || '', mod = m.modifier || '';
+    var via = step.name ? ' pela ' + step.name : (step.ref ? ' pela ' + step.ref : '');
+    var side = '';
+    if (mod.indexOf('left') > -1) side = 'a esquerda';
+    else if (mod.indexOf('right') > -1) side = 'a direita';
+    switch (type) {
+      case 'depart': return 'Siga' + (step.name ? ' pela ' + step.name : ' em frente');
+      case 'arrive': return 'Voce chegou ao destino';
+      case 'turn':
+        if (mod === 'uturn') return 'Faca o retorno';
+        if (mod === 'sharp left') return 'Vire acentuadamente a esquerda' + via;
+        if (mod === 'sharp right') return 'Vire acentuadamente a direita' + via;
+        if (mod === 'slight left') return 'Mantenha-se a esquerda' + via;
+        if (mod === 'slight right') return 'Mantenha-se a direita' + via;
+        return 'Vire ' + side + via;
+      case 'new name':
+      case 'continue': return 'Continue' + (step.name ? ' pela ' + step.name : ' em frente');
+      case 'merge': return 'Entre' + (side ? ' a ' + side : '') + via;
+      case 'on ramp': return 'Pegue o acesso' + (side ? ' a ' + side : '') + via;
+      case 'off ramp': return 'Pegue a saida' + (side ? ' a ' + side : '') + via;
+      case 'fork': return 'Mantenha-se ' + (side ? 'a ' + side : 'em frente') + ' na bifurcacao' + via;
+      case 'end of road': return 'No fim da via, vire ' + side + via;
+      case 'roundabout':
+      case 'rotary': return 'Entre na rotatoria' + (m.exit ? ' e saia na ' + m.exit + 'a saida' : '') + via;
+      case 'roundabout turn': return 'Na rotatoria, saia e vire ' + side + via;
+      case 'exit roundabout':
+      case 'exit rotary': return 'Saira da rotatoria' + via;
+      default: return 'Continue' + (step.name ? ' pela ' + step.name : ' em frente');
+    }
+  }
+
+  function openGps() {
+    if (!overlay) return;
+    overlay.classList.add('active');
+    // Pre-preenche a origem com o local analisado (ou a busca atual)
+    if (!origemInput.value) {
+      var startTxt = '';
+      try {
+        if (typeof currentData !== 'undefined' && currentData && currentData.address) {
+          var A = currentData.address;
+          startTxt = [A.street || A.neighborhood, A.city, A.state, A.country].filter(Boolean).join(', ');
+        }
+      } catch (e) {}
+      if (!startTxt) {
+        try { startTxt = (el('search-input') || {}).value || ''; } catch (e) {}
+      }
+      if (startTxt) origemInput.value = startTxt;
+    }
+    // Pre-preenche o destino com a busca atual (se nao for igual a origem)
+    if (!destinoInput.value) {
+      try {
+        var q = (el('search-input') || {}).value || '';
+        if (q && q !== origemInput.value) destinoInput.value = q;
+      } catch (e) {}
+    }
+    try { setTimeout(function() { destinoInput.focus(); }, 150); } catch (e) {}
+  }
+
+  function closeGps() {
+    if (!overlay) return;
+    stopNav();
+    overlay.classList.remove('active');
+  }
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      status('err', 'Seu navegador nao suporta geolocalizacao.');
+      return;
+    }
+    status('info', 'Obtendo sua localizacao pelo GPS...');
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      origemFix = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      origemInput.value = 'Minha localizacao (GPS)';
+      status('ok', 'Localizacao detectada! Agora escreva o destino e tracar a rota.');
+    }, function() {
+      status('err', 'Nao foi possivel obter sua localizacao. Verifique se o GPS esta ativo e se o navegador tem permissao.');
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+  }
+
+  async function traceRoute() {
+    var oq = (origemInput.value || '').trim();
+    var dq = (destinoInput.value || '').trim();
+    if (!oq || !dq) {
+      status('err', 'Preencha a <b>origem</b> e o <b>destino</b> para tracar a rota.');
+      return;
+    }
+    traceBtn.disabled = true;
+    status('info', 'Localizando origem e destino no mapa...');
+    try {
+      var o = null, d = null;
+      if (origemFix && oq.indexOf('Minha localizacao') === 0) o = origemFix;
+      if (!o) o = await geocodeQuery(oq, false);
+      d = await geocodeQuery(dq, false);
+      if (!o || !isFinite(o.lat) || !isFinite(o.lng)) {
+        status('err', 'Nao encontrei a <b>origem</b>. Tente escrever cidade + estado ou pais (ex.: Sao Paulo, SP).');
+        traceBtn.disabled = false; return;
+      }
+      if (!d || !isFinite(d.lat) || !isFinite(d.lng)) {
+        status('err', 'Nao encontrei o <b>destino</b>. Tente escrever cidade + estado ou pais (ex.: Curitiba, PR).');
+        traceBtn.disabled = false; return;
+      }
+      status('info', 'Calculando a melhor rota pelas estradas...');
+      var url = 'https://router.project-osrm.org/route/v1/driving/' +
+        o.lng + ',' + o.lat + ';' + d.lng + ',' + d.lat +
+        '?overview=full&geometries=geojson&steps=true&alternatives=false';
+      var r = await fetch(url);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var j = await r.json();
+      if (!j || !j.routes || !j.routes.length) throw new Error('sem rota');
+      var rt = j.routes[0];
+      var steps = [];
+      (rt.legs || []).forEach(function(leg) {
+        (leg.steps || []).forEach(function(s) { steps.push(s); });
+      });
+      route = {
+        coords: (rt.geometry.coordinates || []).map(function(c) { return [c[1], c[0]]; }),
+        steps: steps,
+        distance: rt.distance || 0,
+        duration: rt.duration || 0
+      };
+      spokenSteps = {}; navStepIdx = 0;
+      renderRoute();
+      drawRoute(o, d);
+      status('ok', 'Rota tracada com sucesso! Confira o resumo, veja no mapa e inicie a navegacao.');
+    } catch (e) {
+      status('err', 'Nao foi possivel calcular a rota agora (servico de rotas ocupado). Tente novamente em instantes.');
+    }
+    traceBtn.disabled = false;
+  }
+
+  function renderRoute() {
+    if (!route) return;
+    summaryEl.innerHTML = 'Distancia total: <b>' + fmtDist(route.distance) + '</b> &bull; ' +
+      'Tempo estimado: <b>' + fmtDur(route.duration) + '</b> &bull; ' +
+      route.steps.length + ' passos';
+    summaryEl.classList.add('show');
+    var html = '';
+    route.steps.forEach(function(s, i) {
+      html += '<li><span class="gps-step-n">' + (i + 1) + '</span><span>' + esc(maneuverText(s)) +
+              '</span><span class="gps-step-d">' + fmtDist(s.distance || 0) + '</span></li>';
+    });
+    stepsEl.innerHTML = html;
+    stepsEl.classList.add('show');
+    stepLis = stepsEl ? Array.prototype.slice.call(stepsEl.children) : [];
+  }
+
+  function drawRoute(o, d) {
+    try {
+      if (typeof map === 'undefined' || !map) { if (typeof initMap === 'function') initMap(); }
+      if (typeof map === 'undefined' || !map || typeof L === 'undefined' || !route) return;
+      if (gpsRouteLayer) { try { map.removeLayer(gpsRouteLayer); } catch (e) {} }
+      gpsRouteLayer = L.layerGroup();
+      L.polyline(route.coords, { color: '#3b82f6', weight: 5, opacity: .85 }).addTo(gpsRouteLayer);
+      L.circleMarker([o.lat, o.lng], { radius: 7, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 1 }).addTo(gpsRouteLayer);
+      L.circleMarker([d.lat, d.lng], { radius: 7, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1 }).addTo(gpsRouteLayer);
+      gpsRouteLayer.addTo(map);
+      map.fitBounds(L.latLngBounds(route.coords), { padding: [30, 30] });
+    } catch (e) {}
+  }
+
+  function highlightStep(idx) {
+    stepLis.forEach(function(li, i) { li.classList.toggle('current', i === idx); });
+    try { if (stepLis[idx]) stepLis[idx].scrollIntoView({ block: 'nearest' }); } catch (e) {}
+  }
+
+  function onNavFix(pos) {
+    if (!route) return;
+    var me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    // Marcador azul da posicao atual no mapa
+    try {
+      if (typeof map !== 'undefined' && map && typeof L !== 'undefined') {
+        if (gpsPosMarker) { try { map.removeLayer(gpsPosMarker); } catch (e) {} }
+        gpsPosMarker = L.circleMarker([me.lat, me.lng], {
+          radius: 8, color: '#fff', weight: 2, fillColor: '#3b82f6', fillOpacity: 1
+        }).addTo(map);
+      }
+    } catch (e) {}
+
+    var next = route.steps[navStepIdx + 1];
+    if (!next) {
+      // Ultimo trecho: distancia ate o destino
+      var destPt = route.coords[route.coords.length - 1];
+      var ddEnd = haversine(me, { lat: destPt[0], lng: destPt[1] });
+      if (ddEnd < 70) {
+        if (!spokenSteps.arrive) {
+          spokenSteps.arrive = true;
+          speak('Voce chegou ao destino');
+          status('ok', '&#9989; <b>Voce chegou ao destino!</b> Boa viagem!');
+          highlightStep(route.steps.length - 1);
+        }
+        stopNav();
+        return;
+      }
+      status('info', 'Continue em frente. Destino a <b>' + fmtDist(ddEnd) + '</b>.');
+      return;
+    }
+
+    var m = next.maneuver && next.maneuver.location;
+    if (!m) { navStepIdx++; return; }
+    var dd = haversine(me, { lat: m[1], lng: m[0] });
+    var instr = maneuverText(next);
+
+    if (dd < 55) {
+      navStepIdx++;
+      highlightStep(navStepIdx + 1);
+      return;
+    }
+    if (dd < 450 && !spokenSteps['n' + (navStepIdx + 1)]) {
+      spokenSteps['n' + (navStepIdx + 1)] = true;
+      speak('Em ' + fmtDist(dd) + ', ' + instr);
+    }
+    status('info', 'Proxima: <b>' + esc(instr) + '</b> em ' + fmtDist(dd));
+    highlightStep(navStepIdx + 1);
+  }
+
+  function startNav() {
+    if (!route) {
+      status('err', 'Primeiro <b>tracar a rota</b> (preencha origem e destino acima).');
+      return;
+    }
+    if (!navigator.geolocation) {
+      status('err', 'Seu navegador nao suporta GPS para navegacao ao vivo.');
+      return;
+    }
+    stopNav();
+    spokenSteps = {}; navStepIdx = 0;
+    highlightStep(1);
+    speak(maneuverText(route.steps[0]));
+    watchId = navigator.geolocation.watchPosition(onNavFix, function() {
+      status('err', 'Perdemos o sinal do GPS. Verifique a permissao de localizacao do navegador.');
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 });
+    navStartBtn.style.display = 'none';
+    navStopBtn.style.display = '';
+    status('info', 'Navegacao iniciada! Siga as instrucoes por voz e mantenha o navegador aberto.');
+  }
+
+  function stopNav() {
+    if (watchId !== null && navigator.geolocation) {
+      try { navigator.geolocation.clearWatch(watchId); } catch (e) {}
+    }
+    watchId = null;
+    if (navStartBtn) navStartBtn.style.display = '';
+    if (navStopBtn) navStopBtn.style.display = 'none';
+  }
+
+  function initGps() {
+    overlay = el('gps-overlay');
+    if (!overlay) return;
+    origemInput = el('gps-origem');
+    destinoInput = el('gps-destino');
+    summaryEl = el('gps-summary');
+    stepsEl = el('gps-steps');
+    statusEl = el('gps-status');
+    traceBtn = el('gps-trace');
+    navStartBtn = el('gps-nav-start');
+    navStopBtn = el('gps-nav-stop');
+    soundBtn = el('gps-sound');
+
+    var btnGps = el('btn-gps');
+    if (btnGps) btnGps.addEventListener('click', openGps);
+
+    var closeBtn = el('gps-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeGps);
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) closeGps(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && overlay.classList.contains('active')) closeGps(); });
+
+    var fixBtn = el('gps-origem-fix');
+    if (fixBtn) fixBtn.addEventListener('click', useMyLocation);
+    if (traceBtn) traceBtn.addEventListener('click', function() { traceRoute(); });
+    if (destinoInput) {
+      destinoInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); traceRoute(); }
+      });
+    }
+    if (origemInput) {
+      origemInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); traceRoute(); }
+      });
+      origemInput.addEventListener('input', function() { origemFix = null; });
+    }
+    if (navStartBtn) navStartBtn.addEventListener('click', startNav);
+    if (navStopBtn) navStopBtn.addEventListener('click', function() {
+      stopNav();
+      status('info', 'Navegacao interrompida. Pode iniciar novamente quando quiser.');
+    });
+    if (soundBtn) soundBtn.addEventListener('click', function() {
+      soundOn = !soundOn;
+      soundBtn.textContent = 'Voz: ' + (soundOn ? 'LIGADA' : 'DESLIGADA');
+      if (!soundOn && window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+    });
+  }
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initGps); }
+  else { initGps(); }
+})();
