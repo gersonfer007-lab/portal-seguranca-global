@@ -1482,11 +1482,34 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 </div>
 
 <!-- BRASAO -->
+<style>
+.emblem-features { display: flex; flex-wrap: wrap; justify-content: center; gap: .45rem; margin-top: .9rem; max-width: 720px; }
+.emblem-features span {
+  font-size: .68rem; font-weight: 600; color: var(--text-secondary);
+  background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.28);
+  border-radius: 999px; padding: .32rem .7rem; line-height: 1.2; white-space: nowrap;
+}
+@media (max-width: 640px) { .emblem-features { gap: .35rem; } .emblem-features span { font-size: .62rem; padding: .28rem .6rem; } }
+</style>
 <section class="emblem-section">
   <img src="brasao-sh.png" alt="Portal Seguranca Global" class="emblem-img">
   <div class="emblem-title">Busca de seguran&ccedil;a em qualquer endere&ccedil;o do mundo</div>
-  <div class="emblem-tagline">Veja se o lugar que voc&ecirc; procura &eacute; realmente seguro</div>
+  <div class="emblem-tagline">Seguran&ccedil;a, estradas, rios e mares &mdash; tudo em um s&oacute; portal</div>
   <div class="emblem-subtitle">portalsegurancaglobal.com.br</div>
+  <div class="emblem-features" aria-label="Recursos do portal">
+    <span>&#128737;&#65039; Safety Score por endere&ccedil;o</span>
+    <span>&#128506;&#65039; Mapa de ocorr&ecirc;ncias</span>
+    <span>&#128225; Not&iacute;cias por pa&iacute;s</span>
+    <span>&#128666; Rodovias do mundo inteiro</span>
+    <span>&#128176; Ped&aacute;gios e radares</span>
+    <span>&#128247; C&acirc;meras e limite de velocidade</span>
+    <span>&#128266; GPS de estradas com voz</span>
+    <span>&#9875;&#65039; Rios, mares e avisos n&aacute;uticos</span>
+    <span>&#128021; Rastreamento de carros, pessoas e pets</span>
+    <span>&#128337; Rel&oacute;gio mundial e fuso hor&aacute;rio</span>
+    <span>&#128196; Relat&oacute;rio PDF com QR de verifica&ccedil;&atilde;o</span>
+    <span>&#128367;&#65039; Atualiza&ccedil;&atilde;o autom&aacute;tica</span>
+  </div>
   <div class="emblem-divider"></div>
 </section>
 
@@ -2665,7 +2688,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r16"></script>
+<script defer src="app.js?v=20260930r17"></script>
 <script>
 (function(){
   var EDICOES={
