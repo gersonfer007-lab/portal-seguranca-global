@@ -19,16 +19,16 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https://*.basemaps.cartocdn.com", "https://*.tile.openstreetmap.org", "https://*.arcgisonline.com", "https://*.googleapis.com", "https://*.google.com", "https://flagcdn.com", "https://unpkg.com", "https://images.unsplash.com", "https://commons.wikimedia.org", "https://upload.wikimedia.org", "https://thumb.wikimedia.org", "https://api.qrserver.com"],
-      connectSrc: ["'self'", "https://viacep.com.br", "https://nominatim.openstreetmap.org", "https://ntfy.sh", "https://api.allorigins.win", "https://api.rss2json.com", "https://pt.wikipedia.org"],
+      connectSrc: ["'self'", "https://viacep.com.br", "https://nominatim.openstreetmap.org", "https://ntfy.sh", "https://api.allorigins.win", "https://api.rss2json.com", "https://pt.wikipedia.org", "https://overpass-api.de", "https://overpass.kumi.systems", "https://router.project-osrm.org", "https://routing.openstreetmap.de", "https://marine-api.open-meteo.com", "https://api.open-meteo.com"],
       frameSrc: ["https://www.google.com", "https://maps.google.com", "https://earth.google.com"],
       workerSrc: ["'self'", "blob:"],
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
-      formAction: ["'self'"]
+      formAction: ["'self'", "https://formsubmit.co"]
     }
   },
   crossOriginEmbedderPolicy: false,
