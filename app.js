@@ -1101,6 +1101,14 @@ function renderRoadAlerts(alerts, lat, lng) {
 var nauticLayer = null;
 var currentNautic = null;   // estado nautico da ultima busca (para o PDF)
 function nauticEsc(s) { return roadEsc(s); }
+// "Rio Tiete" -> "Rio Tiete"; "Represa Billings" (tipo agua) -> "Corpo d'agua — Represa Billings"
+function nauticNomeLabel(a) {
+  var rot = { rio: 'Rio', baia: 'Ba\u00eda', lago: 'Lago', canal: 'Canal', agua: 'Corpo d\u2019\u00e1gua' }[a.tipo] || 'Corpo d\u2019\u00e1gua';
+  var nm = a.nome || rot;
+  var norm = function(x) { return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+  if (a.nome && norm(a.nome).indexOf(norm(rot)) === 0) return nm;
+  return rot + ' \u2014 ' + nm;
+}
 function nauticTipoLabel(t) {
   var m = { rio: 'Rio', baia: 'Ba&iacute;a', lago: 'Lago', canal: 'Canal', agua: 'Corpo d&apos;&aacute;gua' };
   return m[t] || 'Corpo d&apos;&aacute;gua';
@@ -1197,7 +1205,7 @@ async function loadNauticAlerts(lat, lng) {
   if (temAgua) {
     linhas.push('<div style="font-weight:800;margin-bottom:4px;">&#127754; Corpos d&apos;&aacute;gua num raio de 4 km:</div>');
     aguas.forEach(function(a) {
-      linhas.push('<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;"><span>&#128167; ' + nauticTipoLabel(a.tipo) + (a.nome ? ' &mdash; <b>' + nauticEsc(a.nome) + '</b>' : '') + '</span><span style="color:var(--text-muted);white-space:nowrap;">' + a.d.toFixed(1) + ' km</span></div>');
+      linhas.push('<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;"><span>&#128167; <b>' + nauticEsc(nauticNomeLabel(a)) + '</b></span><span style="color:var(--text-muted);white-space:nowrap;">' + a.d.toFixed(1) + ' km</span></div>');
     });
   } else {
     linhas.push('<div style="font-weight:800;margin-bottom:4px;">&#127754; Local consultado &eacute; um ambiente aqu&aacute;tico.</div>');
@@ -1244,7 +1252,7 @@ async function loadNauticAlerts(lat, lng) {
       aguas.forEach(function(a) {
         L.marker([a.lat, a.lng], { icon: nautIcon, zIndexOffset: 400 })
           .addTo(nauticLayer)
-          .bindPopup('<b>' + nauticTipoLabel(a.tipo) + '</b>' + (a.nome ? '<br>' + nauticEsc(a.nome) : '') + '<br>' + a.d.toFixed(1) + ' km do ponto analisado');
+          .bindPopup('<b>' + nauticEsc(nauticNomeLabel(a)) + '</b><br>' + a.d.toFixed(1) + ' km do ponto analisado');
       });
       if (currentMapView === 'dark' || currentMapView === 'satellite') { nauticLayer.addTo(map); }
     }
@@ -1579,11 +1587,10 @@ async function _doGeneratePDF() {
       nautStatusEl.textContent = 'Nenhum corpo d\u2019\u00e1gua relevante identificado num raio de 4 km';
       nautDetailsEl.textContent = 'A varredura n\u00e1utica n\u00e3o encontrou rios, mares, ba\u00edas ou lagos no per\u00edmetro analisado. N\u00e3o h\u00e1 avisos n\u00e1uticos aplic\u00e1veis a este endere\u00e7o.';
     } else {
-      var tipoTxt = { rio: 'Rio', baia: 'Ba\u00eda', lago: 'Lago', canal: 'Canal', agua: 'Corpo d\u2019\u00e1gua' };
       var partes = [];
       if (naut.temAgua) {
         var lista = naut.aguas.map(function(a) {
-          return (tipoTxt[a.tipo] || 'Corpo d\u2019\u00e1gua') + (a.nome ? ' ' + a.nome : '') + ' (' + a.d.toFixed(1).replace('.', ',') + ' km)';
+          return nauticNomeLabel(a) + ' (' + a.d.toFixed(1).replace('.', ',') + ' km)';
         }).join('; ');
         partes.push('Corpos d\u2019\u00e1gua num raio de 4 km: ' + lista + '.');
       } else {
