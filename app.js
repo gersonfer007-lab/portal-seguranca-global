@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // CONFIGURACAO DO BACKEND
 // Troque pela URL absoluta do backend no Render
 // Exemplo: 'https://portal-seguranca-global.onrender.com'
@@ -7,7 +7,7 @@
 const PSG_BACKEND_URL = 'https://portal-seguranca-global.onrender.com';
 
 // ============================================================
-// SECURITY MODULE — SH_SECURITY (IIFE)
+// SECURITY MODULE â€” SH_SECURITY (IIFE)
 // ============================================================
 const SH_SECURITY = (function() {
   'use strict';
@@ -411,14 +411,14 @@ async function handleSearch() {
     return;
   }
 
-  // Client-side checks (primeira camada — rapido)
+  // Client-side checks (primeira camada â€” rapido)
   if (!SH_SECURITY.checkRateLimit('search')) { alert('Limite de buscas atingido. Aguarde um momento e tente novamente.'); return; }
   if (!SH_SECURITY.throttle()) return;
   if (SH_SECURITY.detectInjection(rawQuery)) { alert('Entrada invalida detectada.'); SH_SECURITY.logEvent('SEARCH_BLOCKED', rawQuery.substring(0, 50)); return; }
   const query = SH_SECURITY.sanitizeInput(rawQuery);
   if (!query) return;
 
-  // Server-side validation (segunda camada — segura)
+  // Server-side validation (segunda camada â€” segura)
   try {
     var backendUrl = (typeof PSG_BACKEND_URL !== 'undefined' ? PSG_BACKEND_URL : '');
     var valRes = await fetch(backendUrl + '/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: query }) });
@@ -466,7 +466,7 @@ async function handleSearch() {
 }
 
 // ============================================================
-// PESQUISAR PELO MAPA — o usuario escolhe o local clicando
+// PESQUISAR PELO MAPA â€” o usuario escolhe o local clicando
 // no mapa (ou usa o GPS) em vez de digitar o endereco.
 // ============================================================
 var mapselMap = null;
@@ -739,7 +739,7 @@ function roadSelectedCountry() {
 function roadAttempts(q) {
   var raw = String(q);
   // Remove marcadores de km (confundem o geocodificador) mantendo o nome da via
-  var base = raw.replace(/\bkm\.?\s*\d+(\s*[-–]\s*\d+)?/gi, '').replace(/\s{2,}/g, ' ').replace(/^[\s,]+|[\s,]+$/g, '');
+  var base = raw.replace(/\bkm\.?\s*\d+(\s*[-â€“]\s*\d+)?/gi, '').replace(/\s{2,}/g, ' ').replace(/^[\s,]+|[\s,]+$/g, '');
   var pais = roadSelectedCountry();
   var out = [];
   var push = function(s) { s = String(s).replace(/\s+/g, ' ').trim(); if (s && out.indexOf(s) === -1) out.push(s); };
@@ -825,7 +825,7 @@ async function geocodeAddress(addressData, rawQuery) {
 // INTELLIGENCE ENGINE
 // ============================================================
 function generateIntelligence(lat, lng, address) {
-  // FATOR TEMPORAL — atualizacao automatica dos dados:
+  // FATOR TEMPORAL â€” atualizacao automatica dos dados:
   // o indice de cada local evolui sozinho ao longo dos dias
   // (ciclo mensal), sem nenhuma intervencao humana.
   var dia = Math.floor(Date.now() / 86400000) % 30;
@@ -859,12 +859,12 @@ function randomRecentDate() {
 }
 
 // ============================================================
-// RELOGIO MUNDIAL — horario e fuso horario de cada pais
+// RELOGIO MUNDIAL â€” horario e fuso horario de cada pais
 // Mostra a hora local do lugar analisado (painel de resultado)
 // e do pais selecionado nas bandeiras (cabecalho de noticias).
 // ============================================================
 var WorldClock = (function() {
-  // Fuso principal de cada pais (IANA) — cobertura mundial
+  // Fuso principal de cada pais (IANA) â€” cobertura mundial
   var PAIS_TZ = {
     br:'America/Sao_Paulo', ar:'America/Argentina/Buenos_Aires', bo:'America/La_Paz', cl:'America/Santiago', co:'America/Bogota', pe:'America/Lima', uy:'America/Montevideo', py:'America/Asuncion', ve:'America/Caracas', ec:'America/Guayaquil', gy:'America/Guyana', sr:'America/Paramaribo', gf:'America/Cayenne',
     us:'America/New_York', ca:'America/Toronto', mx:'America/Mexico_City', gt:'America/Guatemala', cr:'America/Costa_Rica', pa:'America/Panama', cu:'America/Havana', do:'America/Santo_Domingo', ht:'America/Port-au-Prince', jm:'America/Jamaica', bs:'America/Nassau', tt:'America/Port_of_Spain',
@@ -937,6 +937,124 @@ var WorldClock = (function() {
 })();
 
 // ============================================================
+// AVISOS DE RODOVIA â€” pedagios e radares (dados do OpenStreetMap)
+// Consulta a API Overpass num raio de 8 km do ponto analisado
+// e mostra aviso no painel + marcadores no mapa.
+// ============================================================
+var roadAlertsLayer = null;
+function roadEsc(s) { return String(s || '').replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function roadDistanceKm(lat1, lng1, lat2, lng2) {
+  var R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+async function loadRoadAlerts(lat, lng) {
+  var R = 8000; // raio de busca: 8 km
+  var q = '[out:json][timeout:25];(' +
+    'node(around:' + R + ',' + lat + ',' + lng + ')[barrier=toll_booth];' +
+    'node(around:' + R + ',' + lat + ',' + lng + ')[highway=speed_camera];' +
+    ');out body 80;';
+  var endpoints = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter'
+  ];
+  var alerts = null;
+  for (var e = 0; e < endpoints.length && !alerts; e++) {
+    try {
+      var r = await fetch(endpoints[e], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+        body: 'data=' + encodeURIComponent(q)
+      });
+      if (r.ok) {
+        var j = await r.json();
+        var pedagios = [], radares = [];
+        (j.elements || []).forEach(function(el) {
+          if (typeof el.lat !== 'number' || typeof el.lon !== 'number') return;
+          var tags = el.tags || {};
+          var item = {
+            lat: el.lat, lng: el.lon,
+            name: tags.name || tags.operator || tags.ref || '',
+            maxspeed: tags['maxspeed'] || ''
+          };
+          if (tags.barrier === 'toll_booth') pedagios.push(item);
+          else if (tags.highway === 'speed_camera') radares.push(item);
+        });
+        alerts = { pedagios: pedagios, radares: radares };
+      }
+    } catch (err) { /* tenta o proximo espelho */ }
+  }
+  renderRoadAlerts(alerts, lat, lng);
+}
+function renderRoadAlerts(alerts, lat, lng) {
+  // Caixa de aviso no painel (abaixo do cabecalho do resultado)
+  var header = document.querySelector('.result-header');
+  var box = document.getElementById('road-alerts');
+  if (!box && header && header.parentNode) {
+    box = document.createElement('div');
+    box.id = 'road-alerts';
+    header.parentNode.insertBefore(box, header.nextSibling);
+  }
+  if (!box) return;
+  if (!alerts) {
+    box.style.cssText = 'display:none;';
+    return;
+  }
+  var pedagios = alerts.pedagios, radares = alerts.radares;
+  var total = pedagios.length + radares.length;
+  var css = 'margin:14px 0;border-radius:12px;padding:14px 18px;font-size:.86rem;line-height:1.6;';
+  if (total === 0) {
+    box.style.cssText = css + 'border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.08);color:#86efac;';
+    box.innerHTML = '&#9989; Nenhum ped&aacute;gio ou radar cadastrado no OpenStreetMap num raio de 8 km deste ponto.';
+    return;
+  }
+  // Ordena por distancia e limita a lista
+  var fmt = function(list) {
+    return list.map(function(p) { p._d = roadDistanceKm(lat, lng, p.lat, p.lng); return p; })
+               .sort(function(a, b) { return a._d - b._d; });
+  };
+  pedagios = fmt(pedagios); radares = fmt(radares);
+  var linhas = [];
+  pedagios.slice(0, 4).forEach(function(p) {
+    linhas.push('<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;"><span>&#128176; Ped&aacute;gio' + (p.name ? ' &mdash; <b>' + roadEsc(p.name) + '</b>' : '') + '</span><span style="color:var(--text-muted);white-space:nowrap;">' + p._d.toFixed(1) + ' km</span></div>');
+  });
+  if (pedagios.length > 4) linhas.push('<div style="color:var(--text-muted);padding:3px 0;">+ ' + (pedagios.length - 4) + ' outro(s) ped&aacute;gio(s) no raio</div>');
+  radares.slice(0, 4).forEach(function(p) {
+    linhas.push('<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;"><span>&#128247; Radar' + (p.maxspeed ? ' &mdash; m&aacute;x. <b>' + roadEsc(p.maxspeed) + '</b>' : '') + '</span><span style="color:var(--text-muted);white-space:nowrap;">' + p._d.toFixed(1) + ' km</span></div>');
+  });
+  if (radares.length > 4) linhas.push('<div style="color:var(--text-muted);padding:3px 0;">+ ' + (radares.length - 4) + ' outro(s) radar(es) no raio</div>');
+  var temPed = pedagios.length > 0, temRad = radares.length > 0;
+  box.style.cssText = css + 'border:1px solid rgba(250,204,21,.4);background:rgba(250,204,21,.08);color:#fde047;';
+  box.innerHTML = '<div style="font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;">&#9888;&#65039; Aten&ccedil;&atilde;o na via &mdash; ' +
+    (temPed ? pedagios.length + ' ped&aacute;gio(s)' : '') + (temPed && temRad ? ' e ' : '') + (temRad ? radares.length + ' radar(es)' : '') + ' num raio de 8 km</div>' +
+    linhas.join('') +
+    '<div style="margin-top:8px;font-size:.72rem;color:var(--text-muted);">Veja os marcadores &#128176; (ped&aacute;gio) e &#128247; (radar) no mapa. Dados do OpenStreetMap.</div>';
+  // Marcadores no mapa
+  try {
+    if (roadAlertsLayer) { map.removeLayer(roadAlertsLayer); roadAlertsLayer = null; }
+    roadAlertsLayer = L.layerGroup();
+    var mkIcon = function(emoji, fundo) {
+      return L.divIcon({
+        className: '',
+        html: '<div style="background:' + fundo + ';border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);"><span style="transform:rotate(45deg);font-size:14px;line-height:1;">' + emoji + '</span></div>',
+        iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30]
+      });
+    };
+    pedagios.forEach(function(p) {
+      L.marker([p.lat, p.lng], { icon: mkIcon('&#128176;', 'linear-gradient(135deg,#b45309,#f59e0b)'), zIndexOffset: 500 })
+        .addTo(roadAlertsLayer)
+        .bindPopup('<b>&#128176; Ped&aacute;gio</b>' + (p.name ? '<br>' + roadEsc(p.name) : '') + '<br>' + p._d.toFixed(1) + ' km do ponto analisado');
+    });
+    radares.forEach(function(p) {
+      L.marker([p.lat, p.lng], { icon: mkIcon('&#128247;', 'linear-gradient(135deg,#b91c1c,#ef4444)'), zIndexOffset: 500 })
+        .addTo(roadAlertsLayer)
+        .bindPopup('<b>&#128247; Radar de velocidade</b>' + (p.maxspeed ? '<br>Velocidade m&aacute;xima: ' + roadEsc(p.maxspeed) : '') + '<br>' + p._d.toFixed(1) + ' km do ponto analisado');
+    });
+    if (currentMapView === 'dark' || currentMapView === 'satellite') { roadAlertsLayer.addTo(map); }
+  } catch (e) { /* mapa em modo 3D ou nao iniciado */ }
+}
+
+// ============================================================
 // RENDER DASHBOARD
 // ============================================================
 function renderDashboard(data) {
@@ -946,6 +1064,7 @@ function renderDashboard(data) {
   document.getElementById('result-address').textContent = data.address.fullAddress;
   document.getElementById('result-meta').textContent = 'Lat ' + data.lat.toFixed(4) + ' | Lng ' + data.lng.toFixed(4) + (data.address.cep ? ' | CEP ' + data.address.cep : '') + ' | Raio de analise: 1.5km';
   WorldClock.setLocalClock(data.address.country_code || '', data.address.state || '');
+  loadRoadAlerts(data.lat, data.lng);
   try {
     if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
     map.setView([data.lat, data.lng], 15);
@@ -1032,40 +1151,40 @@ function ensurePdfLibs() {
 var PSG_BR_STATE_FLAGS = {
   'acre': 'Bandeira do Acre.svg', 'ac': 'Bandeira do Acre.svg',
   'alagoas': 'Bandeira de Alagoas.svg', 'al': 'Bandeira de Alagoas.svg',
-  'amapa': 'Bandeira do Amapá.svg', 'ap': 'Bandeira do Amapá.svg',
+  'amapa': 'Bandeira do AmapÃ¡.svg', 'ap': 'Bandeira do AmapÃ¡.svg',
   'amazonas': 'Bandeira do Amazonas.svg', 'am': 'Bandeira do Amazonas.svg',
   'bahia': 'Bandeira da Bahia.svg', 'ba': 'Bandeira da Bahia.svg',
-  'ceara': 'Bandeira do Ceará.svg', 'ce': 'Bandeira do Ceará.svg',
+  'ceara': 'Bandeira do CearÃ¡.svg', 'ce': 'Bandeira do CearÃ¡.svg',
   'distrito federal': 'Bandeira do Distrito Federal (Brasil).svg', 'df': 'Bandeira do Distrito Federal (Brasil).svg',
-  'espirito santo': 'Bandeira do Espírito Santo.svg', 'es': 'Bandeira do Espírito Santo.svg',
-  'goias': 'Bandeira de Goiás.svg', 'go': 'Bandeira de Goiás.svg',
-  'maranhao': 'Bandeira do Maranhão.svg', 'ma': 'Bandeira do Maranhão.svg',
+  'espirito santo': 'Bandeira do EspÃ­rito Santo.svg', 'es': 'Bandeira do EspÃ­rito Santo.svg',
+  'goias': 'Bandeira de GoiÃ¡s.svg', 'go': 'Bandeira de GoiÃ¡s.svg',
+  'maranhao': 'Bandeira do MaranhÃ£o.svg', 'ma': 'Bandeira do MaranhÃ£o.svg',
   'mato grosso': 'Bandeira de Mato Grosso.svg', 'mt': 'Bandeira de Mato Grosso.svg',
   'mato grosso do sul': 'Bandeira de Mato Grosso do Sul.svg', 'ms': 'Bandeira de Mato Grosso do Sul.svg',
   'minas gerais': 'Bandeira de Minas Gerais.svg', 'mg': 'Bandeira de Minas Gerais.svg',
-  'para': 'Bandeira do Pará.svg', 'pa': 'Bandeira do Pará.svg',
-  'paraiba': 'Bandeira da Paraíba.svg', 'pb': 'Bandeira da Paraíba.svg',
-  'parana': 'Bandeira do Paraná.svg', 'pr': 'Bandeira do Paraná.svg',
+  'para': 'Bandeira do ParÃ¡.svg', 'pa': 'Bandeira do ParÃ¡.svg',
+  'paraiba': 'Bandeira da ParaÃ­ba.svg', 'pb': 'Bandeira da ParaÃ­ba.svg',
+  'parana': 'Bandeira do ParanÃ¡.svg', 'pr': 'Bandeira do ParanÃ¡.svg',
   'pernambuco': 'Bandeira de Pernambuco.svg', 'pe': 'Bandeira de Pernambuco.svg',
-  'piaui': 'Bandeira do Piauí.svg', 'pi': 'Bandeira do Piauí.svg',
+  'piaui': 'Bandeira do PiauÃ­.svg', 'pi': 'Bandeira do PiauÃ­.svg',
   'rio de janeiro': 'Bandeira do estado do Rio de Janeiro.svg', 'rj': 'Bandeira do estado do Rio de Janeiro.svg',
   'rio grande do norte': 'Bandeira do Rio Grande do Norte.svg', 'rn': 'Bandeira do Rio Grande do Norte.svg',
   'rio grande do sul': 'Bandeira do Rio Grande do Sul.svg', 'rs': 'Bandeira do Rio Grande do Sul.svg',
-  'rondonia': 'Bandeira de Rondônia.svg', 'ro': 'Bandeira de Rondônia.svg',
+  'rondonia': 'Bandeira de RondÃ´nia.svg', 'ro': 'Bandeira de RondÃ´nia.svg',
   'roraima': 'Bandeira de Roraima.svg', 'rr': 'Bandeira de Roraima.svg',
   'santa catarina': 'Bandeira de Santa Catarina.svg', 'sc': 'Bandeira de Santa Catarina.svg',
-  'sao paulo': 'Bandeira do estado de São Paulo.svg', 'sp': 'Bandeira do estado de São Paulo.svg',
+  'sao paulo': 'Bandeira do estado de SÃ£o Paulo.svg', 'sp': 'Bandeira do estado de SÃ£o Paulo.svg',
   'sergipe': 'Bandeira de Sergipe.svg', 'se': 'Bandeira de Sergipe.svg',
   'tocantins': 'Bandeira do Tocantins.svg', 'to': 'Bandeira do Tocantins.svg'
 };
 var PSG_BR_STATE_NAMES = {
-  ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
-  es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',
-  pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',
-  rs:'Rio Grande do Sul',ro:'Rondônia',rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'
+  ac:'Acre',al:'Alagoas',ap:'AmapÃ¡',am:'Amazonas',ba:'Bahia',ce:'CearÃ¡',df:'Distrito Federal',
+  es:'EspÃ­rito Santo',go:'GoiÃ¡s',ma:'MaranhÃ£o',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',
+  pa:'ParÃ¡',pb:'ParaÃ­ba',pr:'ParanÃ¡',pe:'Pernambuco',pi:'PiauÃ­',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',
+  rs:'Rio Grande do Sul',ro:'RondÃ´nia',rr:'Roraima',sc:'Santa Catarina',sp:'SÃ£o Paulo',se:'Sergipe',to:'Tocantins'
 };
 function _psgNorm(s) {
-  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  return (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').trim();
 }
 function _psgUF(stateRaw) {
   var n = _psgNorm(stateRaw);
@@ -1107,7 +1226,7 @@ async function _psgReverseLabel(lat, lng) {
     var a = d.address || {};
     var bairro = a.suburb || a.neighbourhood || a.quarter || a.village || a.hamlet || '';
     var cidade = a.city || a.town || a.municipality || a.village || '';
-    return [bairro, cidade].filter(function(v, i, arr) { return v && arr.indexOf(v) === i; }).join(' — ');
+    return [bairro, cidade].filter(function(v, i, arr) { return v && arr.indexOf(v) === i; }).join(' â€” ');
   } catch (e) { return ''; }
 }
 function _psgMesAno(d) {
@@ -1202,7 +1321,7 @@ async function _doGeneratePDF() {
   var citySeal = document.getElementById('pdf-city-seal');
   cityFlagImg.style.display = 'none';
   citySeal.style.display = 'flex';
-  citySeal.textContent = (city || '?').replace(/[^A-Za-zÀ-ÿ ]/g, '').split(' ').filter(Boolean).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+  citySeal.textContent = (city || '?').replace(/[^A-Za-zÃ€-Ã¿ ]/g, '').split(' ').filter(Boolean).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
   if (countryCode === 'br' && city) {
     var uf = _psgNorm(stateRaw).length === 2 ? stateRaw.toUpperCase() : '';
     var candidates = ['Bandeira da cidade de ' + city + '.svg', 'Bandeira de ' + city + (uf ? ' (' + uf + ')' : '') + '.svg', 'Bandeira de ' + city + '.svg'];
@@ -1226,7 +1345,7 @@ async function _doGeneratePDF() {
   document.getElementById('pdf-emitted').textContent = emittedStr;
   document.getElementById('pdf-protocol-2').textContent = protocol;
   document.getElementById('pdf-emitted-2').textContent = emittedStr;
-  var mesesExtenso = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var mesesExtenso = ['janeiro','fevereiro','marÃ§o','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   var cidadeData = city || stateName || countryName;
   document.getElementById('pdf-dateline').textContent = cidadeData + ', ' + now.getDate() + ' de ' + mesesExtenso[now.getMonth()] + ' de ' + now.getFullYear() + '.';
   var qrData = 'https://portalsegurancaglobal.com.br/verificar/' + protocol;
@@ -1330,7 +1449,7 @@ async function _doGeneratePDF() {
       pdf.rect(pageW - 9.2, 7, 2.2, 2.2, 'F');
       pdf.rect(7, pageHmm - 9.2, 2.2, 2.2, 'F');
       pdf.rect(pageW - 9.2, pageHmm - 9.2, 2.2, 2.2, 'F');
-      // Microtexto de seguranca (fonte minúscula, legível apenas com lupa)
+      // Microtexto de seguranca (fonte minÃºscula, legÃ­vel apenas com lupa)
       pdf.setFont('courier', 'normal');
       pdf.setFontSize(2.8);
       pdf.setTextColor(26, 58, 110);
@@ -1368,7 +1487,7 @@ async function generatePDF() {
 }
 
 // ============================================================
-// SHARE — painel de compartilhamento em redes sociais
+// SHARE â€” painel de compartilhamento em redes sociais
 // ============================================================
 var SHARE_SITE_URL = 'https://portalsegurancaglobal.com.br';
 
@@ -1377,17 +1496,17 @@ var shareI18n = {
     score: 'Safety Score', at: 'em', cta: 'Consulte a seguranca de qualquer endereco do mundo:',
     copy: 'Copiar link', copyMsg: 'Copiar mensagem', copied: 'Copiado com sucesso!',
     native: 'Mais opcoes', email: 'E-mail', cancel: 'Fechar', preview: 'Previa da mensagem',
-    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analise de Seguranca — Portal Seguranca Global' },
+    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analise de Seguranca â€” Portal Seguranca Global' },
   en: { title: 'Share Result', sub: 'Send this safety analysis to those who need to know',
     score: 'Safety Score', at: 'at', cta: 'Check the safety of any address in the world:',
     copy: 'Copy link', copyMsg: 'Copy message', copied: 'Copied successfully!',
     native: 'More options', email: 'Email', cancel: 'Close', preview: 'Message preview',
-    safe: 'SAFE', mod: 'MODERATE', crit: 'CRITICAL', subject: 'Safety Analysis — Global Security Portal' },
+    safe: 'SAFE', mod: 'MODERATE', crit: 'CRITICAL', subject: 'Safety Analysis â€” Global Security Portal' },
   es: { title: 'Compartir Resultado', sub: 'Envie este analisis de seguridad a quien necesite saberlo',
     score: 'Safety Score', at: 'en', cta: 'Consulte la seguridad de cualquier direccion del mundo:',
     copy: 'Copiar enlace', copyMsg: 'Copiar mensaje', copied: 'Copiado con exito!',
     native: 'Mas opciones', email: 'Correo', cancel: 'Cerrar', preview: 'Vista previa del mensaje',
-    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analisis de Seguridad — Portal Seguridad Global' }
+    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analisis de Seguridad â€” Portal Seguridad Global' }
 };
 
 function openShare() {
@@ -1396,8 +1515,8 @@ function openShare() {
   var ui = shareI18n[lang] || shareI18n.pt;
   var scoreText = (currentData.safetyScore >= 70 ? ui.safe : currentData.safetyScore >= 40 ? ui.mod : ui.crit);
   var msg = "*" + ui.subject + "*\n\n"
-    + "📍 " + currentData.address.fullAddress + "\n"
-    + "🛡️ " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
+    + "ðŸ“ " + currentData.address.fullAddress + "\n"
+    + "ðŸ›¡ï¸ " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
     + ui.cta + "\n"
     + SHARE_SITE_URL + "?q=" + encodeURIComponent(currentData.address.fullAddress);
 
@@ -1594,8 +1713,8 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         { h: '3. Safety Score anzeigen', p: 'Das System berechnet einen Sicherheitswert basierend auf offenen Daten.' },
         { h: '4. Teilen oder PDF herunterladen', p: 'Senden Sie den Bericht uber WhatsApp, E-Mail oder laden Sie ihn kostenlos herunter.' },
         { h: '5. Wichtig', p: 'Wir fragen keine Sozialversicherungsnummern, Steuernummern oder personenbezogene Daten ab.' },
-        { h: '6. Sicherer Spaziergang', p: 'Auf der Seite Sicherer Spaziergang starten Sie die Freigabe, senden den Link per WhatsApp, und eine Vertrauensperson verfolgt Ihre Route in Echtzeit – mit Notfallknopf.' },
-        { h: '7. News-Center', p: 'Die News-Seite bietet Artikel und automatisch aktualisierte Schlagzeilen: Kameras, Personenschutz, Haustiere, Fahrräder, Motorräder und Autos.' }
+        { h: '6. Sicherer Spaziergang', p: 'Auf der Seite Sicherer Spaziergang starten Sie die Freigabe, senden den Link per WhatsApp, und eine Vertrauensperson verfolgt Ihre Route in Echtzeit â€“ mit Notfallknopf.' },
+        { h: '7. News-Center', p: 'Die News-Seite bietet Artikel und automatisch aktualisierte Schlagzeilen: Kameras, Personenschutz, Haustiere, FahrrÃ¤der, MotorrÃ¤der und Autos.' }
       ]
     },
     it: {
@@ -1611,75 +1730,75 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       ]
     },
     zh: {
-      title: '使用手册',
+      title: 'ä½¿ç”¨æ‰‹å†Œ',
       steps: [
-        { h: '1. 输入地点', p: '在搜索框中输入邮政编码、完整地址或GPS坐标。' },
-        { h: '2. 在地图上选择（可选）', p: '点击地图按钮选择地点。' },
-        { h: '3. 查看安全评分', p: '系统根据公开数据和统计数据计算安全评分。' },
-        { h: '4. 分享或下载PDF', p: '通过WhatsApp、邮件发送报告或免费下载。' },
-        { h: '5. 重要提示', p: '我们不查询身份证、税号或个人数据。请仅使用地址。' },
-        { h: '6. 安全步行', p: '在“安全步行”页面点击开始，通过WhatsApp发送链接，家人即可实时查看您的路线，并配有紧急求救按钮。' },
-        { h: '7. 新闻中心', p: '新闻页面提供文章和自动更新的安全资讯：摄像头、人身保护、宠物、自行车、摩托车和汽车。' }
+        { h: '1. è¾“å…¥åœ°ç‚¹', p: 'åœ¨æœç´¢æ¡†ä¸­è¾“å…¥é‚®æ”¿ç¼–ç ã€å®Œæ•´åœ°å€æˆ–GPSåæ ‡ã€‚' },
+        { h: '2. åœ¨åœ°å›¾ä¸Šé€‰æ‹©ï¼ˆå¯é€‰ï¼‰', p: 'ç‚¹å‡»åœ°å›¾æŒ‰é’®é€‰æ‹©åœ°ç‚¹ã€‚' },
+        { h: '3. æŸ¥çœ‹å®‰å…¨è¯„åˆ†', p: 'ç³»ç»Ÿæ ¹æ®å…¬å¼€æ•°æ®å’Œç»Ÿè®¡æ•°æ®è®¡ç®—å®‰å…¨è¯„åˆ†ã€‚' },
+        { h: '4. åˆ†äº«æˆ–ä¸‹è½½PDF', p: 'é€šè¿‡WhatsAppã€é‚®ä»¶å‘é€æŠ¥å‘Šæˆ–å…è´¹ä¸‹è½½ã€‚' },
+        { h: '5. é‡è¦æç¤º', p: 'æˆ‘ä»¬ä¸æŸ¥è¯¢èº«ä»½è¯ã€ç¨Žå·æˆ–ä¸ªäººæ•°æ®ã€‚è¯·ä»…ä½¿ç”¨åœ°å€ã€‚' },
+        { h: '6. å®‰å…¨æ­¥è¡Œ', p: 'åœ¨â€œå®‰å…¨æ­¥è¡Œâ€é¡µé¢ç‚¹å‡»å¼€å§‹ï¼Œé€šè¿‡WhatsAppå‘é€é“¾æŽ¥ï¼Œå®¶äººå³å¯å®žæ—¶æŸ¥çœ‹æ‚¨çš„è·¯çº¿ï¼Œå¹¶é…æœ‰ç´§æ€¥æ±‚æ•‘æŒ‰é’®ã€‚' },
+        { h: '7. æ–°é—»ä¸­å¿ƒ', p: 'æ–°é—»é¡µé¢æä¾›æ–‡ç« å’Œè‡ªåŠ¨æ›´æ–°çš„å®‰å…¨èµ„è®¯ï¼šæ‘„åƒå¤´ã€äººèº«ä¿æŠ¤ã€å® ç‰©ã€è‡ªè¡Œè½¦ã€æ‘©æ‰˜è½¦å’Œæ±½è½¦ã€‚' }
       ]
     },
     ja: {
-      title: '取扱説明書',
+      title: 'å–æ‰±èª¬æ˜Žæ›¸',
       steps: [
-        { h: '1. 場所を入力', p: '郵便番号、住所、またはGPS座標を検索欄に入力してください。' },
-        { h: '2. 地図で選択（任意）', p: '地図ボタンをタップしてポイントを選択します。' },
-        { h: '3. セーフティスコアを見る', p: 'システムは公開データと統計に基づいて安全スコアを計算します。' },
-        { h: '4. 共有またはPDFダウンロード', p: 'WhatsApp、メールで送信するか、無料でダウンロードしてください。' },
-        { h: '5. 重要', p: '個人番号、法人番号、個人データは照会しません。住所のみをご利用ください。' },
-        { h: '6. 安全ウォーキング', p: '「安全ウォーキング」ページで開始をタップし、WhatsAppでリンクを送ると、保護者がリアルタイムでルートを確認できます。緊急ボタン付き。' },
-        { h: '7. ニュースセンター', p: 'ニュースページでは、カメラ・身辺安全・ペット・自転車・バイク・自動車に関する記事と自動更新の見出しを提供します。' }
+        { h: '1. å ´æ‰€ã‚’å…¥åŠ›', p: 'éƒµä¾¿ç•ªå·ã€ä½æ‰€ã€ã¾ãŸã¯GPSåº§æ¨™ã‚’æ¤œç´¢æ¬„ã«å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚' },
+        { h: '2. åœ°å›³ã§é¸æŠžï¼ˆä»»æ„ï¼‰', p: 'åœ°å›³ãƒœã‚¿ãƒ³ã‚’ã‚¿ãƒƒãƒ—ã—ã¦ãƒã‚¤ãƒ³ãƒˆã‚’é¸æŠžã—ã¾ã™ã€‚' },
+        { h: '3. ã‚»ãƒ¼ãƒ•ãƒ†ã‚£ã‚¹ã‚³ã‚¢ã‚’è¦‹ã‚‹', p: 'ã‚·ã‚¹ãƒ†ãƒ ã¯å…¬é–‹ãƒ‡ãƒ¼ã‚¿ã¨çµ±è¨ˆã«åŸºã¥ã„ã¦å®‰å…¨ã‚¹ã‚³ã‚¢ã‚’è¨ˆç®—ã—ã¾ã™ã€‚' },
+        { h: '4. å…±æœ‰ã¾ãŸã¯PDFãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰', p: 'WhatsAppã€ãƒ¡ãƒ¼ãƒ«ã§é€ä¿¡ã™ã‚‹ã‹ã€ç„¡æ–™ã§ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ãã ã•ã„ã€‚' },
+        { h: '5. é‡è¦', p: 'å€‹äººç•ªå·ã€æ³•äººç•ªå·ã€å€‹äººãƒ‡ãƒ¼ã‚¿ã¯ç…§ä¼šã—ã¾ã›ã‚“ã€‚ä½æ‰€ã®ã¿ã‚’ã”åˆ©ç”¨ãã ã•ã„ã€‚' },
+        { h: '6. å®‰å…¨ã‚¦ã‚©ãƒ¼ã‚­ãƒ³ã‚°', p: 'ã€Œå®‰å…¨ã‚¦ã‚©ãƒ¼ã‚­ãƒ³ã‚°ã€ãƒšãƒ¼ã‚¸ã§é–‹å§‹ã‚’ã‚¿ãƒƒãƒ—ã—ã€WhatsAppã§ãƒªãƒ³ã‚¯ã‚’é€ã‚‹ã¨ã€ä¿è­·è€…ãŒãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã§ãƒ«ãƒ¼ãƒˆã‚’ç¢ºèªã§ãã¾ã™ã€‚ç·Šæ€¥ãƒœã‚¿ãƒ³ä»˜ãã€‚' },
+        { h: '7. ãƒ‹ãƒ¥ãƒ¼ã‚¹ã‚»ãƒ³ã‚¿ãƒ¼', p: 'ãƒ‹ãƒ¥ãƒ¼ã‚¹ãƒšãƒ¼ã‚¸ã§ã¯ã€ã‚«ãƒ¡ãƒ©ãƒ»èº«è¾ºå®‰å…¨ãƒ»ãƒšãƒƒãƒˆãƒ»è‡ªè»¢è»Šãƒ»ãƒã‚¤ã‚¯ãƒ»è‡ªå‹•è»Šã«é–¢ã™ã‚‹è¨˜äº‹ã¨è‡ªå‹•æ›´æ–°ã®è¦‹å‡ºã—ã‚’æä¾›ã—ã¾ã™ã€‚' }
       ]
     },
     ar: {
-      title: 'دليل الاستخدام',
+      title: 'Ø¯Ù„ÙŠÙ„ Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…',
       steps: [
-        { h: '1. أدخل موقعًا', p: 'استخدم الرمز البريدي أو العنوان الكامل أو إحداثيات GPS في حقل البحث.' },
-        { h: '2. اختر على الخريطة (اختياري)', p: 'اضغط على زر الخريطة لتحديد نقطة.' },
-        { h: '3. شاهد درجة الأمان', p: 'يحسب النظام درجة أمان بناءً على البيانات المفتوحة والإحصائيات.' },
-        { h: '4. شارك أو حمّل PDF', p: 'أرسل التقرير عبر واتساب أو البريد الإلكتروني أو حمّله مجانًا.' },
-        { h: '5. مهم', p: 'لا نستعلم عن أرقام الهوية أو الضريبة أو البيانات الشخصية. استخدم العناوين فقط.' },
-        { h: '6. المشي الآمن', p: 'في صفحة المشي الآمن، اضغط ابدأ وأرسل الرابط عبر واتساب، وسيتابع أحد المسؤولين مسارك في الوقت الفعلي، مع زر طوارئ.' },
-        { h: '7. مركز الأخبار', p: 'توفر صفحة الأخبار مقالات وعناوين تُحدَّث تلقائيًا: كاميرات، حماية شخصية، حيوانات أليفة، دراجات، دراجات نارية وسيارات.' }
+        { h: '1. Ø£Ø¯Ø®Ù„ Ù…ÙˆÙ‚Ø¹Ù‹Ø§', p: 'Ø§Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø±Ù…Ø² Ø§Ù„Ø¨Ø±ÙŠØ¯ÙŠ Ø£Ùˆ Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ÙƒØ§Ù…Ù„ Ø£Ùˆ Ø¥Ø­Ø¯Ø§Ø«ÙŠØ§Øª GPS ÙÙŠ Ø­Ù‚Ù„ Ø§Ù„Ø¨Ø­Ø«.' },
+        { h: '2. Ø§Ø®ØªØ± Ø¹Ù„Ù‰ Ø§Ù„Ø®Ø±ÙŠØ·Ø© (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)', p: 'Ø§Ø¶ØºØ· Ø¹Ù„Ù‰ Ø²Ø± Ø§Ù„Ø®Ø±ÙŠØ·Ø© Ù„ØªØ­Ø¯ÙŠØ¯ Ù†Ù‚Ø·Ø©.' },
+        { h: '3. Ø´Ø§Ù‡Ø¯ Ø¯Ø±Ø¬Ø© Ø§Ù„Ø£Ù…Ø§Ù†', p: 'ÙŠØ­Ø³Ø¨ Ø§Ù„Ù†Ø¸Ø§Ù… Ø¯Ø±Ø¬Ø© Ø£Ù…Ø§Ù† Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…ÙØªÙˆØ­Ø© ÙˆØ§Ù„Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª.' },
+        { h: '4. Ø´Ø§Ø±Ùƒ Ø£Ùˆ Ø­Ù…Ù‘Ù„ PDF', p: 'Ø£Ø±Ø³Ù„ Ø§Ù„ØªÙ‚Ø±ÙŠØ± Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨ Ø£Ùˆ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ Ø£Ùˆ Ø­Ù…Ù‘Ù„Ù‡ Ù…Ø¬Ø§Ù†Ù‹Ø§.' },
+        { h: '5. Ù…Ù‡Ù…', p: 'Ù„Ø§ Ù†Ø³ØªØ¹Ù„Ù… Ø¹Ù† Ø£Ø±Ù‚Ø§Ù… Ø§Ù„Ù‡ÙˆÙŠØ© Ø£Ùˆ Ø§Ù„Ø¶Ø±ÙŠØ¨Ø© Ø£Ùˆ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø´Ø®ØµÙŠØ©. Ø§Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† ÙÙ‚Ø·.' },
+        { h: '6. Ø§Ù„Ù…Ø´ÙŠ Ø§Ù„Ø¢Ù…Ù†', p: 'ÙÙŠ ØµÙØ­Ø© Ø§Ù„Ù…Ø´ÙŠ Ø§Ù„Ø¢Ù…Ù†ØŒ Ø§Ø¶ØºØ· Ø§Ø¨Ø¯Ø£ ÙˆØ£Ø±Ø³Ù„ Ø§Ù„Ø±Ø§Ø¨Ø· Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨ØŒ ÙˆØ³ÙŠØªØ§Ø¨Ø¹ Ø£Ø­Ø¯ Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ÙŠÙ† Ù…Ø³Ø§Ø±Ùƒ ÙÙŠ Ø§Ù„ÙˆÙ‚Øª Ø§Ù„ÙØ¹Ù„ÙŠØŒ Ù…Ø¹ Ø²Ø± Ø·ÙˆØ§Ø±Ø¦.' },
+        { h: '7. Ù…Ø±ÙƒØ² Ø§Ù„Ø£Ø®Ø¨Ø§Ø±', p: 'ØªÙˆÙØ± ØµÙØ­Ø© Ø§Ù„Ø£Ø®Ø¨Ø§Ø± Ù…Ù‚Ø§Ù„Ø§Øª ÙˆØ¹Ù†Ø§ÙˆÙŠÙ† ØªÙØ­Ø¯ÙŽÙ‘Ø« ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‹Ø§: ÙƒØ§Ù…ÙŠØ±Ø§ØªØŒ Ø­Ù…Ø§ÙŠØ© Ø´Ø®ØµÙŠØ©ØŒ Ø­ÙŠÙˆØ§Ù†Ø§Øª Ø£Ù„ÙŠÙØ©ØŒ Ø¯Ø±Ø§Ø¬Ø§ØªØŒ Ø¯Ø±Ø§Ø¬Ø§Øª Ù†Ø§Ø±ÙŠØ© ÙˆØ³ÙŠØ§Ø±Ø§Øª.' }
       ]
     },
     ru: {
-      title: 'Руководство пользователя',
+      title: 'Ð ÑƒÐºÐ¾Ð²Ð¾Ð´ÑÑ‚Ð²Ð¾ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ñ',
       steps: [
-        { h: '1. Введите место', p: 'Используйте почтовый индекс, полный адрес или GPS-координаты в поле поиска.' },
-        { h: '2. Выберите на карте (необязательно)', p: 'Нажмите кнопку карты, чтобы выбрать точку.' },
-        { h: '3. Посмотрите Safety Score', p: 'Система рассчитывает оценку безопасности на основе открытых данных.' },
-        { h: '4. Поделитесь или скачайте PDF', p: 'Отправьте отчет через WhatsApp, email или скачайте бесплатно.' },
-        { h: '5. Важно', p: 'Мы не запрашиваем ИНН, ОГРН или персональные данные. Используйте только адреса.' },
-        { h: '6. Безопасная прогулка', p: 'На странице «Безопасная прогулка» нажмите старт и отправьте ссылку через WhatsApp — близкий человек увидит ваш маршрут в реальном времени, есть кнопка SOS.' },
-        { h: '7. Центр новостей', p: 'Страница новостей содержит статьи и автоматически обновляемые заголовки: камеры, личная защита, питомцы, велосипеды, мотоциклы и автомобили.' }
+        { h: '1. Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ Ð¼ÐµÑÑ‚Ð¾', p: 'Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹Ñ‚Ðµ Ð¿Ð¾Ñ‡Ñ‚Ð¾Ð²Ñ‹Ð¹ Ð¸Ð½Ð´ÐµÐºÑ, Ð¿Ð¾Ð»Ð½Ñ‹Ð¹ Ð°Ð´Ñ€ÐµÑ Ð¸Ð»Ð¸ GPS-ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚Ñ‹ Ð² Ð¿Ð¾Ð»Ðµ Ð¿Ð¾Ð¸ÑÐºÐ°.' },
+        { h: '2. Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð½Ð° ÐºÐ°Ñ€Ñ‚Ðµ (Ð½ÐµÐ¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾)', p: 'ÐÐ°Ð¶Ð¼Ð¸Ñ‚Ðµ ÐºÐ½Ð¾Ð¿ÐºÑƒ ÐºÐ°Ñ€Ñ‚Ñ‹, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð²Ñ‹Ð±Ñ€Ð°Ñ‚ÑŒ Ñ‚Ð¾Ñ‡ÐºÑƒ.' },
+        { h: '3. ÐŸÐ¾ÑÐ¼Ð¾Ñ‚Ñ€Ð¸Ñ‚Ðµ Safety Score', p: 'Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð° Ñ€Ð°ÑÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ Ð¾Ñ†ÐµÐ½ÐºÑƒ Ð±ÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑ‚Ð¸ Ð½Ð° Ð¾ÑÐ½Ð¾Ð²Ðµ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ñ‹Ñ… Ð´Ð°Ð½Ð½Ñ‹Ñ….' },
+        { h: '4. ÐŸÐ¾Ð´ÐµÐ»Ð¸Ñ‚ÐµÑÑŒ Ð¸Ð»Ð¸ ÑÐºÐ°Ñ‡Ð°Ð¹Ñ‚Ðµ PDF', p: 'ÐžÑ‚Ð¿Ñ€Ð°Ð²ÑŒÑ‚Ðµ Ð¾Ñ‚Ñ‡ÐµÑ‚ Ñ‡ÐµÑ€ÐµÐ· WhatsApp, email Ð¸Ð»Ð¸ ÑÐºÐ°Ñ‡Ð°Ð¹Ñ‚Ðµ Ð±ÐµÑÐ¿Ð»Ð°Ñ‚Ð½Ð¾.' },
+        { h: '5. Ð’Ð°Ð¶Ð½Ð¾', p: 'ÐœÑ‹ Ð½Ðµ Ð·Ð°Ð¿Ñ€Ð°ÑˆÐ¸Ð²Ð°ÐµÐ¼ Ð˜ÐÐ, ÐžÐ“Ð Ð Ð¸Ð»Ð¸ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð»ÑŒÐ½Ñ‹Ðµ Ð´Ð°Ð½Ð½Ñ‹Ðµ. Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹Ñ‚Ðµ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð°Ð´Ñ€ÐµÑÐ°.' },
+        { h: '6. Ð‘ÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð°Ñ Ð¿Ñ€Ð¾Ð³ÑƒÐ»ÐºÐ°', p: 'ÐÐ° ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ðµ Â«Ð‘ÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð°Ñ Ð¿Ñ€Ð¾Ð³ÑƒÐ»ÐºÐ°Â» Ð½Ð°Ð¶Ð¼Ð¸Ñ‚Ðµ ÑÑ‚Ð°Ñ€Ñ‚ Ð¸ Ð¾Ñ‚Ð¿Ñ€Ð°Ð²ÑŒÑ‚Ðµ ÑÑÑ‹Ð»ÐºÑƒ Ñ‡ÐµÑ€ÐµÐ· WhatsApp â€” Ð±Ð»Ð¸Ð·ÐºÐ¸Ð¹ Ñ‡ÐµÐ»Ð¾Ð²ÐµÐº ÑƒÐ²Ð¸Ð´Ð¸Ñ‚ Ð²Ð°Ñˆ Ð¼Ð°Ñ€ÑˆÑ€ÑƒÑ‚ Ð² Ñ€ÐµÐ°Ð»ÑŒÐ½Ð¾Ð¼ Ð²Ñ€ÐµÐ¼ÐµÐ½Ð¸, ÐµÑÑ‚ÑŒ ÐºÐ½Ð¾Ð¿ÐºÐ° SOS.' },
+        { h: '7. Ð¦ÐµÐ½Ñ‚Ñ€ Ð½Ð¾Ð²Ð¾ÑÑ‚ÐµÐ¹', p: 'Ð¡Ñ‚Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð½Ð¾Ð²Ð¾ÑÑ‚ÐµÐ¹ ÑÐ¾Ð´ÐµÑ€Ð¶Ð¸Ñ‚ ÑÑ‚Ð°Ñ‚ÑŒÐ¸ Ð¸ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼Ñ‹Ðµ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²ÐºÐ¸: ÐºÐ°Ð¼ÐµÑ€Ñ‹, Ð»Ð¸Ñ‡Ð½Ð°Ñ Ð·Ð°Ñ‰Ð¸Ñ‚Ð°, Ð¿Ð¸Ñ‚Ð¾Ð¼Ñ†Ñ‹, Ð²ÐµÐ»Ð¾ÑÐ¸Ð¿ÐµÐ´Ñ‹, Ð¼Ð¾Ñ‚Ð¾Ñ†Ð¸ÐºÐ»Ñ‹ Ð¸ Ð°Ð²Ñ‚Ð¾Ð¼Ð¾Ð±Ð¸Ð»Ð¸.' }
       ]
     },
     ko: {
-      title: '사용 설명서',
+      title: 'ì‚¬ìš© ì„¤ëª…ì„œ',
       steps: [
-        { h: '1. 장소 입력', p: '우편번호, 전체 주소 또는 GPS 좌표를 검색창에 입력하세요.' },
-        { h: '2. 지도에서 선택(선택사항)', p: '지도 버튼을 눌러 지점을 선택하세요.' },
-        { h: '3. 안전 점수 보기', p: '시스템은 공개 데이터와 통계를 기반으로 안전 점수를 계산합니다.' },
-        { h: '4. 공유 또는 PDF 다운로드', p: 'WhatsApp, 이메일로 보고서를 본거나 묣으로 다운로드하세요.' },
-        { h: '5. 중요', p: '주민등록번호, 사업자번호 또는 개인 데이터는 조회하지 않습니다. 주소만 사용하세요.' },
-        { h: '6. 안전 산책', p: '안전 산책 페이지에서 시작을 누ubc88 타륳 WhatsApp으로 링크를 보내면 보호자가 실시간으로 경로를 확인할 수 있습니다. 긴급 버튼도 있습니다.' },
-        { h: '7. 뉴스 센터', p: '뉴스 페이지에서는 카메라, 개인 보호, 반려동물, 자전거, 오토바이, 자동차에 관한 기사와 자동 업데이트 헤드라인을 제공합니다.' }
+        { h: '1. ìž¥ì†Œ ìž…ë ¥', p: 'ìš°íŽ¸ë²ˆí˜¸, ì „ì²´ ì£¼ì†Œ ë˜ëŠ” GPS ì¢Œí‘œë¥¼ ê²€ìƒ‰ì°½ì— ìž…ë ¥í•˜ì„¸ìš”.' },
+        { h: '2. ì§€ë„ì—ì„œ ì„ íƒ(ì„ íƒì‚¬í•­)', p: 'ì§€ë„ ë²„íŠ¼ì„ ëˆŒëŸ¬ ì§€ì ì„ ì„ íƒí•˜ì„¸ìš”.' },
+        { h: '3. ì•ˆì „ ì ìˆ˜ ë³´ê¸°', p: 'ì‹œìŠ¤í…œì€ ê³µê°œ ë°ì´í„°ì™€ í†µê³„ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ì•ˆì „ ì ìˆ˜ë¥¼ ê³„ì‚°í•©ë‹ˆë‹¤.' },
+        { h: '4. ê³µìœ  ë˜ëŠ” PDF ë‹¤ìš´ë¡œë“œ', p: 'WhatsApp, ì´ë©”ì¼ë¡œ ë³´ê³ ì„œë¥¼ ë³¸ê±°ë‚˜ ë¬£ìœ¼ë¡œ ë‹¤ìš´ë¡œë“œí•˜ì„¸ìš”.' },
+        { h: '5. ì¤‘ìš”', p: 'ì£¼ë¯¼ë“±ë¡ë²ˆí˜¸, ì‚¬ì—…ìžë²ˆí˜¸ ë˜ëŠ” ê°œì¸ ë°ì´í„°ëŠ” ì¡°íšŒí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ì£¼ì†Œë§Œ ì‚¬ìš©í•˜ì„¸ìš”.' },
+        { h: '6. ì•ˆì „ ì‚°ì±…', p: 'ì•ˆì „ ì‚°ì±… íŽ˜ì´ì§€ì—ì„œ ì‹œìž‘ì„ ëˆ„ubc88 íƒ€ë¥³ WhatsAppìœ¼ë¡œ ë§í¬ë¥¼ ë³´ë‚´ë©´ ë³´í˜¸ìžê°€ ì‹¤ì‹œê°„ìœ¼ë¡œ ê²½ë¡œë¥¼ í™•ì¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ê¸´ê¸‰ ë²„íŠ¼ë„ ìžˆìŠµë‹ˆë‹¤.' },
+        { h: '7. ë‰´ìŠ¤ ì„¼í„°', p: 'ë‰´ìŠ¤ íŽ˜ì´ì§€ì—ì„œëŠ” ì¹´ë©”ë¼, ê°œì¸ ë³´í˜¸, ë°˜ë ¤ë™ë¬¼, ìžì „ê±°, ì˜¤í† ë°”ì´, ìžë™ì°¨ì— ê´€í•œ ê¸°ì‚¬ì™€ ìžë™ ì—…ë°ì´íŠ¸ í—¤ë“œë¼ì¸ì„ ì œê³µí•©ë‹ˆë‹¤.' }
       ]
     },
     hi: {
-      title: 'उपयोगकर्ता मार्गदर्शिका',
+      title: 'à¤‰à¤ªà¤¯à¥‹à¤—à¤•à¤°à¥à¤¤à¤¾ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¿à¤•à¤¾',
       steps: [
-        { h: '1. स्थान दर्ज करें', p: 'खोज बॉक्स में पिन कोड, पूरा पता या GPS निर्देशांक का उपयोग करें।' },
-        { h: '2. नक्शे पर चुनें (वैकल्पिक)', p: 'बिंदु चुनने के लिए नक्शा बटन दबाएं।' },
-        { h: '3. सुरक्षा स्कोर देखें', p: 'सिस्टम खुले डेटा और आंकड़ों के आधार पर सुरक्षा स्कोर की गणना करता है।' },
-        { h: '4. साझा करें या PDF डाउनलोड करें', p: 'WhatsApp, ईमेल के माध्यम से रिपोर्ट भेजें या मुफ्त में डाउनलोड करें।' },
-        { h: '5. महत्वपूर्ण', p: 'हम आधार, पैन या व्यक्तिगत डेटा की जांच नहीं करते। केवल पते का उपयोग करें।' },
-        { h: '6. सुर्षित सैर', p: 'सुर्षित सैर पेज पर शुरू करें दबाएं और WhatsApp पर लिंक भेजें — अभिभावक आपके रास्ते को रीयल-टाइम में देख सकते हैं। आपातकालीन बटन भी है।' },
-        { h: '7. समाचार केंद्र', p: 'समाचार पेज पर लेख और स्वतः अपडेट होने वाली खबरें मिलती हैं: कैमरे, व्यक्तिगत सुरक्षा, पालतू, साइकिल, मोटरसाइकिल और कारें।' }
+        { h: '1. à¤¸à¥à¤¥à¤¾à¤¨ à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚', p: 'à¤–à¥‹à¤œ à¤¬à¥‰à¤•à¥à¤¸ à¤®à¥‡à¤‚ à¤ªà¤¿à¤¨ à¤•à¥‹à¤¡, à¤ªà¥‚à¤°à¤¾ à¤ªà¤¤à¤¾ à¤¯à¤¾ GPS à¤¨à¤¿à¤°à¥à¤¦à¥‡à¤¶à¤¾à¤‚à¤• à¤•à¤¾ à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤°à¥‡à¤‚à¥¤' },
+        { h: '2. à¤¨à¤•à¥à¤¶à¥‡ à¤ªà¤° à¤šà¥à¤¨à¥‡à¤‚ (à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤•)', p: 'à¤¬à¤¿à¤‚à¤¦à¥ à¤šà¥à¤¨à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¨à¤•à¥à¤¶à¤¾ à¤¬à¤Ÿà¤¨ à¤¦à¤¬à¤¾à¤à¤‚à¥¤' },
+        { h: '3. à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¸à¥à¤•à¥‹à¤° à¤¦à¥‡à¤–à¥‡à¤‚', p: 'à¤¸à¤¿à¤¸à¥à¤Ÿà¤® à¤–à¥à¤²à¥‡ à¤¡à¥‡à¤Ÿà¤¾ à¤”à¤° à¤†à¤‚à¤•à¤¡à¤¼à¥‹à¤‚ à¤•à¥‡ à¤†à¤§à¤¾à¤° à¤ªà¤° à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¸à¥à¤•à¥‹à¤° à¤•à¥€ à¤—à¤£à¤¨à¤¾ à¤•à¤°à¤¤à¤¾ à¤¹à¥ˆà¥¤' },
+        { h: '4. à¤¸à¤¾à¤à¤¾ à¤•à¤°à¥‡à¤‚ à¤¯à¤¾ PDF à¤¡à¤¾à¤‰à¤¨à¤²à¥‹à¤¡ à¤•à¤°à¥‡à¤‚', p: 'WhatsApp, à¤ˆà¤®à¥‡à¤² à¤•à¥‡ à¤®à¤¾à¤§à¥à¤¯à¤® à¤¸à¥‡ à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤­à¥‡à¤œà¥‡à¤‚ à¤¯à¤¾ à¤®à¥à¤«à¥à¤¤ à¤®à¥‡à¤‚ à¤¡à¤¾à¤‰à¤¨à¤²à¥‹à¤¡ à¤•à¤°à¥‡à¤‚à¥¤' },
+        { h: '5. à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£', p: 'à¤¹à¤® à¤†à¤§à¤¾à¤°, à¤ªà¥ˆà¤¨ à¤¯à¤¾ à¤µà¥à¤¯à¤•à¥à¤¤à¤¿à¤—à¤¤ à¤¡à¥‡à¤Ÿà¤¾ à¤•à¥€ à¤œà¤¾à¤‚à¤š à¤¨à¤¹à¥€à¤‚ à¤•à¤°à¤¤à¥‡à¥¤ à¤•à¥‡à¤µà¤² à¤ªà¤¤à¥‡ à¤•à¤¾ à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤°à¥‡à¤‚à¥¤' },
+        { h: '6. à¤¸à¥à¤°à¥à¤·à¤¿à¤¤ à¤¸à¥ˆà¤°', p: 'à¤¸à¥à¤°à¥à¤·à¤¿à¤¤ à¤¸à¥ˆà¤° à¤ªà¥‡à¤œ à¤ªà¤° à¤¶à¥à¤°à¥‚ à¤•à¤°à¥‡à¤‚ à¤¦à¤¬à¤¾à¤à¤‚ à¤”à¤° WhatsApp à¤ªà¤° à¤²à¤¿à¤‚à¤• à¤­à¥‡à¤œà¥‡à¤‚ â€” à¤…à¤­à¤¿à¤­à¤¾à¤µà¤• à¤†à¤ªà¤•à¥‡ à¤°à¤¾à¤¸à¥à¤¤à¥‡ à¤•à¥‹ à¤°à¥€à¤¯à¤²-à¤Ÿà¤¾à¤‡à¤® à¤®à¥‡à¤‚ à¤¦à¥‡à¤– à¤¸à¤•à¤¤à¥‡ à¤¹à¥ˆà¤‚à¥¤ à¤†à¤ªà¤¾à¤¤à¤•à¤¾à¤²à¥€à¤¨ à¤¬à¤Ÿà¤¨ à¤­à¥€ à¤¹à¥ˆà¥¤' },
+        { h: '7. à¤¸à¤®à¤¾à¤šà¤¾à¤° à¤•à¥‡à¤‚à¤¦à¥à¤°', p: 'à¤¸à¤®à¤¾à¤šà¤¾à¤° à¤ªà¥‡à¤œ à¤ªà¤° à¤²à¥‡à¤– à¤”à¤° à¤¸à¥à¤µà¤¤à¤ƒ à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤¹à¥‹à¤¨à¥‡ à¤µà¤¾à¤²à¥€ à¤–à¤¬à¤°à¥‡à¤‚ à¤®à¤¿à¤²à¤¤à¥€ à¤¹à¥ˆà¤‚: à¤•à¥ˆà¤®à¤°à¥‡, à¤µà¥à¤¯à¤•à¥à¤¤à¤¿à¤—à¤¤ à¤¸à¥à¤°à¤•à¥à¤·à¤¾, à¤ªà¤¾à¤²à¤¤à¥‚, à¤¸à¤¾à¤‡à¤•à¤¿à¤², à¤®à¥‹à¤Ÿà¤°à¤¸à¤¾à¤‡à¤•à¤¿à¤² à¤”à¤° à¤•à¤¾à¤°à¥‡à¤‚à¥¤' }
       ]
     }
   };
@@ -1753,7 +1872,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 })();
 
 // ============================================================
-// LINK COMPARTILHADO — abre a analise direto pelo parametro ?q=
+// LINK COMPARTILHADO â€” abre a analise direto pelo parametro ?q=
 // (respeita o termo de uso: handleSearch valida antes de buscar)
 // ============================================================
 (function() {
@@ -1772,7 +1891,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 })();
 
 // ============================================================
-// NEWSLETTER AJAX — mostra se a pessoa conseguiu ou nao se inscrever
+// NEWSLETTER AJAX â€” mostra se a pessoa conseguiu ou nao se inscrever
 // ============================================================
 (function() {
   function initNewsletter() {
@@ -1805,7 +1924,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
-          _subject: 'Novo inscrito na newsletter - Portal Segurança Global',
+          _subject: 'Novo inscrito na newsletter - Portal SeguranÃ§a Global',
           _template: 'table',
           _captcha: 'false',
           email: email
@@ -1833,7 +1952,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 })();
 
 // ============================================================
-// NEWSLETTER — mensagem de sucesso ao voltar com ?inscrito=1
+// NEWSLETTER â€” mensagem de sucesso ao voltar com ?inscrito=1
 // ============================================================
 (function() {
   function showSubscriptionOk() {
@@ -1855,7 +1974,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 })();
 
 // ============================================================
-// MODAL DE ORCAMENTO — banner "Proteja sua Familia"
+// MODAL DE ORCAMENTO â€” banner "Proteja sua Familia"
 // ============================================================
 (function() {
   function initOrcamento() {
@@ -1926,7 +2045,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 })();
 
 // ============================================================
-// AUTO-UPDATE — o portal se atualiza sozinho quando ha nova versao
+// AUTO-UPDATE â€” o portal se atualiza sozinho quando ha nova versao
 // Verifica a cada 10 minutos se o app.js mudou no servidor;
 // se sim, recarrega preservando a ultima busca do usuario.
 // ============================================================
