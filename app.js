@@ -2456,7 +2456,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
     }
   }
 
-  function openGps() {
+  function openGps(auto) {
     if (!overlay) return;
     overlay.classList.add('active');
     // Pre-preenche a origem com o local analisado (ou a busca atual)
@@ -2480,7 +2480,11 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         if (q && q !== origemInput.value) destinoInput.value = q;
       } catch (e) {}
     }
-    try { setTimeout(function() { destinoInput.focus(); }, 150); } catch (e) {}
+    // Entrada rapida: sem origem conhecida, jah pede a localizacao do GPS
+    if (auto && !origemInput.value && navigator.geolocation) {
+      useMyLocation();
+    }
+    try { setTimeout(function() { (destinoInput.value ? destinoInput : origemInput).focus(); }, 150); } catch (e) {}
   }
 
   function closeGps() {
@@ -2829,7 +2833,14 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
     soundBtn = el('gps-sound');
 
     var btnGps = el('btn-gps');
-    if (btnGps) btnGps.addEventListener('click', openGps);
+    if (btnGps) btnGps.addEventListener('click', function() { openGps(); });
+
+    // Entradas rapidas: botao flutuante (1 toque) e link GPS do cabecalho
+    var fabGps = el('btn-gps-fab');
+    if (fabGps) fabGps.addEventListener('click', function() { openGps(true); });
+    var navGps = el('nav-gps');
+    if (navGps) navGps.addEventListener('click', function(e) { e.preventDefault(); openGps(true); });
+    window.psgOpenGps = openGps;
 
     var closeBtn = el('gps-close');
     if (closeBtn) closeBtn.addEventListener('click', closeGps);
