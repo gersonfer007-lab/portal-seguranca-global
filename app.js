@@ -1904,145 +1904,193 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
     pt: {
       title: 'Manual de Instrucoes',
       steps: [
-        { h: '1. Digite um local', p: 'Use CEP, endereco completo ou coordenadas GPS no campo de busca.' },
-        { h: '2. Escolha no mapa (opcional)', p: 'Clique no botao do mapa para selecionar um ponto com o toque.' },
-        { h: '3. Veja o Safety Score', p: 'O sistema calcula uma nota de seguranca baseada em dados abertos e estatisticas.' },
-        { h: '4. Compartilhe ou baixe o PDF', p: 'Envie o relatorio por WhatsApp, email ou faca o download gratuito.' },
-        { h: '5. Importante', p: 'Nao consultamos CPF, CNPJ, RG ou dados pessoais. Use apenas enderecos.' },
-        { h: '6. Caminhada Segura', p: 'Na pagina Caminhada Segura, toque em iniciar, envie o link por WhatsApp e o responsavel acompanha sua rota em tempo real, com botao de emergencia.' },
-        { h: '7. Central de Noticias', p: 'A pagina Noticias traz artigos e manchetes atualizadas automaticamente sobre seguranca: camaras, protecao pessoal, pets, bikes, motos e carros.' }
+        { h: 'Digite um local', p: 'Use CEP, endereco completo, coordenadas GPS ou o nome de uma rodovia de qualquer pais do mundo.' },
+        { h: 'Escolha no mapa (opcional)', p: 'Toque no botao do mapa para selecionar um ponto exato no globo.' },
+        { h: 'Veja o Safety Score', p: 'Nota de seguranca calculada com dados abertos, alem de mapa de ocorrencias, relogio mundial com fuso horario do local e noticias do pais selecionado nas bandeiras.' },
+        { h: 'Rodovias: pedagios, radares e limite', p: 'Ao pesquisar uma rodovia, o portal mostra pedagios, radares e camaras num raio de 8 km e o limite de velocidade da via mais proxima.' },
+        { h: 'GPS de Estradas', p: 'Traca a rota ate o seu destino com navegacao guiada por voz e avisos automaticos de camaras, radares e pedagios a frente.' },
+        { h: 'Rios e mares: avisos nauticos', p: 'Perto da agua, o portal mostra os corpos d\u2019agua proximos, as condicoes do mar (ondas e temperatura) e as orientacoes da Marinha e das autoridades de navegacao. Tudo entra tambem no relatorio PDF.' },
+        { h: 'Rastreamento seguro', p: 'Veja como rastrear carros, pessoas e pets de forma simples e segura, com orientacoes e boas praticas.' },
+        { h: 'Compartilhe ou baixe o PDF', p: 'Envie a analise por WhatsApp, Telegram, e-mail e redes sociais, ou baixe o relatorio PDF gratuito com QR de verificacao, fundamentacao legal e avisos oficiais.' },
+        { h: 'Caminhada Segura', p: 'Na pagina Caminhada Segura, toque em iniciar, envie o link por WhatsApp e o responsavel acompanha sua rota em tempo real, com botao de emergencia.' },
+        { h: 'Central de Noticias e atualizacao automatica', p: 'A pagina Noticias traz artigos e manchetes atualizadas automaticamente: camaras, protecao pessoal, pets, bikes, motos e carros. O portal tambem se atualiza sozinho, sem precisar recarregar.' },
+        { h: 'Importante', p: 'Nao consultamos CPF, CNPJ, RG ou dados pessoais. Use apenas enderecos.' }
       ]
     },
     en: {
       title: 'User Manual',
       steps: [
-        { h: '1. Enter a location', p: 'Use ZIP code, full address or GPS coordinates in the search field.' },
-        { h: '2. Pick on the map (optional)', p: 'Click the map button to select a point by touch.' },
-        { h: '3. See the Safety Score', p: 'The system calculates a safety score based on open data and statistics.' },
-        { h: '4. Share or download PDF', p: 'Send the report via WhatsApp, email or download it for free.' },
-        { h: '5. Important', p: 'We do not query SSN, tax ID, ID cards or personal data. Use addresses only.' },
-        { h: '6. Safe Walk', p: 'On the Safe Walk page, tap start, send the link via WhatsApp and a guardian follows your route in real time, with an emergency button.' },
-        { h: '7. News Center', p: 'The News page brings articles and automatically updated headlines about security: cameras, personal protection, pets, bikes, motorcycles and cars.' }
+        { h: 'Enter a location', p: 'Use a ZIP/postcode, full address, GPS coordinates, or a highway name from anywhere in the world.' },
+        { h: 'Pick on the map (optional)', p: 'Tap the map button to select an exact point on the globe.' },
+        { h: 'See the Safety Score', p: 'A safety rating based on open data, plus an occurrence map, world clock with local timezone, and news for the country selected in the flags.' },
+        { h: 'Highways: tolls, radars and limits', p: 'When you search a highway, the portal shows tolls, radars and speed cameras within 8 km, plus the speed limit of the nearest road.' },
+        { h: 'Road GPS', p: 'Trace your route with voice-guided navigation and automatic warnings of cameras, radars and tolls ahead.' },
+        { h: 'Rivers and seas: nautical warnings', p: 'Near water, the portal shows nearby water bodies, sea conditions (waves and temperature) and guidance from navies and navigation authorities. Everything is also included in the PDF report.' },
+        { h: 'Safe tracking', p: 'Learn how to track cars, people and pets in a simple and safe way, with guidance and best practices.' },
+        { h: 'Share or download the PDF', p: 'Send the analysis via WhatsApp, Telegram, email and social networks, or download the free PDF report with verification QR code, legal basis and official notices.' },
+        { h: 'Safe Walk', p: 'On the Safe Walk page, tap start, share the link via WhatsApp, and a guardian follows your route in real time with an emergency button.' },
+        { h: 'News hub and auto-update', p: 'The News page brings articles and automatically updated headlines: cameras, personal protection, pets, bikes, motorcycles and cars. The portal also updates itself, no reload needed.' },
+        { h: 'Important', p: 'We do not query ID, tax or personal records. Use addresses only.' }
       ]
     },
     es: {
-      title: 'Manual de Uso',
+      title: 'Manual de Instrucciones',
       steps: [
-        { h: '1. Escriba un lugar', p: 'Use codigo postal, direccion completa o coordenadas GPS en el campo de busqueda.' },
-        { h: '2. Elija en el mapa (opcional)', p: 'Toque el boton del mapa para seleccionar un punto.' },
-        { h: '3. Vea la Puntuacion de Seguridad', p: 'El sistema calcula una puntuacion basada en datos abiertos y estadisticas.' },
-        { h: '4. Comparta o descargue el PDF', p: 'Envie el informe por WhatsApp, email o descarguelo gratis.' },
-        { h: '5. Importante', p: 'No consultamos DNI, NIF, CIF ni datos personales. Use solo direcciones.' },
-        { h: '6. Caminata Segura', p: 'En la pagina Caminata Segura, toque iniciar, envie el enlace por WhatsApp y un responsable sigue su ruta en tiempo real, con boton de emergencia.' },
-        { h: '7. Central de Noticias', p: 'La pagina Noticias trae articulos y titulares actualizados automaticamente: camaras, proteccion personal, mascotas, bicis, motos y coches.' }
+        { h: 'Escriba un lugar', p: 'Use código postal, dirección completa, coordenadas GPS o el nombre de una carretera de cualquier país del mundo.' },
+        { h: 'Elija en el mapa (opcional)', p: 'Toque el botón del mapa para seleccionar un punto exacto en el globo.' },
+        { h: 'Vea el Safety Score', p: 'Nota de seguridad calculada con datos abiertos, además de mapa de ocurrencias, reloj mundial con huso horario local y noticias del país seleccionado en las banderas.' },
+        { h: 'Carreteras: peajes, radares y límites', p: 'Al buscar una carretera, el portal muestra peajes, radares y cámaras en un radio de 8 km y el límite de velocidad de la vía más cercana.' },
+        { h: 'GPS de Carreteras', p: 'Trace su ruta con navegación guiada por voz y avisos automáticos de cámaras, radares y peajes más adelante.' },
+        { h: 'Ríos y mares: avisos náuticos', p: 'Cerca del agua, el portal muestra los cuerpos de agua cercanos, las condiciones del mar (olas y temperatura) y las orientaciones de la Marina y las autoridades de navegación. Todo también entra en el informe PDF.' },
+        { h: 'Rastreo seguro', p: 'Vea cómo rastrear coches, personas y mascotas de forma simple y segura, con orientaciones y buenas prácticas.' },
+        { h: 'Comparta o descargue el PDF', p: 'Envíe el análisis por WhatsApp, Telegram, correo electrónico y redes sociales, o descargue el informe PDF gratuito con QR de verificación, fundamentación legal y avisos oficiales.' },
+        { h: 'Caminata Segura', p: 'En la página Caminata Segura, toque iniciar, envíe el enlace por WhatsApp y el responsable acompaña su ruta en tiempo real, con botón de emergencia.' },
+        { h: 'Centro de Noticias y actualización automática', p: 'La página de Noticias trae artículos y titulares actualizados automáticamente: cámaras, protección personal, mascotas, bicicletas, motos y coches. El portal también se actualiza solo, sin necesidad de recargar.' },
+        { h: 'Importante', p: 'No consultamos documentos ni datos personales. Use solo direcciones.' }
       ]
     },
     fr: {
-      title: 'Manuel d\'Utilisation',
+      title: "Manuel d'Instructions",
       steps: [
-        { h: '1. Saisissez un lieu', p: 'Utilisez le code postal, l\'adresse complete ou les coordonnees GPS.' },
-        { h: '2. Choisir sur la carte (facultatif)', p: 'Touchez le bouton de la carte pour selectionner un point.' },
-        { h: '3. Consultez le Safety Score', p: 'Le systeme calcule un score de securite base sur des donnees ouvertes.' },
-        { h: '4. Partagez ou telechargez le PDF', p: 'Envoyez le rapport par WhatsApp, email ou telechargez-le gratuitement.' },
-        { h: '5. Important', p: 'Nous ne consultons pas les numeros de securite sociale, SIRET ou donnees personnelles.' },
-        { h: '6. Marche sure', p: 'Sur la page Marche sure, touchez demarrer, envoyez le lien par WhatsApp et un proche suit votre trajet en temps reel, avec bouton d\'urgence.' },
-        { h: '7. Centre de nouvelles', p: 'La page Nouvelles propose des articles et des titres mis a jour automatiquement : cameras, protection personnelle, animaux, velos, motos et voitures.' }
+        { h: 'Saisissez un lieu', p: 'Utilisez un code postal, une adresse complète, des coordonnées GPS ou le nom d\u2019une route de n\u2019importe quel pays du monde.' },
+        { h: 'Choisissez sur la carte (facultatif)', p: 'Touchez le bouton carte pour sélectionner un point exact sur le globe.' },
+        { h: 'Consultez le Safety Score', p: 'Note de sécurité calculée avec des données ouvertes, plus une carte des occurrences, une horloge mondiale avec le fuseau horaire local et les actualités du pays choisi dans les drapeaux.' },
+        { h: 'Routes : péages, radars et limites', p: 'Lors d\u2019une recherche de route, le portail affiche les péages, radars et caméras dans un rayon de 8 km, ainsi que la limite de vitesse de la route la plus proche.' },
+        { h: 'GPS Routier', p: 'Tracez votre itinéraire avec une navigation vocale et des avertissements automatiques des caméras, radars et péages à venir.' },
+        { h: 'Rivières et mers : avis nautiques', p: 'Près de l\u2019eau, le portail affiche les plans d\u2019eau proches, les conditions de la mer (vagues et température) et les recommandations de la Marine et des autorités de navigation. Tout figure aussi dans le rapport PDF.' },
+        { h: 'Suivi sécurisé', p: 'Découvrez comment suivre voitures, personnes et animaux de compagnie de manière simple et sûre, avec conseils et bonnes pratiques.' },
+        { h: 'Partagez ou téléchargez le PDF', p: 'Envoyez l\u2019analyse par WhatsApp, Telegram, e-mail et réseaux sociaux, ou téléchargez le rapport PDF gratuit avec QR de vérification, base légale et avis officiels.' },
+        { h: 'Marche Sécurisée', p: 'Sur la page Marche Sécurisée, touchez démarrer, envoyez le lien par WhatsApp et un proche suit votre trajet en temps réel, avec bouton d\u2019urgence.' },
+        { h: 'Centre d\u2019actualités et mise à jour automatique', p: 'La page Actualités propose des articles et des titres mis à jour automatiquement : caméras, protection personnelle, animaux, vélos, motos et voitures. Le portail se met aussi à jour tout seul, sans rechargement.' },
+        { h: 'Important', p: 'Nous ne consultons aucun document ni donnée personnelle. Utilisez uniquement des adresses.' }
       ]
     },
     de: {
       title: 'Bedienungsanleitung',
       steps: [
-        { h: '1. Ort eingeben', p: 'Verwenden Sie Postleitzahl, vollstandige Adresse oder GPS-Koordinaten.' },
-        { h: '2. Auf Karte wahlen (optional)', p: 'Tippen Sie auf die Karte, um einen Punkt auszuwahlen.' },
-        { h: '3. Safety Score anzeigen', p: 'Das System berechnet einen Sicherheitswert basierend auf offenen Daten.' },
-        { h: '4. Teilen oder PDF herunterladen', p: 'Senden Sie den Bericht uber WhatsApp, E-Mail oder laden Sie ihn kostenlos herunter.' },
-        { h: '5. Wichtig', p: 'Wir fragen keine Sozialversicherungsnummern, Steuernummern oder personenbezogene Daten ab.' },
-        { h: '6. Sicherer Spaziergang', p: 'Auf der Seite Sicherer Spaziergang starten Sie die Freigabe, senden den Link per WhatsApp, und eine Vertrauensperson verfolgt Ihre Route in Echtzeit - mit Notfallknopf.' },
-        { h: '7. News-Center', p: 'Die News-Seite bietet Artikel und automatisch aktualisierte Schlagzeilen: Kameras, Personenschutz, Haustiere, Fahrr\u00e4der, Motorr\u00e4der und Autos.' }
+        { h: 'Or eingeben', p: 'Verwenden Sie Postleitzahl, vollständige Adresse, GPS-Koordinaten oder den Namen einer Straße aus der ganzen Welt.' },
+        { h: 'Auf der Karte wählen (optional)', p: 'Tippen Sie auf die Karten-Schaltfläche, um einen genauen Punkt auf dem Globus auszuwählen.' },
+        { h: 'Safety Score ansehen', p: 'Sicherheitsnote auf Basis offener Daten, dazu Vorkommnis-Karte, Weltuhr mit lokaler Zeitzone und Nachrichten des in den Flaggen gewählten Landes.' },
+        { h: 'Straßen: Maut, Blitzer und Limits', p: 'Bei der Suche nach einer Straße zeigt das Portal Mautstellen, Blitzer und Kameras im Umkreis von 8 km sowie das Tempolimit der nächsten Straße.' },
+        { h: 'Straßen-GPS', p: 'Route planen mit sprachgeführter Navigation und automatischen Warnungen vor Kameras, Blitzern und Mautstellen.' },
+        { h: 'Flüsse und Meere: nautische Warnungen', p: 'In Wassernähe zeigt das Portal nahegelegene Gewässer, Meeresbedingungen (Wellen und Temperatur) sowie Hinweise der Marine und der Schifffahrtsbehörden. Alles steht auch im PDF-Bericht.' },
+        { h: 'Sicheres Tracking', p: 'Erfahren Sie, wie Sie Autos, Personen und Haustiere einfach und sicher orten können, mit Tipps und bewährten Methoden.' },
+        { h: 'Teilen oder PDF herunterladen', p: 'Senden Sie die Analyse per WhatsApp, Telegram, E-Mail und sozialen Netzwerken oder laden Sie den kostenlosen PDF-Bericht mit Verifizierungs-QR-Code, Rechtsgrundlage und offiziellen Hinweisen herunter.' },
+        { h: 'Sicherer Spaziergang', p: 'Auf der Seite Sicherer Spaziergang starten Sie die Freigabe, senden den Link per WhatsApp, und eine Vertrauensperson verfolgt Ihre Route in Echtzeit - mit Notfallknopf.' },
+        { h: 'News-Center und Auto-Update', p: 'Die News-Seite bietet Artikel und automatisch aktualisierte Schlagzeilen: Kameras, Personenschutz, Haustiere, Fahrr\u00e4der, Motorr\u00e4der und Autos. Das Portal aktualisiert sich auch von selbst, ohne Neuladen.' },
+        { h: 'Wichtig', p: 'Wir fragen keine Ausweise oder persönlichen Daten ab. Verwenden Sie nur Adressen.' }
       ]
     },
     it: {
-      title: 'Manuale d\'Uso',
+      title: 'Manuale di Istruzioni',
       steps: [
-        { h: '1. Inserisci un luogo', p: 'Usa CAP, indirizzo completo o coordinate GPS nel campo di ricerca.' },
-        { h: '2. Scegli sulla mappa (opzionale)', p: 'Tocca il pulsante mappa per selezionare un punto.' },
-        { h: '3. Vedi il Safety Score', p: 'Il sistema calcola un punteggio di sicurezza basato su dati aperti.' },
-        { h: '4. Condividi o scarica il PDF', p: 'Invia il rapporto via WhatsApp, email o scaricalo gratuitamente.' },
-        { h: '5. Importante', p: 'Non consultiamo codici fiscali, partite IVA o dati personali. Usa solo indirizzi.' },
-        { h: '6. Camminata Sicura', p: 'Nella pagina Camminata Sicura, tocca avvia, invia il link via WhatsApp e un familiare segue il tuo percorso in tempo reale, con pulsante di emergenza.' },
-        { h: '7. Centro Notizie', p: 'La pagina Notizie offre articoli e titoli aggiornati automaticamente: telecamere, protezione personale, animali, bici, moto e auto.' }
+        { h: 'Digita un luogo', p: 'Usa CAP, indirizzo completo, coordinate GPS o il nome di una strada di qualsiasi paese del mondo.' },
+        { h: 'Scegli sulla mappa (facoltativo)', p: 'Tocca il pulsante mappa per selezionare un punto esatto sul globo.' },
+        { h: 'Guarda il Safety Score', p: 'Voto di sicurezza calcolato con dati aperti, oltre a mappa degli eventi, orologio mondiale con fuso orario locale e notizie del paese scelto nelle bandiere.' },
+        { h: 'Strade: pedaggi, autovelox e limiti', p: 'Cercando una strada, il portale mostra pedaggi, autovelox e telecamere in un raggio di 8 km e il limite di velocità della strada più vicina.' },
+        { h: 'GPS Stradale', p: 'Traccia il percorso con navigazione vocale e avvisi automatici di telecamere, autovelox e pedaggi davanti a te.' },
+        { h: 'Fiumi e mari: avvisi nautici', p: 'Vicino all\u2019acqua, il portale mostra i corpi idrici vicini, le condizioni del mare (onde e temperatura) e le indicazioni della Marina e delle autorità di navigazione. Tutto entra anche nel rapporto PDF.' },
+        { h: 'Tracciamento sicuro', p: 'Scopri come tracciare auto, persone e animali domestici in modo semplice e sicuro, con consigli e buone pratiche.' },
+        { h: 'Condividi o scarica il PDF', p: 'Invia l\u2019analisi via WhatsApp, Telegram, e-mail e social network, oppure scarica il rapporto PDF gratuito con QR di verifica, base legale e avvisi ufficiali.' },
+        { h: 'Camminata Sicura', p: 'Nella pagina Camminata Sicura, tocca avvia, invia il link via WhatsApp e un responsabile segue il tuo percorso in tempo reale, con pulsante di emergenza.' },
+        { h: 'Centro Notizie e aggiornamento automatico', p: 'La pagina Notizie porta articoli e titoli aggiornati automaticamente: telecamere, protezione personale, animali, bici, moto e auto. Il portale si aggiorna anche da solo, senza ricaricare.' },
+        { h: 'Importante', p: 'Non consultiamo documenti o dati personali. Usa solo indirizzi.' }
       ]
     },
     zh: {
       title: '使用手册',
       steps: [
-        { h: '1. 输入地点', p: '在搜索框中输入邮政编码、完整地址或GPS坐标。' },
-        { h: '2. 在地图上选择（可选）', p: '点击地图按钮选择地点。' },
-        { h: '3. 查看安全评分', p: '系统根据公开数据和统计计算安全评分。' },
-        { h: '4. 分享或下载PDF', p: '通过WhatsApp、电子邮件发送报告或免费下载。' },
-        { h: '5. 重要提示', p: '我们不查询身份证、税号或个人数据。请仅使用地址。' },
-        { h: '6. 安全步行', p: '在安全步行页面点击开始，通过WhatsApp发送链接，家人即可实时跟踪您的路线，并配有紧急按钮。' },
-        { h: '7. 新闻中心', p: '新闻页面提供文章和自动更新的安全资讯：摄像头、个人防护、宠物、自行车、摩托车和汽车。' }
+        { h: '输入地点', p: '输入邮政编码、完整地址、GPS坐标或世界任何国家的公路名称。' },
+        { h: '在地图上选择（可选）', p: '点击地图按钮选择地球上的精确位置。' },
+        { h: '查看安全评分', p: '基于开放数据计算的安全评分，还包括事件地图、当地时间的世界时钟，以及所选国家（旗帜）的新闻。' },
+        { h: '公路：收费、雷达与限速', p: '搜索公路时，门户网站会显示8公里范围内的收费站、测速雷达和摄像头，以及最近道路的限速。' },
+        { h: '公路GPS', p: '规划路线，配语音导航，并自动提醒前方的摄像头、测速雷达和收费站。' },
+        { h: '河流与海洋：航行警报', p: '靠近水域时，门户网站会显示附近水域、海况（海浪和温度），以及海军和航行当局的指引。所有内容也会写入PDF报告。' },
+        { h: '安全追踪', p: '了解如何以简单安全的方式追踪汽车、人员和宠物，附指引和最佳实践。' },
+        { h: '分享或下载PDF', p: '通过WhatsApp、Telegram、电子邮件和社交网络发送分析，或下载免费PDF报告，含验证二维码、法律依据和官方公告。' },
+        { h: '安全散步', p: '在安全散步页面点击开始，通过WhatsApp发送链接，家人即可实时跟踪您的路线，并配有紧急按钮。' },
+        { h: '新闻中心与自动更新', p: '新闻页面提供自动更新的文章和头条：摄像头、个人防护、宠物、自行车、摩托车和汽车。门户网站也会自动更新，无需重新加载。' },
+        { h: '重要提示', p: '我们不查询证件号码或个人数据。请仅使用地址。' }
       ]
     },
     ja: {
       title: '取扱説明書',
       steps: [
-        { h: '1. 場所を入力', p: '検索欄に郵便番号、住所、またはGPS座標を入力してください。' },
-        { h: '2. 地図で選択（任意）', p: '地図ボタンをタップして場所を選択します。' },
-        { h: '3. 安全スコアを確認', p: 'システムは公開データと統計に基づいて安全スコアを計算します。' },
-        { h: '4. 共有またはPDFダウンロード', p: 'WhatsAppやメールでレポートを送信、または無料でダウンロードできます。' },
-        { h: '5. 重要', p: '個人番号、法人番号、個人データは照会しません。住所のみをご利用ください。' },
-        { h: '6. 安全な散歩', p: '安全な散歩ページで開始をタップし、WhatsAppでリンクを送信すると、家族が緊急ボタン付きでルートをリアルタイムで追跡できます。' },
-        { h: '7. ニュースセンター', p: 'ニュースページでは、カメラ、身辺保護、ペット、自転車、バイク、自動車に関する記事と自動更新の見出しを提供します。' }
+        { h: '場所を入力', p: '郵便番号、住所、GPS座標、または世界中の道路名を入力してください。' },
+        { h: '地図で選択（任意）', p: '地図ボタンをタップして地球上の正確な地点を選択します。' },
+        { h: '安全スコアを確認', p: '公開データに基づく安全スコアのほか、事件マップ、現地タイムゾーン付きの世界時計、旗で選んだ国のニュースを提供します。' },
+        { h: '道路：料金・レーダー・速度制限', p: '道路を検索すると、8km圏内の料金所、速度違反取締装置（オービス）とカメラ、および最寄り道路の速度制限を表示します。' },
+        { h: '道路GPS', p: '音声ナビゲーション付きのルート案内と、前方のカメラ・オービス・料金所の自動警告機能。' },
+        { h: '川と海：海難警報', p: '水辺では、近くの水域、海の状態（波と水温）、海軍および航海当局の指針を表示します。すべてPDFレポートにも含まれます。' },
+        { h: '安全な追跡', p: '車、人、ペットを簡単かつ安全に追跡する方法を、ガイドとベストプラクティスとともに紹介します。' },
+        { h: '共有またはPDFダウンロード', p: 'WhatsApp、Telegram、メール、SNSで分析を送信、または検証QRコード、法的根拠、公式通知付きの無料PDFレポートをダウンロードできます。' },
+        { h: '安全な散歩', p: '安全な散歩ページで開始をタップし、WhatsAppでリンクを送ると、家族が緊急ボタン付きでルートをリアルタイムで追跡できます。' },
+        { h: 'ニュースセンターと自動更新', p: 'ニュースページは、カメラ、身辺保護、ペット、自転車、バイク、自動車に関する記事と自動更新される見出しを提供します。ポータル自体も再読み込みなしで自動更新されます。' },
+        { h: '重要', p: '個人番号や個人データは照会しません。住所のみをご利用ください。' }
       ]
     },
     ar: {
       title: 'دليل الاستخدام',
       steps: [
-        { h: '1. أدخل الموقع', p: 'أدخل الرمز البريدي أو العنوان الكامل أو إحداثيات GPS في مربع البحث.' },
-        { h: '2. اختر على الخريطة (اختياري)', p: 'اضغط على زر الخريطة لاختيار نقطة.' },
-        { h: '3. اطّلع على درجة الأمان', p: 'يحسب النظام درجة أمان بناءً على البيانات المفتوحة والإحصاءات.' },
-        { h: '4. شارك أو حمّل ملف PDF', p: 'أرسل التقرير عبر واتساب أو البريد الإلكتروني أو حمّله مجانًا.' },
-        { h: '5. مهم', p: 'لا نستعلم عن أرقام الهوية أو الرقم الضريبي أو البيانات الشخصية. استخدم العناوين فقط.' },
-        { h: '6. المشي الآمن', p: 'في صفحة المشي الآمن، اضغط ابدأ وأرسل الرابط عبر واتساب ليتابع أحد أفراد العائلة مسارك في الوقت الفعلي مع زر الطوارئ.' },
-        { h: '7. مركز الأخبار', p: 'تقدم صفحة الأخبار مقالات وعناوين تُحدَّث تلقائيًا عن الأمن: الكاميرات، الحماية الشخصية، الحيوانات الأليفة، الدراجات، الدراجات النارية والسيارات.' }
+        { h: 'أدخل الموقع', p: 'أدخل الرمز البريدي أو العنوان الكامل أو إحداثيات GPS أو اسم طريق من أي دولة في العالم.' },
+        { h: 'اختر على الخريطة (اختياري)', p: 'اضغط على زر الخريطة لاختيار نقطة دقيقة على الكرة الأرضية.' },
+        { h: 'اطّلع على درجة الأمان', p: 'درجة أمان محسوبة من البيانات المفتوحة، مع خريطة الحوادث وساعة عالمية بالتوقيت المحلي وأخبار الدولة المختارة في الأعلام.' },
+        { h: 'الطرق: الرسوم والرادارات والحدود', p: 'عند البحث عن طريق، يعرض البوابة الرسوم ورادارات السرعة والكاميرات في نطاق 8 كم، وحد السرعة لأقرب طريق.' },
+        { h: 'GPS الطرق', p: 'ارسم مسارك مع ملاحة صوتية وتحذيرات تلقائية من الكاميرات والرادارات ومراكز الرسوم أمامك.' },
+        { h: 'الأنهار والبحار: تحذيرات ملاحية', p: 'قرب الماء، يعرض البوابة المسطحات المائية القريبة وحالة البحر (الأمواج ودرجة الحرارة) وإرشادات البحرية وسلطات الملاحة. كل ذلك يرد أيضًا في تقرير PDF.' },
+        { h: 'التتبع الآمن', p: 'تعرّف على كيفية تتبع السيارات والأشخاص والحيوانات الأليفة بطريقة بسيطة وآمنة، مع إرشادات وأفضل الممارسات.' },
+        { h: 'شارك أو حمّل ملف PDF', p: 'أرسل التحليل عبر واتساب وتيليجرام والبريد الإلكتروني والشبكات الاجتماعية، أو حمّل تقرير PDF المجاني مع رمز تحقق QR والأساس القانوني والإعلانات الرسمية.' },
+        { h: 'المشي الآمن', p: 'في صفحة المشي الآمن، اضغط ابدأ وأرسل الرابط عبر واتساب ليتابع أحد المسؤولين مسارك في الوقت الفعلي مع زر الطوارئ.' },
+        { h: 'مركز الأخبار والتحديث التلقائي', p: 'تقدم صفحة الأخبار مقالات وعناوين تُحدَّث تلقائيًا: الكاميرات، الحماية الشخصية، الحيوانات الأليفة، الدراجات، الدراجات النارية والسيارات. كما يتحدث البوابة تلقائيًا دون إعادة تحميل.' },
+        { h: 'مهم', p: 'لا نستعلم عن أرقام الهوية أو البيانات الشخصية. استخدم العناوين فقط.' }
       ]
     },
     ru: {
       title: 'Руководство пользователя',
       steps: [
-        { h: '1. Введите место', p: 'Введите почтовый индекс, полный адрес или GPS-координаты в поле поиска.' },
-        { h: '2. Выберите на карте (необязательно)', p: 'Нажмите кнопку карты, чтобы выбрать точку.' },
-        { h: '3. Посмотрите оценку безопасности', p: 'Система рассчитывает оценку безопасности на основе открытых данных и статистики.' },
-        { h: '4. Поделитесь или скачайте PDF', p: 'Отправьте отчёт через WhatsApp, по электронной почте или скачайте бесплатно.' },
-        { h: '5. Важно', p: 'Мы не запрашиваем номера документов, налоговые номера или персональные данные. Используйте только адреса.' },
-        { h: '6. Безопасная прогулка', p: 'На странице «Безопасная прогулка» нажмите начать, отправьте ссылку через WhatsApp, и близкий человек будет отслеживать ваш маршрут в реальном времени с кнопкой экстренной помощи.' },
-        { h: '7. Центр новостей', p: 'Страница новостей предлагает статьи и автоматически обновляемые заголовки о безопасности: камеры, личная защита, домашние животные, велосипеды, мотоциклы и автомобили.' }
+        { h: 'Введите место', p: 'Введите почтовый индекс, полный адрес, GPS-координаты или название шоссе из любой страны мира.' },
+        { h: 'Выберите на карте (необязательно)', p: 'Нажмите кнопку карты, чтобы выбрать точную точку на глобусе.' },
+        { h: 'Посмотрите Safety Score', p: 'Оценка безопасности на основе открытых данных, а также карта происшествий, мировые часы с местным часовым поясом и новости страны, выбранной во флажках.' },
+        { h: 'Шоссе: платные дороги, радары и лимиты', p: 'При поиске шоссе портал показывает платные пункты, радары и камеры в радиусе 8 км, а также ограничение скорости ближайшей дороги.' },
+        { h: 'Дорожный GPS', p: 'Проложите маршрут с голосовой навигацией и автоматическими предупреждениями о камерах, радарах и платных пунктах впереди.' },
+        { h: 'Реки и моря: морские предупреждения', p: 'Рядом с водой портал показывает ближайшие водоёмы, состояние моря (волны и температура) и рекомендации ВМФ и навигационных властей. Всё это также входит в PDF-отчёт.' },
+        { h: 'Безопасное отслеживание', p: 'Узнайте, как отслеживать автомобили, людей и питомцев просто и безопасно, с рекомендациями и лучшими практиками.' },
+        { h: 'Поделитесь или скачайте PDF', p: 'Отправьте анализ через WhatsApp, Telegram, электронную почту и соцсети или скачайте бесплатный PDF-отчёт с QR-кодом проверки, правовым обоснованием и официальными уведомлениями.' },
+        { h: 'Безопасная прогулка', p: 'На странице «Безопасная прогулка» нажмите начать, отправьте ссылку через WhatsApp, и ответственный человек будет отслеживать ваш маршрут в реальном времени с кнопкой экстренной помощи.' },
+        { h: 'Центр новостей и автообновление', p: 'Страница новостей предлагает статьи и автоматически обновляемые заголовки: камеры, личная защита, питомцы, велосипеды, мотоциклы и автомобили. Портал также обновляется сам, без перезагрузки.' },
+        { h: 'Важно', p: 'Мы не запрашиваем документы или персональные данные. Используйте только адреса.' }
       ]
     },
     ko: {
       title: '사용 설명서',
       steps: [
-        { h: '1. 장소 입력', p: '검색창에 우편번호, 전체 주소 또는 GPS 좌표를 입력하세요.' },
-        { h: '2. 지도에서 선택 (선택 사항)', p: '지도 버튼을 눌러 지점을 선택하세요.' },
-        { h: '3. 안전 점수 확인', p: '시스템이 공개 데이터와 통계를 바탕으로 안전 점수를 계산합니다.' },
-        { h: '4. 공유 또는 PDF 다운로드', p: 'WhatsApp이나 이메일로 보고서를 보내거나 무료로 다운로드하세요.' },
-        { h: '5. 중요', p: '우리는 주민번호, 사업자번호, 개인 데이터를 조회하지 않습니다. 주소만 사용하세요.' },
-        { h: '6. 안전 산책', p: '안전 산책 페이지에서 시작을 누르고 WhatsApp으로 링크를 보내면 가족이 긴급 버튼과 함께 실시간으로 경로를 추적합니다.' },
-        { h: '7. 뉴스 센터', p: '뉴스 페이지는 카메라, 개인 보호, 반려동물, 자전거, 오토바이, 자동차에 관한 기사와 자동 업데이트되는 헤드라인을 제공합니다.' }
+        { h: '장소 입력', p: '우편번호, 전체 주소, GPS 좌표 또는 전 세계 어느 나라의 도로 이름이든 입력하세요.' },
+        { h: '지도에서 선택 (선택 사항)', p: '지도 버튼을 눌러 지구본에서 정확한 지점을 선택하세요.' },
+        { h: '안전 점수 확인', p: '공개 데이터 기반 안전 점수와 함께 사건 지도, 현지 시간대가 표시되는 세계 시계, 국기에서 선택한 나라의 뉴스를 제공합니다.' },
+        { h: '도로: 통행료, 레이더, 제한 속도', p: '도로를 검색하면 8km 반경 내 통행료소, 속도 단속 카메라와 레이더, 그리고 가장 가까운 도로의 제한 속도를 표시합니다.' },
+        { h: '도로 GPS', p: '음성 내비게이션으로 경로를 안내하고 전방의 카메라, 레이더, 통행료소를 자동으로 경고합니다.' },
+        { h: '강과 바다: 해상 경보', p: '물가 근처에서는 주변 수역, 해상 상태(파도와 수온), 해군 및 항해 당국의 지침을 표시합니다. 모든 내용은 PDF 보고서에도 포함됩니다.' },
+        { h: '안전한 추적', p: '안내와 모범 사례와 함께 자동차, 사람, 반려동물을 간단하고 안전하게 추적하는 방법을 알아보세요.' },
+        { h: '공유 또는 PDF 다운로드', p: 'WhatsApp, Telegram, 이메일, 소셜 네트워크로 분석 결과를 보내거나 검증 QR 코드, 법적 근거, 공지 사항이 포함된 무료 PDF 보고서를 다운로드하세요.' },
+        { h: '안전 산책', p: '안전 산책 페이지에서 시작을 누르고 WhatsApp으로 링크를 보내면 가족이 긴급 버튼과 함께 실시간으로 경로를 추적합니다.' },
+        { h: '뉴스 센터와 자동 업데이트', p: '뉴스 페이지는 카메라, 개인 보호, 반려동물, 자전거, 오토바이, 자동차에 관한 기사와 자동 업데이트되는 헤드라인을 제공합니다. 포털도 새로고침 없이 스스로 업데이트됩니다.' },
+        { h: '중요', p: '우리는 신분증 번호나 개인 데이터를 조회하지 않습니다. 주소만 사용하세요.' }
       ]
     },
     hi: {
       title: 'उपयोगकर्ता मार्गदर्शिका',
       steps: [
-        { h: '1. स्थान दर्ज करें', p: 'खोज बॉक्स में पिन कोड, पूरा पता या GPS निर्देशांक दर्ज करें।' },
-        { h: '2. मानचित्र पर चुनें (वैकल्पिक)', p: 'मानचित्र बटन पर क्लिक करके बिंदु चुनें।' },
-        { h: '3. सुरक्षा स्कोर देखें', p: 'सिस्टम सार्वजनिक डेटा और सांख्यिकी के आधार पर सुरक्षा स्कोर की गणना करता है।' },
-        { h: '4. साझा करें या PDF डाउनलोड करें', p: 'रिपोर्ट WhatsApp, ईमेल से भेजें या नि:शुल्क डाउनलोड करें।' },
-        { h: '5. महत्वपूर्ण', p: 'हम आधार, पैन या व्यक्तिगत डेटा की जांच नहीं करते। केवल पते का उपयोग करें।' },
-        { h: '6. सुरक्षित सैर', p: 'सुरक्षित सैर पेज पर शुरू करें दबाएं, WhatsApp पर लिंक भेजें, और परिवार आपके मार्ग को वास्तविक समय में आपातकालीन बटन के साथ देख सकता है।' },
-        { h: '7. समाचार केंद्र', p: 'समाचार पेज कैमरे, व्यक्तिगत सुरक्षा, पालतू जानवरों, साइकिल, मोटरसाइकिल और कारों पर लेख और स्वतः अद्यतन शीर्षक प्रदान करता है।' }
+        { h: 'स्थान दर्ज करें', p: 'पिन कोड, पूरा पता, GPS निर्देशांक या दुनिया के किसी भी देश की सड़क का नाम दर्ज करें।' },
+        { h: 'मानचित्र पर चुनें (वैकल्पिक)', p: 'मानचित्र बटन पर क्लिक करके ग्लोब पर सटीक बिंदु चुनें।' },
+        { h: 'सुरक्षा स्कोर देखें', p: 'खुले डेटा से गणना की गई सुरक्षा रेटिंग, साथ ही घटनाओं का मानचित्र, स्थानीय समय क्षेत्र वाली विश्व घड़ी, और झंडों में चुने गए देश की खबरें।' },
+        { h: 'सड़कें: टोल, रडार और सीमा', p: 'सड़क खोजने पर पोर्टल 8 किमी त्रिज्या में टोल, स्पीड रडार और कैमरे, तथा निकटतम सड़क की गति सीमा दिखाता है।' },
+        { h: 'सड़क GPS', p: 'आवाज़ वाले नेविगेशन के साथ रूट बनाएं और आगे आने वाले कैमरों, रडार और टोल की स्वतः चेतावनी पाएं।' },
+        { h: 'नदियाँ और समुद्र: समुद्री चेतावनियाँ', p: 'पानी के पास होने पर पोर्टल नज़दीकी जलस्रोत, समुद्र की स्थिति (लहरें और तापमान) तथा नौसेना और नेविगेशन प्राधिकरणों के दिशा-निर्देश दिखाता है। यह सब PDF रिपोर्ट में भी आता है।' },
+        { h: 'सुरक्षित ट्रैकिंग', p: 'मार्गदर्शन और सर्वोत्तम प्रथाओं के साथ जानें कि कारों, लोगों और पालतू जानवरों को कैसे सरल और सुरक्षित तरीके से ट्रैक करें।' },
+        { h: 'साझा करें या PDF डाउनलोड करें', p: 'WhatsApp, Telegram, ईमेल और सोशल नेटवर्क पर विश्लेषण भेजें, या सत्यापन QR कोड, कानूनी आधार और आधिकारिक सूचनाओं के साथ निःशुल्क PDF रिपोर्ट डाउनलोड करें।' },
+        { h: 'सुरक्षित सैर', p: 'सुरक्षित सैर पेज पर शुरू करें दबाएं, WhatsApp पर लिंक भेजें, और एक जिम्मेदार व्यक्ति आपातकालीन बटन के साथ आपके मार्ग को वास्तविक समय में देखता है।' },
+        { h: 'समाचार केंद्र और स्वतः अद्यतन', p: 'समाचार पेज कैमरों, व्यक्तिगत सुरक्षा, पालतू जानवरों, साइकिल, मोटरसाइकिल और कारों पर स्वतः अद्यतन होने वाले लेख और शीर्षक देता है। पोर्टल भी बिना रीलोड स्वयं अपडेट होता है।' },
+        { h: 'महत्वपूर्ण', p: 'हम दस्तावेज़ नंबर या व्यक्तिगत डेटा की जांच नहीं करते। केवल पते का उपयोग करें।' }
       ]
     },
   };
