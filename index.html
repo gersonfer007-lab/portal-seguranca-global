@@ -983,6 +983,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-law .art { font-size: 11px; font-weight: 800; color: #0c1730; letter-spacing: .04em; }
 #pdf-report .pdf-law .txt { font-size: 10.5px; color: #333; line-height: 1.55; font-style: italic; margin-top: 3px; }
 #pdf-report .pdf-law .base { font-size: 9.5px; color: #666; margin-top: 3px; }
+#pdf-report .pdf-navy-tribute { margin-top: 8px; font-weight: 600; color: #1a4d8f; font-size: 10.5px; line-height: 1.5; }
 /* Elementos de seguranca do documento */
 #pdf-report .pdf-security-bg {
   position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none;
@@ -1943,10 +1944,24 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     </div>
   </div>
 
+  <div class="pdf-section" id="pdf-nautic-section">
+    <h3>6. Avisos N&aacute;uticos &mdash; Rios, Mares e Autoridades de Navega&ccedil;&atilde;o</h3>
+    <div class="pdf-law" style="margin-bottom:10px;">
+      <div class="art" id="pdf-nautic-status">--</div>
+      <div class="txt" id="pdf-nautic-details">--</div>
+      <div class="base" id="pdf-nautic-src">Varredura n&aacute;utica: OpenStreetMap e Open-Meteo Marine. Os avisos oficiais de navega&ccedil;&atilde;o s&atilde;o emitidos pelas autoridades navais de cada pa&iacute;s (Marinha do Brasil / IMO).</div>
+    </div>
+    <p class="pdf-note" style="font-size:10.5px;margin-bottom:6px;">
+      &#9875;&#65039; <b>Emerg&ecirc;ncia no mar e nos rios:</b> Canal 16 VHF (156,8 MHz) &mdash; frequ&ecirc;ncia internacional de socorro &mdash; e os telefones de emerg&ecirc;ncia do seu pa&iacute;s (192/193 no Brasil).<br>
+      <b>Antes de navegar:</b> consulte os Avisos aos Navegantes da Marinha do Brasil (CHM/DHN), as Cartas N&aacute;uticas oficiais e as normas da IMO &mdash; Organiza&ccedil;&atilde;o Mar&iacute;tima Internacional. Banhistas: respeite as bandeiras dos salva-vidas, nade em &aacute;reas monitoradas e nunca subestime correntes de retorno. Em rios, aten&ccedil;&atilde;o a correnteza, enchentes e margens alagadas.
+    </p>
+    <div class="pdf-navy-tribute">&#9875;&#65039; Homenagem e reconhecimento &agrave;s Marinhas de Guerra e Guardas Costeiras de todo o mundo, que guardam rios, mares e a vida de quem navega.</div>
+  </div>
+
   <div class="pdf-dateline" id="pdf-dateline">--</div>
 
   <div class="pdf-section">
-    <h3>6. Fundamentacao Constitucional</h3>
+    <h3>7. Fundamentacao Constitucional</h3>
     <p class="pdf-note">A disponibilizacao deste documento ao solicitante considera os seguintes dispositivos da Constituicao da Republica Federativa do Brasil de 1988, relacionados ao acesso a informacao e ao direito social a seguranca. Esta fundamentacao nao transforma o Portal Seguranca Global em orgao publico, nao substitui pedido formal pela Lei de Acesso a Informacao e nao confere a este relatorio presuncao de documento oficial estatal:</p>
     <div class="pdf-law">
       <div class="art">Art. 5&ordm;, XIV, Constituicao Federal de 1988</div>
@@ -1971,7 +1986,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>7. Condicoes e Responsabilidades deste Documento</h3>
+    <h3>8. Condicoes e Responsabilidades deste Documento</h3>
     <div class="pdf-clauses">
       <p>Este documento e gerado eletronicamente pelo Portal Seguranca Global a partir de dados publicos, estatisticas abertas e modelos estatisticos do perimetro analisado, nao havendo consulta a dados pessoais, CPF, CNPJ, RG ou antecedentes criminais de qualquer pessoa ou empresa.</p>
       <p>As informacoes aqui contidas possuem finalidade exclusivamente informativa e preventiva, nao substituindo consultoria profissional de seguranca, boletins oficiais de ocorrencia ou documentos emitidos por orgaos publicos.</p>
@@ -1984,7 +1999,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>8. Autenticacao do Documento</h3>
+    <h3>9. Autenticacao do Documento</h3>
     <div class="pdf-auth">
       <img id="pdf-qr" src="" alt="QR Code de verificacao" crossorigin="anonymous">
       <div class="info">
@@ -2650,7 +2665,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r13"></script>
+<script defer src="app.js?v=20260930r14"></script>
 <script>
 (function(){
   var EDICOES={
