@@ -2562,6 +2562,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       renderRoute();
       drawRoute(o, d);
       gpsLoadHazards();
+      gpsPrecacheRouteTiles();  // salva os tiles da rota para navegar offline
       status('ok', 'Rota tracada com sucesso! Confira o resumo, veja no mapa e inicie a navegacao.');
     } catch (e) {
       status('err', 'Nao foi possivel calcular a rota agora (servico de rotas ocupado). Tente novamente em instantes.');
@@ -2602,6 +2603,69 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
   function highlightStep(idx) {
     stepLis.forEach(function(li, i) { li.classList.toggle('current', i === idx); });
     try { if (stepLis[idx]) stepLis[idx].scrollIntoView({ block: 'nearest' }); } catch (e) {}
+  }
+
+  // ---- OFFLINE: pre-cache dos tiles do mapa ao longo da rota ----
+  // A navegacao (GPS do aparelho + voz) nao precisa de internet; o mapa,
+  // sim — entao salvamos os tiles da area da rota no Service Worker.
+  function gpsTileXY(lat, lng, z) {
+    var n = Math.pow(2, z);
+    var x = Math.floor((lng + 180) / 360 * n);
+    var latR = lat * Math.PI / 180;
+    var y = Math.floor((1 - Math.log(Math.tan(latR) + 1 / Math.cos(latR)) / Math.PI) / 2 * n);
+    return { x: Math.max(0, Math.min(n - 1, x)), y: Math.max(0, Math.min(n - 1, y)) };
+  }
+  function gpsPrecacheRouteTiles() {
+    try {
+      if (!route || !route.coords.length || !navigator.onLine) return;
+      var minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+      route.coords.forEach(function(c) {
+        if (c[0] < minLat) minLat = c[0];
+        if (c[0] > maxLat) maxLat = c[0];
+        if (c[1] < minLng) minLng = c[1];
+        if (c[1] > maxLng) maxLng = c[1];
+      });
+      var layers = [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/',
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/'
+      ];
+      var urls = [];
+      var zooms = [];
+      try { if (typeof map !== 'undefined' && map && map.getZoom) zooms.push(Math.round(map.getZoom())); } catch (e) {}
+      if (!zooms.length) zooms.push(12);
+      zooms.push(zooms[0] - 1); // visao geral (menos tiles)
+      zooms.forEach(function(z) {
+        if (z < 3 || z > 16) return;
+        var a = gpsTileXY(maxLat, minLng, z), b = gpsTileXY(minLat, maxLng, z);
+        var count = (b.x - a.x + 1) * (b.y - a.y + 1);
+        if (count > 150) return; // area grande demais neste zoom — nao salvar
+        for (var x = a.x; x <= b.x; x++) {
+          for (var y = a.y; y <= b.y; y++) {
+            layers.forEach(function(L0) { urls.push(L0 + z + '/' + y + '/' + x); });
+          }
+        }
+      });
+      urls = urls.slice(0, 400);
+      if (!urls.length) return;
+      // Envia ao Service Worker (se ativo) ou busca direto (o SW cacheia)
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CACHE_TILES', urls: urls });
+      } else {
+        urls.forEach(function(u) { fetch(u, { mode: 'no-cors' }).catch(function() {}); });
+      }
+    } catch (e) { /* prefetch e best-effort */ }
+  }
+
+  // ---- OFFLINE: indicador de conectividade no painel do GPS ----
+  function gpsOfflineNotice() {
+    if (!statusEl) return;
+    if (!navigator.onLine) {
+      if (route) {
+        status('info', '&#128225; <b>SEM INTERNET &mdash; modo offline.</b> A navegacao continua funcionando: rota, voz e avisos de radar j&aacute; est&atilde;o salvos neste aparelho.');
+      } else {
+        status('err', '&#128225; <b>Sem internet.</b> Trace a rota enquanto online &mdash; depois a navegacao funciona offline no resto da viagem.');
+      }
+    }
   }
 
   // ---- AVISOS DE CAMERAS, RADARES E PEDAGIOS NA ROTA (OpenStreetMap) ----
@@ -2871,8 +2935,26 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       soundBtn.textContent = 'Voz: ' + (soundOn ? 'LIGADA' : 'DESLIGADA');
       if (!soundOn && window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
     });
+
+    // Offline: avisa que a navegacao continua sem internet
+    window.addEventListener('online', function() { if (overlay.classList.contains('active') && route) status('ok', '&#127760; Conexao restabelecida.'); });
+    window.addEventListener('offline', function() { if (overlay.classList.contains('active')) gpsOfflineNotice(); });
   }
 
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initGps); }
   else { initGps(); }
+})();
+
+// ============================================================
+// SERVICE WORKER — GPS OFFLINE
+// Salva o portal (shell) e os tiles do mapa para que a
+// navegacao continue funcionando sem internet.
+// ============================================================
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+  function regSw() {
+    navigator.serviceWorker.register('/sw.js').catch(function(e) { /* offline fica indisponivel; site segue normal */ });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', regSw); }
+  else { regSw(); }
 })();
