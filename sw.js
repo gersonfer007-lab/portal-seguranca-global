@@ -78,6 +78,12 @@ self.addEventListener('fetch', function(e) {
   // 1) APIs de dados: apenas online, nunca cacheia
   if (API_HOSTS.indexOf(url.hostname) !== -1) return;
 
+  // Sondas de diagnostico do service worker (mesma origem e cross-origin)
+  if (url.pathname === '/swprobe' || url.pathname === '/swprobe-x') {
+    e.respondWith(new Response('SW_ALIVE', { headers: { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' } }));
+    return;
+  }
+
   // 2) Tiles de mapa (Esri): cache-first — tile salvo nunca expira
   if (url.hostname === 'server.arcgisonline.com') {
     e.respondWith(
@@ -114,11 +120,6 @@ self.addEventListener('fetch', function(e) {
   // 4) Mesma origem: network-first (atualizacoes do portal fluem),
   //    com fallback para o cache quando offline
   if (url.origin === self.location.origin) {
-    // Sonda de diagnostico do proprio service worker
-    if (url.pathname === '/swprobe') {
-      e.respondWith(new Response('SW_ALIVE', { headers: { 'Content-Type': 'text/plain' } }));
-      return;
-    }
     // Navegacao de pagina
     if (req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
       e.respondWith(
