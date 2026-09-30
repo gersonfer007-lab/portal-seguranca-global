@@ -1,0 +1,27 @@
+{
+  "name": "Portal Seguranca Global",
+  "short_name": "Seguranca Global",
+  "description": "Seguranca em qualquer endereco do mundo: Safety Score, GPS de estradas com voz, radares, pedagios e avisos nauticos. Funciona offline apos tracar a rota.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0e17",
+  "theme_color": "#1d4ed8",
+  "lang": "pt-BR",
+  "categories": ["navigation", "travel", "utilities"],
+  "icons": [
+    {
+      "src": "/brasao-sh.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brasao-sh.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
