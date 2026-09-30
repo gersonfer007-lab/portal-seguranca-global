@@ -13,10 +13,16 @@
 <meta property="og:url" content="https://portalsegurancaglobal.com.br/">
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/brasao-sh.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Seguranca Global">
 
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems https://router.project-osrm.org https://routing.openstreetmap.de https://marine-api.open-meteo.com; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems https://router.project-osrm.org https://routing.openstreetmap.de https://marine-api.open-meteo.com https://server.arcgisonline.com; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -2461,7 +2467,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     </div>
 
     <div class="gps-status" id="gps-status" role="status"></div>
-    <p class="gps-note">Rotas calculadas com dados abertos do OpenStreetMap (OSRM). Durante a rota e a navegacao voce recebe <b>avisos automaticos de camaras, radares e pedagios</b> a frente, com limite de velocidade quando disponivel. Use com responsabilidade e atencao ao volante &mdash; a navegacao por voz precisa de GPS ativo no aparelho.</p>
+    <p class="gps-note">Rotas calculadas com dados abertos do OpenStreetMap (OSRM). Durante a rota e a navegacao voce recebe <b>avisos automaticos de camaras, radares e pedagios</b> a frente, com limite de velocidade quando disponivel. <b>Funciona offline:</b> apos tracar a rota, a navegacao por voz e o mapa continuam ativos mesmo sem internet &mdash; os dados ficam salvos no seu aparelho. Use com responsabilidade e atencao ao volante &mdash; a navegacao por voz precisa de GPS ativo no aparelho.</p>
   </div>
 </div>
 
@@ -2711,7 +2717,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=20260930r18"></script>
+<script defer src="app.js?v=20261001r19"></script>
 <script>
 (function(){
   var EDICOES={
