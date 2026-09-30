@@ -4,9 +4,9 @@
    - Tiles de mapa (Esri) em cache: a rota vista continua
      visivel offline durante a navegacao
    - APIs (rotas, geocodificacao, mar): so online, sem cache
-   Versao: psg-sw-v2
+   Versao: psg-sw-v3
    ============================================================ */
-var CACHE_SHELL = 'psg-shell-v2';
+var CACHE_SHELL = 'psg-shell-v3';
 var CACHE_TILES = 'psg-tiles-v1';
 var SHELL_ASSETS = [
   '/',
@@ -19,9 +19,10 @@ var SHELL_ASSETS = [
   '/constituicao.html',
   '/constituicao-data.js',
   '/quem-somos.html',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js'
+  '/vendor/leaflet.css',
+  '/vendor/leaflet.js',
+  '/vendor/leaflet-heat.js',
+  '/vendor/chart.umd.min.js'
 ];
 var API_HOSTS = [
   'nominatim.openstreetmap.org',
