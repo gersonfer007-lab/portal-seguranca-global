@@ -1663,6 +1663,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <div class="result-location">
       <h2 id="result-address">--</h2>
       <p id="result-meta" data-i18n="resultMeta">--</p>
+      <p id="result-clock" style="margin-top:.35rem;font-size:.85rem;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;display:none;"></p>
     </div>
     <div class="result-actions">
       <button class="btn btn-primary" id="btn-pdf">
@@ -2492,6 +2493,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <span style="font-size:1.1rem;">&#128246;</span>
       <strong style="font-size:1.02rem;" id="feed-titulo">&Uacute;ltimas do Brasil e do Mundo</strong>
       <span class="feed-pais" id="feed-pais">&#127463;&#127479; Brasil</span>
+      <span id="feed-clock" title="Hor&aacute;rio local do pa&iacute;s selecionado" style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.12);color:#93c5fd;border:1px solid rgba(59,130,246,.3);font-size:.62rem;font-weight:700;padding:3px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace;">&#128337; --:--</span>
       <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3);font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.08em;">
         <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:feedpulse2 2s infinite;"></span> Auto
       </span>
@@ -2559,7 +2561,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r3"></script>
+<script defer src="app.js?v=20260930r4"></script>
 <script>
 (function(){
   var EDICOES={
