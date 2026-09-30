@@ -1624,3 +1624,74 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', showSubscriptionOk); }
   else { showSubscriptionOk(); }
 })();
+
+// ============================================================
+// MODAL DE ORCAMENTO — banner "Proteja sua Familia"
+// ============================================================
+(function() {
+  function initOrcamento() {
+    var overlay = document.getElementById('orc-overlay');
+    var form = document.getElementById('orc-form');
+    var openBtn = document.getElementById('open-orcamento');
+    if (!overlay || !form) return;
+
+    function open() {
+      overlay.classList.add('active');
+      var first = document.getElementById('orc-nome');
+      if (first) setTimeout(function() { try { first.focus(); } catch (e) {} }, 120);
+    }
+    function close() { overlay.classList.remove('active'); }
+    function showMsg(kind, text) {
+      var m = document.getElementById('orc-msg');
+      if (!m) return;
+      m.className = 'orc-msg ' + kind;
+      m.textContent = text;
+    }
+
+    if (openBtn) openBtn.addEventListener('click', open);
+    var closeBtn = document.getElementById('orc-close');
+    var cancelBtn = document.getElementById('orc-cancel');
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var nome = (document.getElementById('orc-nome') || {}).value || '';
+      var contato = (document.getElementById('orc-contato') || {}).value || '';
+      if (!nome.trim() || !contato.trim()) {
+        showMsg('err', 'Preencha seu nome e um contato (e-mail ou WhatsApp).');
+        return;
+      }
+      var sendBtn = document.getElementById('orc-send');
+      if (sendBtn) sendBtn.disabled = true;
+      showMsg('', '');
+      var payload = {
+        _subject: 'Pedido de orcamento - Portal Seguranca Global',
+        _template: 'table',
+        nome: nome.trim(),
+        contato: contato.trim(),
+        cidade: (document.getElementById('orc-cidade') || {}).value || '-',
+        servico: (document.getElementById('orc-servico') || {}).value || '-',
+        mensagem: (document.getElementById('orc-msg-field') || {}).value || '-'
+      };
+      fetch('https://formsubmit.co/ajax/gersonfer007@hotmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function() {
+          form.reset();
+          showMsg('ok', 'Pedido enviado com sucesso! Retornaremos o contato em breve.');
+        })
+        .catch(function() {
+          showMsg('err', 'Nao foi possivel enviar agora. Tente novamente em instantes ou escreva para gersonfer007@hotmail.com');
+        })
+        .finally(function() { if (sendBtn) sendBtn.disabled = false; });
+    });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initOrcamento); }
+  else { initOrcamento(); }
+})();
