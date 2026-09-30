@@ -1099,6 +1099,7 @@ function renderRoadAlerts(alerts, lat, lng) {
 // com base nas autoridades de navegacao do mundo.
 // ============================================================
 var nauticLayer = null;
+var currentNautic = null;   // estado nautico da ultima busca (para o PDF)
 function nauticEsc(s) { return roadEsc(s); }
 function nauticTipoLabel(t) {
   var m = { rio: 'Rio', baia: 'Ba&iacute;a', lago: 'Lago', canal: 'Canal', agua: 'Corpo d&apos;&aacute;gua' };
@@ -1181,11 +1182,15 @@ async function loadNauticAlerts(lat, lng) {
     aguas = unicas.slice(0, 4);
   }
   var temAgua = aguas.length > 0;
-  if (!temAgua && !palavraAgua) { box.style.cssText = 'display:none;'; return; }
+  if (!temAgua && !palavraAgua) {
+    currentNautic = { temAgua: false, aguas: [], mar: null, aguaQuery: false };
+    box.style.cssText = 'display:none;'; return;
+  }
 
   // 2) Condicoes do mar no ponto d'agua mais proximo
   var alvoMar = temAgua ? aguas[0] : { lat: lat, lng: lng };
   var mar = await nauticMarine(alvoMar.lat, alvoMar.lng);
+  currentNautic = { temAgua: temAgua, aguas: aguas, mar: mar, aguaQuery: palavraAgua };
 
   // 3) Montagem do painel
   var linhas = [];
@@ -1564,6 +1569,44 @@ async function _doGeneratePDF() {
   document.getElementById('pdf-occ').textContent = currentData.totalOccurrences;
   document.getElementById('pdf-cam').textContent = currentData.cameras;
   document.getElementById('pdf-com').textContent = currentData.commerce;
+
+  // ---- Avisos nauticos (secao 6 do relatorio) ----
+  var nautStatusEl = document.getElementById('pdf-nautic-status');
+  var nautDetailsEl = document.getElementById('pdf-nautic-details');
+  if (nautStatusEl && nautDetailsEl) {
+    var naut = currentNautic;
+    if (!naut || (!naut.temAgua && !naut.mar && !naut.aguaQuery)) {
+      nautStatusEl.textContent = 'Nenhum corpo d\u2019\u00e1gua relevante identificado num raio de 4 km';
+      nautDetailsEl.textContent = 'A varredura n\u00e1utica n\u00e3o encontrou rios, mares, ba\u00edas ou lagos no per\u00edmetro analisado. N\u00e3o h\u00e1 avisos n\u00e1uticos aplic\u00e1veis a este endere\u00e7o.';
+    } else {
+      var tipoTxt = { rio: 'Rio', baia: 'Ba\u00eda', lago: 'Lago', canal: 'Canal', agua: 'Corpo d\u2019\u00e1gua' };
+      var partes = [];
+      if (naut.temAgua) {
+        var lista = naut.aguas.map(function(a) {
+          return (tipoTxt[a.tipo] || 'Corpo d\u2019\u00e1gua') + (a.nome ? ' ' + a.nome : '') + ' (' + a.d.toFixed(1).replace('.', ',') + ' km)';
+        }).join('; ');
+        partes.push('Corpos d\u2019\u00e1gua num raio de 4 km: ' + lista + '.');
+      } else {
+        partes.push('O local consultado \u00e9 um ambiente aqu\u00e1tico.');
+      }
+      var tituloNaut = 'Aviso n\u00e1utico';
+      if (naut.mar && typeof naut.mar.wave_height === 'number') {
+        var onda = naut.mar.wave_height;
+        var cond = 'ondas de ' + onda.toFixed(1).replace('.', ',') + ' m';
+        if (naut.mar.swell_wave_height != null) cond += ', ondula\u00e7\u00e3o de ' + naut.mar.swell_wave_height.toFixed(1).replace('.', ',') + ' m';
+        if (naut.mar.sea_surface_temperature != null) cond += ', \u00e1gua a ' + naut.mar.sea_surface_temperature.toFixed(0) + '\u00b0C';
+        partes.push('Condi\u00e7\u00f5es do mar no momento da emiss\u00e3o: ' + cond + '.');
+        if (onda < 1) { tituloNaut = 'MAR CALMO'; partes.push('Condi\u00e7\u00f5es adequadas para banho e navega\u00e7\u00e3o com os cuidados normais.'); }
+        else if (onda < 2) { tituloNaut = 'MAR AGITADO'; partes.push('Cautela: banhistas devem respeitar as bandeiras dos salva-vidas e pequenas embarca\u00e7\u00f5es devem redobrar a aten\u00e7\u00e3o.'); }
+        else { tituloNaut = 'MAR PERIGOSO'; partes.push('Ondas altas: banho e navega\u00e7\u00e3o N\u00c3O s\u00e3o recomendados. Aguarde a melhoria das condi\u00e7\u00f5es.'); }
+      } else {
+        tituloNaut = 'Ambiente aqu\u00e1tico continental';
+        partes.push('Aten\u00e7\u00e3o a correnteza, enchentes e margens alagadas. Consulte as autoridades locais antes de atividades no local.');
+      }
+      nautStatusEl.textContent = tituloNaut;
+      nautDetailsEl.textContent = partes.join(' ');
+    }
+  }
 
   // ---- Renderiza com todas as imagens carregadas ----
   showLoading('Gerando relatorio PDF...');
