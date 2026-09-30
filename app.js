@@ -185,6 +185,18 @@ function bindUI() {
   var btnGpsSearch = document.getElementById('btn-gps-search');
   if (btnGpsSearch) btnGpsSearch.addEventListener('click', searchByGps);
 
+  // Consulta rapida da Constituicao (bloco dourado na home)
+  var cqInput = document.getElementById('cq-input');
+  var cqBtn = document.getElementById('cq-btn');
+  if (cqInput && cqBtn) {
+    var cqGo = function() {
+      var q = (cqInput.value || '').trim();
+      window.location.href = 'constituicao.html' + (q ? '?q=' + encodeURIComponent(q) : '');
+    };
+    cqBtn.addEventListener('click', cqGo);
+    cqInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') cqGo(); });
+  }
+
   var btnPdf = document.getElementById('btn-pdf');
   if (btnPdf) btnPdf.addEventListener('click', generatePDF);
 
