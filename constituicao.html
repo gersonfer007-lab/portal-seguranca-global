@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constituição Federal de 1988 — Consulta Rápida | Portal Segurança Global</title>
+<meta name="description" content="Consulte qualquer artigo da Constituição Federal de 1988 e do ADCT em segundos: busca por número ou palavra-chave, texto oficial do Planalto, funciona offline.">
+<link rel="icon" href="brasao-sh.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1d4ed8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
+<style>
+:root {
+  --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: #1a2235; --bg-card-hover: #1f2a40;
+  --border: #2a3550; --text-primary: #e8ecf4; --text-secondary: #8b95a8; --text-muted: #5a6478;
+  --accent: #3b82f6; --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+  --gold: #d4a017;
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --gradient-gold: linear-gradient(135deg, #d4a017, #b8860b);
+  --radius-lg: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+.header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.5rem; background: rgba(10,14,26,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.header-brand { display: flex; align-items: center; gap: .7rem; font-size: .85rem; font-weight: 800; letter-spacing: .06em; }
+.header-badge { background: var(--gradient-gold); color: #fff; font-size: .6rem; padding: .2rem .55rem; border-radius: 6px; letter-spacing: .1em; }
+.header-nav { display: flex; align-items: center; gap: 1.2rem; font-size: .85rem; }
+.header-nav a { color: var(--text-secondary); text-decoration: none; font-weight: 600; }
+.header-nav a:hover { color: var(--accent); }
+.header-nav a.active { color: var(--gold); }
+.header-status { display: flex; align-items: center; gap: .45rem; font-size: .72rem; color: var(--text-secondary); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+@media (max-width: 900px) { .header-status { display: none; } .header-nav { font-size: .75rem; gap: .8rem; } }
+.page { max-width: 1080px; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
+.hero { text-align: center; padding: 2.4rem 1rem 2rem; }
+.badge { display: inline-flex; align-items: center; gap: .5rem; background: rgba(212,160,23,.12); border: 1px solid rgba(212,160,23,.45); color: #ecc670; font-size: .72rem; font-weight: 700; padding: .35rem .9rem; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900; margin: 1rem 0 .6rem; }
+.hero h1 span { background: var(--gradient-gold); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text-secondary); font-size: .95rem; max-width: 720px; margin: 0 auto; line-height: 1.6; }
+.section { margin-top: 2.4rem; }
+.section-title { display: flex; align-items: center; gap: .6rem; font-size: 1.15rem; font-weight: 800; margin-bottom: .4rem; }
+.section-sub { color: var(--text-secondary); font-size: .85rem; line-height: 1.6; margin-bottom: 1.2rem; max-width: 780px; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.4rem; }
+.busca-box { display: flex; gap: .6rem; flex-wrap: wrap; }
+.busca-box input { flex: 1 1 260px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); padding: .95rem 1.1rem; font-size: 1.05rem; font-family: inherit; }
+.busca-box input:focus { outline: none; border-color: var(--gold); }
+.btn { border: none; border-radius: 10px; padding: .95rem 1.5rem; font-size: .9rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-gold { background: var(--gradient-gold); color: #fff; }
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.chip { background: rgba(212,160,23,.08); border: 1px solid rgba(212,160,23,.3); color: #ecc670; font-size: .76rem; font-weight: 700; padding: .4rem .85rem; border-radius: 999px; cursor: pointer; font-family: inherit; }
+.chip:hover { background: rgba(212,160,23,.18); }
+.hint { font-size: .74rem; color: var(--text-muted); margin-top: .8rem; line-height: 1.6; }
+.contador { margin-top: 1.2rem; font-size: .84rem; color: #ecc670; font-weight: 700; display: none; }
+.result-area { margin-top: 1.2rem; }
+.art-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.4rem; margin-bottom: 1rem; }
+.art-head { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.art-num { font-size: 1.25rem; font-weight: 900; color: #ecc670; }
+.art-num .adct-tag { font-size: .62rem; background: rgba(59,130,246,.2); border: 1px solid rgba(59,130,246,.45); color: #93c5fd; padding: .15rem .5rem; border-radius: 6px; vertical-align: middle; margin-left: .5rem; letter-spacing: .06em; }
+.art-ctx { font-size: .72rem; color: var(--text-muted); letter-spacing: .03em; }
+.art-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.mini-btn { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-secondary); font-size: .72rem; font-weight: 700; padding: .38rem .8rem; border-radius: 8px; cursor: pointer; font-family: inherit; text-decoration: none; }
+.mini-btn:hover { border-color: var(--gold); color: #ecc670; }
+.art-body { font-size: .92rem; line-height: 1.75; color: var(--text-primary); white-space: pre-wrap; max-height: 420px; overflow-y: auto; padding-right: .4rem; }
+.art-body::-webkit-scrollbar { width: 8px; }
+.art-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.art-body mark { background: rgba(212,160,23,.35); color: #ffe9b3; border-radius: 3px; padding: 0 2px; }
+.art-body .revogado { color: #f87171; font-weight: 700; }
+.vazio { text-align: center; color: var(--text-secondary); font-size: .88rem; padding: 2rem 1rem; line-height: 1.7; }
+.info-box { border: 1px solid rgba(59,130,246,.35); background: rgba(59,130,246,.08); border-radius: 12px; padding: 1.1rem 1.2rem; font-size: .82rem; line-height: 1.7; color: #bfdbfe; margin-top: 1.6rem; }
+.info-box b { color: #dbeafe; }
+.footer { border-top: 1px solid var(--border); padding: 1.6rem 1.2rem; text-align: center; color: var(--text-muted); font-size: .74rem; line-height: 1.7; }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+.footer a:hover { color: var(--gold); }
+@media (max-width: 640px) { .page { padding: 1.4rem .9rem 3rem; } .art-body { max-height: 340px; } }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <span>PORTAL SEGURANÇA GLOBAL</span>
+    <span class="header-badge">CF/88</span>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Consulta</a>
+    <a href="noticias.html">Notícias</a>
+    <a href="zona-rural.html">Zona Rural</a>
+    <a href="constituicao.html" class="active">Constituição</a>
+    <a href="quem-somos.html">Quem Somos</a>
+  </nav>
+  <div class="header-status"><span class="dot"></span><span>Texto oficial atualizado</span></div>
+</header>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="badge">⚖️ Constituição Federal de 1988</span>
+    <h1>Consulte <span>qualquer artigo</span> da Constituição em segundos</h1>
+    <p>Digite o número do artigo (ex.: 5, 144, 37, ADCT 60) ou uma palavra (ex.: segurança, liberdade, propriedade). O resultado aparece na hora, com o texto oficial — sem cadastro, sem burocracia, funciona até offline.</p>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <div class="busca-box">
+        <input id="cf-input" type="text" placeholder="Número do artigo ou palavra-chave (ex.: 5, 144, segurança, ADCT 60)..." autocomplete="off" autofocus>
+        <button class="btn btn-gold" id="cf-btn" onclick="cfBuscar()">Consultar</button>
+      </div>
+      <div class="chips" id="cf-chips"></div>
+      <div class="hint">💡 Dicas: "5" abre o Art. 5º · "59-A" artigos com letra · "ADCT 60" pesquisa no Ato das Disposições · palavras pesquisam o texto inteiro. Busca instantânea enquanto você digita.</div>
+      <div class="contador" id="cf-count"></div>
+      <div class="result-area" id="cf-results"></div>
+    </div>
+
+    <div class="info-box">
+      <b>Fonte oficial:</b> texto compilado da Constituição Federal de 1988 e do ADCT, conforme publicado pelo Planalto (planalto.gov.br), incluindo as Emendas Constitucionais vigentes. O portal mantém uma cópia embutida para consulta rápida e uso offline — para a versão integral com histórico de alterações, acesse o <a href="https://www.planalto.gov.br/ccivil_03/constituicao/constituicaocompilado.htm" target="_blank" rel="noopener" style="color:#93c5fd;">site oficial do Planalto</a>.
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  Portal Segurança Global · Consulta à Constituição Federal de 1988 (texto compilado) · Fonte: Planalto<br>
+  <a href="index.html">Consulta de Segurança</a> &bull; <a href="noticias.html">Notícias</a> &bull; <a href="zona-rural.html">Zona Rural</a> &bull; <a href="constituicao.html">Constituição</a> &bull; <a href="quem-somos.html">Quem Somos</a>
+</footer>
+
+<script src="constituicao-data.js"></script>
+<script>
+(function() {
+  'use strict';
+  var MAX_RESULTADOS = 40;
+
+  // Normalizacao: minusculas + remover acentos (mantendo o mesmo numero de caracteres)
+  function norm(s) {
+    var out = '';
+    for (var i = 0; i < s.length; i++) {
+      var d = s[i].normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      out += (d.length ? d : s[i]).toLowerCase();
+    }
+    return out;
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Envolve ocorrencias (indice-based) com <mark>
+  function highlight(texto, ranges) {
+    var out = '', pos = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      var a = ranges[i][0], b = ranges[i][1];
+      if (a < pos) continue;
+      out += esc(texto.slice(pos, a));
+      out += '<mark>' + esc(texto.slice(a, b)) + '</mark>';
+      pos = b;
+    }
+    out += esc(texto.slice(pos));
+    return out;
+  }
+
+  function rangesDe(texto, nq) {
+    var nt = norm(texto);
+    var ranges = [], idx = 0;
+    if (!nq) return ranges;
+    while ((idx = nt.indexOf(nq, idx)) !== -1) {
+      ranges.push([idx, idx + nq.length]);
+      idx += nq.length;
+    }
+    return ranges;
+  }
+
+  // Parse da consulta
+  function parseQuery(q) {
+    var s = norm(q).replace(/^art(igo)?\.?\s*/, '');
+    var adct = false;
+    if (/^(adct|adct-|ato das disposicoes)\s*/.test(s)) { adct = true; s = s.replace(/^(adct|adct-|ato das disposicoes)\s*/, ''); }
+    s = s.replace(/[^0-9a-z\-\s]/g, '').trim();
+    var m = s.match(/^(\d+)(\s*-\s*([a-z]))?$/);
+    if (m) {
+      var num = m[1];
+      if (m[3]) num += '-' + m[3].toUpperCase();
+      return { tipo: 'num', num: num, adct: adct };
+    }
+    if (/^[a-z]/.test(s) && s.length >= 3) return { tipo: 'txt', txt: s, adct: adct };
+    return { tipo: 'num', num: s, adct: adct };
+  }
+
+  var porTipo = function(a) { return a.t; };
+
+  function artigosDe(adct) {
+    return CF88_ARTIGOS.filter(function(a) { return adct ? a.t === 'adct' : (a.t === 'cf' || a.n === 'pre'); });
+  }
+
+  function cardArtigo(a, nq) {
+    var ranges = nq ? rangesDe(a.x, nq).slice(0, 30) : [];
+    var corpo = ranges.length ? highlight(a.x, ranges) : esc(a.x);
+    var revogado = /^\(Revogado/.test(a.x) ? ' revogado' : '';
+    var wa = 'https://wa.me/?text=' + encodeURIComponent(a.s + ' da Constituição Federal de 1988:\n\n' + a.x.slice(0, 1200) + '\n\nFonte: Portal Segurança Global — portalsegurancaglobal.com.br');
+    return '<div class="art-card" id="art-' + esc(a.t) + '-' + esc(a.n) + '">' +
+      '<div class="art-head">' +
+      '<div><div class="art-num">' + esc(a.s) + (a.t === 'adct' ? '<span class="adct-tag">ADCT</span>' : '') + '</div>' +
+      '<div class="art-ctx">' + esc(a.c || 'Preâmbulo') + '</div></div>' +
+      '<div class="art-actions">' +
+      '<button class="mini-btn" onclick="cfCopiar(this)">Copiar</button>' +
+      '<a class="mini-btn" href="' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' +
+      '</div></div>' +
+      '<div class="art-body' + revogado + '">' + corpo + '</div>' +
+      '<div class="art-dados" style="display:none">' + esc(a.x) + '</div>' +
+      '</div>';
+  }
+
+  window.cfCopiar = function(btn) {
+    var dados = btn.closest('.art-card').querySelector('.art-dados').textContent;
+    var num = btn.closest('.art-card').querySelector('.art-num').textContent.trim();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(num + ' — Constituição Federal de 1988\n\n' + dados).then(function() {
+        btn.textContent = 'Copiado!';
+        setTimeout(function() { btn.textContent = 'Copiar'; }, 1800);
+      });
+    } else {
+      var t = document.createElement('textarea');
+      t.value = num + ' — Constituição Federal de 1988\n\n' + dados;
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); btn.textContent = 'Copiado!'; setTimeout(function() { btn.textContent = 'Copiar'; }, 1800); } catch (e) {}
+      t.remove();
+    }
+  };
+
+  window.cfBuscar = function() {
+    var q = document.getElementById('cf-input').value.trim();
+    var res = document.getElementById('cf-results');
+    var count = document.getElementById('cf-count');
+    count.style.display = 'none';
+    if (!q) {
+      res.innerHTML = '<div class="vazio">Digite um número de artigo ou uma palavra para começar.<br>Exemplos: <b>5</b> (direitos individuais), <b>144</b> (segurança pública), <b>liberdade</b>, <b>propriedade</b>.</div>';
+      return;
+    }
+    var p = parseQuery(q);
+    if (p.tipo === 'num' && p.num) {
+      var exato = CF88_ARTIGOS.filter(function(a) { return a.n.toUpperCase() === p.num.toUpperCase() && (p.adct ? a.t === 'adct' : a.t === 'cf'); });
+      if (exato.length) {
+        count.textContent = exato.length + ' artigo' + (exato.length > 1 ? 's' : '') + ' encontrado' + (exato.length > 1 ? 's' : '');
+        count.style.display = 'block';
+        res.innerHTML = exato.map(function(a) { return cardArtigo(a, null); }).join('');
+        return;
+      }
+      // Nao achou por numero: tenta texto com o numero (ex.: "144, VIII")
+    }
+    if (p.tipo === 'num' && !p.num) {
+      res.innerHTML = '<div class="vazio">Não entendi a consulta. Tente o número do artigo (ex.: <b>5</b>) ou uma palavra (ex.: <b>segurança</b>).</div>';
+      return;
+    }
+    // Busca textual
+    var nq = norm(p.tipo === 'txt' ? p.txt : p.num);
+    var base = artigosDe(false).concat(artigosDe(true));
+    var achados = [];
+    for (var i = 0; i < base.length; i++) {
+      var a = base[i];
+      var hay = norm(a.s + ' ' + a.c + ' ' + a.x);
+      if (hay.indexOf(nq) !== -1) achados.push(a);
+    }
+    if (!achados.length) {
+      count.style.display = 'block';
+      count.textContent = 'Nenhum artigo encontrado para "' + q + '"';
+      res.innerHTML = '<div class="vazio">Nenhum artigo encontrado. Tente outra palavra (ex.: segurança, liberdade, trabalho, família, imposto).</div>';
+      return;
+    }
+    var total = achados.length;
+    var mostrados = achados.slice(0, MAX_RESULTADOS);
+    count.textContent = total + ' artigo' + (total > 1 ? 's' : '') + ' encontrado' + (total > 1 ? 's' : '') + (total > MAX_RESULTADOS ? ' — mostrando os ' + MAX_RESULTADOS + ' primeiros' : '');
+    count.style.display = 'block';
+    res.innerHTML = mostrados.map(function(a) { return cardArtigo(a, nq); }).join('');
+  };
+
+  // Busca instantanea (debounce)
+  var tId = null;
+  document.getElementById('cf-input').addEventListener('input', function() {
+    clearTimeout(tId);
+    tId = setTimeout(window.cfBuscar, 160);
+  });
+  document.getElementById('cf-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { clearTimeout(tId); window.cfBuscar(); }
+  });
+
+  // Chips de acesso rapido
+  var CHIPS = [
+    ['5', 'Art. 5º — Direitos e Garantias'],
+    ['6', 'Art. 6º — Direitos Sociais'],
+    ['144', 'Art. 144 — Segurança Pública'],
+    ['225', 'Art. 225 — Meio Ambiente'],
+    ['37', 'Art. 37 — Administração Pública'],
+    ['170', 'Art. 170 — Ordem Econômica'],
+    ['205', 'Art. 205 — Educação'],
+    ['1', 'Art. 1º — Fundamentos'],
+    ['ADCT 60', 'ADCT 60 — Educação']
+  ];
+  document.getElementById('cf-chips').innerHTML = CHIPS.map(function(c) {
+    return '<button class="chip" onclick="cfChip(\'' + c[0].replace(/'/g, "\\'") + '\')">' + c[1] + '</button>';
+  }).join('');
+  window.cfChip = function(q) {
+    document.getElementById('cf-input').value = q;
+    window.cfBuscar();
+    window.scrollTo({ top: document.getElementById('cf-results').offsetTop - 120, behavior: 'smooth' });
+  };
+
+  // Estado inicial
+  window.cfBuscar();
+})();
+</script>
+</body>
+</html>
