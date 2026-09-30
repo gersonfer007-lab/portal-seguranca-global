@@ -16,7 +16,7 @@
 
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -2559,7 +2559,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r6"></script>
+<script defer src="app.js?v=20260930r7"></script>
 <script>
 (function(){
   var EDICOES={
