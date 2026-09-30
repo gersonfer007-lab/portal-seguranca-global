@@ -943,6 +943,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-footer .verify { font-weight: 700; color: #0c1730; }
 #pdf-report .pdf-clauses .pdf-symbols-clause { border-left: 3px solid #c9a227; background: rgba(201,162,39,.08); padding: 8px 10px; border-radius: 4px; font-weight: 600; color: #3d3524; }
 #pdf-report .pdf-footer .pdf-footer-symbols { margin-top: 8px; font-weight: 700; color: #7a5c00; border-top: 1px dashed #c9a227; padding-top: 8px; }
+#pdf-report .pdf-footer .pdf-footer-tribute { margin-top: 6px; font-weight: 600; color: #1a4d8f; }
 /* Elementos de documento oficial */
 #pdf-report { position: absolute; }
 #pdf-report .pdf-watermark {
@@ -1509,6 +1510,26 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 </section>
 
+<!-- HOMENAGEM AS POLICIAS E FORCAS ARMADAS -->
+<style>
+.tribute-section { max-width: 880px; margin: 0 auto 1.6rem; padding: 0 1rem; }
+.tribute-box { background: linear-gradient(180deg, rgba(59,130,246,.10), rgba(30,64,175,.06)); border: 1px solid rgba(59,130,246,.4); border-radius: 14px; padding: 1.3rem 1.5rem; text-align: center; position: relative; overflow: hidden; }
+.tribute-box::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% -60%, rgba(59,130,246,.18), transparent 65%); pointer-events: none; }
+.tribute-icon { font-size: 2rem; line-height: 1; margin-bottom: .5rem; }
+.tribute-title { font-size: .95rem; font-weight: 800; color: #93c5fd; letter-spacing: .04em; text-transform: uppercase; margin-bottom: .55rem; }
+.tribute-text { font-size: .84rem; color: var(--text-secondary); line-height: 1.75; }
+.tribute-text strong { color: var(--text-primary); }
+.tribute-sign { margin-top: .7rem; font-size: .78rem; font-weight: 700; color: #93c5fd; letter-spacing: .06em; }
+</style>
+<section class="tribute-section" id="homenagem-forcas">
+  <div class="tribute-box" role="note">
+    <div class="tribute-icon">&#127894;&#65039;</div>
+    <div class="tribute-title">Homenagem &agrave;s Pol&iacute;cias e For&ccedil;as Armadas do Planeta</div>
+    <div class="tribute-text">Aos <strong>policiais militares, policiais civis, bombeiros, guardas municipais</strong> e aos <strong>soldados das For&ccedil;as Armadas de todo o mundo</strong> &mdash; homens e mulheres que vestem o uniforme, deixam suas fam&iacute;lias em casa e arriscam a pr&oacute;pria vida todos os dias para <strong>manter a ordem, proteger os cidad&atilde;os e garantir a paz</strong>. Ao policial que patrulha a madrugada, ao soldado que guarda a fronteira, ao bombeiro que entra onde todos saem: o mundo dorme mais tranquilo por causa de voc&ecirc;s.</div>
+    <div class="tribute-sign">&#127775; Respeito, reconhecimento e gratid&atilde;o &mdash; ontem, hoje e sempre.</div>
+  </div>
+</section>
+
 <!-- BANDEIRAS LATERAIS FIXAS (descem com a pagina toda) -->
 <!-- ESQUERDA (Americas + Europa) -->
 <div class="flags-column left" id="flags-left">
@@ -1984,6 +2005,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <div class="verify">Verifique a autenticidade deste documento em portalsegurancaglobal.com.br</div>
     Documento gerado eletronicamente pelo Portal Seguranca Global. Este relatorio e baseado em dados publicos e estimativas estatisticas do perimetro analisado. Nao substitui consultoria profissional nem boletins oficiais de ocorrencia.
     <div class="pdf-footer-symbols">Uso indevido de bras&otilde;es e s&iacute;mbolos oficiais de &oacute;rg&atilde;os policiais (PM/PC) &eacute; crime &mdash; Art. 296 do C&oacute;digo Penal (falsifica&ccedil;&atilde;o de selo ou sinal p&uacute;blico).</div>
+    <div class="pdf-footer-tribute">&#127894;&#65039; Homenagem e reconhecimento &agrave;s Pol&iacute;cias e For&ccedil;as Armadas de todo o mundo, que mant&ecirc;m a ordem e protegem a sociedade.</div>
   </div>
 </div>
 
