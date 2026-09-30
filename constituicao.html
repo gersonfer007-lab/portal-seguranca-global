@@ -303,6 +303,19 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
     window.scrollTo({ top: document.getElementById('cf-results').offsetTop - 120, behavior: 'smooth' });
   };
 
+  // Consulta via URL (?q=144, links da home e de outros sites)
+  try {
+    var qs = new URLSearchParams(location.search).get('q');
+    if (qs) {
+      document.getElementById('cf-input').value = qs;
+      window.cfBuscar();
+      setTimeout(function() {
+        var r = document.getElementById('cf-results');
+        if (r) window.scrollTo({ top: r.offsetTop - 120, behavior: 'smooth' });
+      }, 250);
+    }
+  } catch (e) {}
+
   // Estado inicial
   window.cfBuscar();
 })();
