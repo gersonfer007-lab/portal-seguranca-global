@@ -1730,21 +1730,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     </button>
   </div>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var inp = document.getElementById('cq-input');
-    var btn = document.getElementById('cq-btn');
-    if (!inp || !btn) return;
-    function go() {
-      var q = (inp.value || '').trim();
-      location.href = 'constituicao.html' + (q ? '?q=' + encodeURIComponent(q) : '');
-    }
-    btn.addEventListener('click', go);
-    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') go(); });
-  });
-  </script>
-
-  <!-- CONSULTA RAPIDA DA CONSTITUICAO -->
+  <!-- CONSULTA RAPIDA DA CONSTITUICAO (conexao no app.js) -->
   <div class="constitution-quick">
     <div class="cq-title">&#9878;&#65039; Consultar a Constitui&ccedil;&atilde;o Federal</div>
     <div class="cq-sub">Qualquer artigo em segundos &mdash; digite o n&uacute;mero ou uma palavra (ex.: 5, 144, seguran&ccedil;a, liberdade)</div>
@@ -2784,7 +2770,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=20261001r22"></script>
+<script defer src="app.js?v=20261001r23"></script>
 <script>
 (function(){
   var EDICOES={
