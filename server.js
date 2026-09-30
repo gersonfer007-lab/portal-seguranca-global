@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const zlib = require('zlib');
 const { sanitizeInput, detectInjection, sanitizeHTML, logEvent, getLog, isPersonalOrCompanyData } = require('./validation');
 
 const app = express();
@@ -69,28 +70,95 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(morgan('combined'));
-app.use(generalLimiter);
+
+// ============================================================
+// COMPRESSAO GZIP (zlib nativo — reduz ~75% de HTML/JS/CSS/JSON)
+// ============================================================
+var GZIP_TYPES = ['text/html', 'text/css', 'text/plain', 'text/javascript', 'application/javascript', 'application/json', 'image/svg+xml'];
+var GZIP_MIN = 1024; // so comprime acima de 1 KB
 
 app.use(function(req, res, next) {
-  if (req.body && JSON.stringify(req.body).length > 5000) {
-    logEvent('PAYLOAD_TOO_LARGE', req.ip);
-    return res.status(413).json({ error: 'Payload muito grande.', code: 'PAYLOAD_TOO_LARGE' });
-  }
+  if (req.method !== 'GET') return next();
+  var accept = String(req.headers['accept-encoding'] || '');
+  if (accept.indexOf('gzip') === -1) return next();
+
+  var origWrite = res.write.bind(res);
+  var origEnd = res.end.bind(res);
+  var chunks = [];
+  var gzipping = false;
+
+  res.write = function(chunk, enc) {
+    if (gzipping) return true; // durante gzip, bufferiza via end
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, enc || 'utf8'));
+    return true;
+  };
+
+  res.end = function(chunk, enc) {
+    if (chunk) {
+      if (Buffer.isBuffer(chunk)) chunks.push(chunk);
+      else if (typeof chunk === 'string') chunks.push(Buffer.from(chunk, enc || 'utf8'));
+    }
+    var body = Buffer.concat(chunks);
+    var ctype = String(res.getHeader('Content-Type') || '').split(';')[0].trim();
+
+    var podeGzip = GZIP_TYPES.indexOf(ctype) !== -1 && body.length >= GZIP_MIN;
+    if (podeGzip) {
+      zlib.gzip(body, { level: 6 }, function(err, out) {
+        if (err || !out || out.length >= body.length) {
+          // gzip nao compensou: envia original
+          res.setHeader('Content-Length', String(body.length));
+          origEnd(body);
+          return;
+        }
+        gzipping = true;
+        res.setHeader('Content-Encoding', 'gzip');
+        res.setHeader('Content-Length', String(out.length));
+        res.removeHeader('ETag');
+        origEnd(out);
+      });
+    } else {
+      res.setHeader('Content-Length', String(body.length));
+      origEnd(body);
+    }
+  };
+
   next();
 });
 
 // ============================================================
-// STATIC FILES
+// STATIC FILES (com cache de navegador)
 // ============================================================
+var ONE_DAY = 86400;
+var ONE_WEEK = 604800;
+
 app.use(express.static(path.join(__dirname), {
   extensions: ['html'],
-  setHeaders: function(res) {
+  setHeaders: function(res, filePath) {
     res.set('X-Content-Type-Options', 'nosniff');
     res.set('X-Frame-Options', 'DENY');
     res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self), payment=(self)');
+    // Service Worker: nunca cachear (precisa atualizar sempre)
+    if (filePath.endsWith(path.join('sw.js'))) {
+      res.set('Cache-Control', 'public, max-age=0, must-revalidate');
+      return;
+    }
+    // HTML: revalida rapido (atualizacoes do portal fluem)
+    if (/\.html$/i.test(filePath)) {
+      res.set('Cache-Control', 'public, max-age=300');
+      return;
+    }
+    // Assets versionados ou imutaveis: 7 dias no navegador
+    if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|json|woff2?)$/i.test(filePath)) {
+      res.set('Cache-Control', 'public, max-age=' + ONE_WEEK);
+    }
   }
 }));
+
+// ============================================================
+// RATE LIMIT — SOMENTE NA API (arquivos estaticos nao contam)
+// ============================================================
+app.use('/api', generalLimiter);
 
 // ============================================================
 // API: Validar entrada (Search — Busca por Localizacao)
