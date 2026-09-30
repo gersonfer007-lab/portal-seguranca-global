@@ -16,7 +16,7 @@
 
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -2535,13 +2535,11 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="nl-box">
     <h2>&#128233; Receba novidades de seguran&ccedil;a</h2>
     <p>Artigos, an&aacute;lises e dicas pr&aacute;ticas de prote&ccedil;&atilde;o. Sem spam, s&oacute; o que importa.</p>
-    <form class="nl-form" action="https://formsubmit.co/gersonfer007@hotmail.com" method="POST">
+    <form class="nl-form" id="nl-form" novalidate>
       <input type="email" name="email" required placeholder="Seu melhor e-mail" aria-label="Seu e-mail">
-      <input type="hidden" name="_subject" value="Novo inscrito na newsletter - Portal Segurança Global">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_next" value="https://portalsegurancaglobal.com.br/?inscrito=1#newsletter">
-      <button type="submit">Inscrever-se</button>
+      <button type="submit" id="nl-btn">Inscrever-se</button>
     </form>
+    <div id="nl-msg" role="status" style="display:none;margin:.8rem auto 0;max-width:420px;padding:.8rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;line-height:1.5;text-align:center;"></div>
     <p class="nl-note">Seus dados ficam seguros e voc&ecirc; pode sair da lista quando quiser.</p>
   </div>
 </section>
@@ -2561,7 +2559,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r4"></script>
+<script defer src="app.js?v=20260930r5"></script>
 <script>
 (function(){
   var EDICOES={
