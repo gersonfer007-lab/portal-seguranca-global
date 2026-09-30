@@ -1093,6 +1093,160 @@ function renderRoadAlerts(alerts, lat, lng) {
 }
 
 // ============================================================
+// AVISOS NAUTICOS — rios, mares e navegacao
+// Detecta corpos d'agua proximos (OpenStreetMap), mostra
+// condicoes do mar em tempo real (Open-Meteo Marine) e orienta
+// com base nas autoridades de navegacao do mundo.
+// ============================================================
+var nauticLayer = null;
+function nauticEsc(s) { return roadEsc(s); }
+function nauticTipoLabel(t) {
+  var m = { rio: 'Rio', baia: 'Ba&iacute;a', lago: 'Lago', canal: 'Canal', agua: 'Corpo d&apos;&aacute;gua' };
+  return m[t] || 'Corpo d&apos;&aacute;gua';
+}
+async function nauticFetchOverpass(lat, lng) {
+  var q = '[out:json][timeout:25];(' +
+    'way(around:4000,' + lat + ',' + lng + ')[natural=water];' +
+    'way(around:4000,' + lat + ',' + lng + ')[waterway=river];' +
+    'way(around:4000,' + lat + ',' + lng + ')[natural=bay];' +
+    'relation(around:4000,' + lat + ',' + lng + ')[natural=water];' +
+    ');out tags center 40;';
+  var endpoints = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter'
+  ];
+  for (var e = 0; e < endpoints.length; e++) {
+    try {
+      var r = await fetch(endpoints[e], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+        body: 'data=' + encodeURIComponent(q)
+      });
+      if (r.ok) return await r.json();
+    } catch (err) { /* tenta o proximo espelho */ }
+  }
+  return null;
+}
+async function nauticMarine(lat, lng) {
+  try {
+    var u = 'https://marine-api.open-meteo.com/v1/marine?latitude=' + lat + '&longitude=' + lng +
+      '&current=wave_height,wind_wave_height,swell_wave_height,swell_wave_period,sea_surface_temperature&timezone=auto';
+    var r = await fetch(u);
+    if (!r.ok) return null;
+    var j = await r.json();
+    if (j && j.current && j.current.wave_height != null) return j.current;
+    return null;
+  } catch (e) { return null; }
+}
+async function loadNauticAlerts(lat, lng) {
+  var box = document.getElementById('nautic-alerts');
+  var header = document.querySelector('.result-header');
+  if (!box && header && header.parentNode) {
+    box = document.createElement('div');
+    box.id = 'nautic-alerts';
+    var ref = document.getElementById('road-alerts') || header;
+    header.parentNode.insertBefore(box, ref.nextSibling);
+  }
+  if (!box) return;
+  var css = 'margin:14px 0;border-radius:12px;padding:14px 18px;font-size:.86rem;line-height:1.6;';
+  // A consulta menciona agua? (rio, mar, praia, lago...)
+  var consulta = '';
+  try { consulta = ((document.getElementById('search-input') || {}).value || '').toLowerCase(); } catch (e) {}
+  var palavraAgua = /(rio|river|lago|lake|mar |sea|oceano|ocean|baia|bay|canal|praia|beach|represa|lagoa|delta|estuario|portugal porto)/.test(' ' + consulta + ' ');
+  // 1) Corpos d'agua num raio de 4 km
+  var j = await nauticFetchOverpass(lat, lng);
+  var aguas = [];
+  if (j && j.elements) {
+    j.elements.forEach(function(el) {
+      var tags = el.tags || {};
+      var pt = (el.type === 'node') ? el : el.center;
+      if (!pt || typeof pt.lat !== 'number' || typeof (pt.lon || pt.lng) !== 'number') return;
+      var tipo = '';
+      if (tags.waterway === 'river') tipo = 'rio';
+      else if (tags.natural === 'bay') tipo = 'baia';
+      else if (tags.natural === 'water') tipo = (tags.water === 'lake' ? 'lago' : (tags.water === 'canal' ? 'canal' : 'agua'));
+      if (!tipo) return;
+      var lon = pt.lon != null ? pt.lon : pt.lng;
+      aguas.push({
+        nome: tags.name || '', tipo: tipo, lat: pt.lat, lng: lon,
+        d: roadDistanceKm(lat, lng, pt.lat, lon)
+      });
+    });
+    aguas.sort(function(a, b) { return a.d - b.d; });
+    var vistos = {}, unicas = [];
+    aguas.forEach(function(a) {
+      var k = (a.nome || a.tipo);
+      if (!vistos[k]) { vistos[k] = 1; unicas.push(a); }
+    });
+    aguas = unicas.slice(0, 4);
+  }
+  var temAgua = aguas.length > 0;
+  if (!temAgua && !palavraAgua) { box.style.cssText = 'display:none;'; return; }
+
+  // 2) Condicoes do mar no ponto d'agua mais proximo
+  var alvoMar = temAgua ? aguas[0] : { lat: lat, lng: lng };
+  var mar = await nauticMarine(alvoMar.lat, alvoMar.lng);
+
+  // 3) Montagem do painel
+  var linhas = [];
+  if (temAgua) {
+    linhas.push('<div style="font-weight:800;margin-bottom:4px;">&#127754; Corpos d&apos;&aacute;gua num raio de 4 km:</div>');
+    aguas.forEach(function(a) {
+      linhas.push('<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;"><span>&#128167; ' + nauticTipoLabel(a.tipo) + (a.nome ? ' &mdash; <b>' + nauticEsc(a.nome) + '</b>' : '') + '</span><span style="color:var(--text-muted);white-space:nowrap;">' + a.d.toFixed(1) + ' km</span></div>');
+    });
+  } else {
+    linhas.push('<div style="font-weight:800;margin-bottom:4px;">&#127754; Local consultado &eacute; um ambiente aqu&aacute;tico.</div>');
+  }
+  var cor, iconeStatus, textoStatus;
+  if (mar && typeof mar.wave_height === 'number') {
+    var onda = mar.wave_height;
+    linhas.push('<div style="font-weight:800;margin:10px 0 4px;">&#9875;&#65039; Condi&ccedil;&otilde;es do mar agora (Open-Meteo Marine):</div>');
+    var itens = ['&#127754; Ondas: <b>' + onda.toFixed(1).replace('.', ',') + ' m</b>'];
+    if (mar.swell_wave_height != null) itens.push('Ondula&ccedil;&atilde;o: <b>' + mar.swell_wave_height.toFixed(1).replace('.', ',') + ' m</b>');
+    if (mar.swell_wave_period != null) itens.push('per&iacute;odo <b>' + Math.round(mar.swell_wave_period) + ' s</b>');
+    if (mar.sea_surface_temperature != null) itens.push('&aacute;gua: <b>' + mar.sea_surface_temperature.toFixed(0) + '&deg;C</b>');
+    linhas.push('<div style="padding:3px 0;">' + itens.join(' &bull; ') + '</div>');
+    if (onda < 1) { cor = 'rgba(34,197,94,.4)'; iconeStatus = '&#9989;'; textoStatus = 'MAR CALMO &mdash; condi&ccedil;&otilde;es adequadas para banho e navega&ccedil;&atilde;o com os cuidados normais.'; }
+    else if (onda < 2) { cor = 'rgba(250,204,21,.4)'; iconeStatus = '&#9888;&#65039;'; textoStatus = 'MAR AGITADO &mdash; cautela: banhistas devem respeitar as bandeiras dos salva-vidas e pequenas embarca&ccedil;&otilde;es devem redobrar a aten&ccedil;&atilde;o.'; }
+    else { cor = 'rgba(239,68,68,.4)'; iconeStatus = '&#128680;'; textoStatus = 'MAR PERIGOSO &mdash; ondas altas: banho e navega&ccedil;&atilde;o N&Atilde;O s&atilde;o recomendados. Aguarde a melhoria das condi&ccedil;&otilde;es.'; }
+  } else {
+    cor = 'rgba(59,130,246,.4)';
+    iconeStatus = '&#8505;&#65039;';
+    textoStatus = 'Corpo d&apos;&aacute;gua continental (rio/lago) &mdash; aten&ccedil;&atilde;o a correnteza, enchentes e margens alagadas.';
+  }
+  box.style.cssText = css + 'border:1px solid ' + cor + ';background:rgba(59,130,246,.08);color:#93c5fd;';
+  box.innerHTML =
+    '<div style="font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;">&#9875;&#65039; Avisos n&aacute;uticos &mdash; Marinha e autoridades de navega&ccedil;&atilde;o</div>' +
+    linhas.join('') +
+    '<div style="margin-top:10px;padding:8px 10px;border-radius:8px;border:1px solid ' + cor + ';background:rgba(0,0,0,.18);">' + iconeStatus + ' <b>' + textoStatus + '</b></div>' +
+    '<div style="margin-top:8px;font-size:.75rem;line-height:1.7;">' +
+    '&#128680; <b>Emerg&ecirc;ncia no mar e rios:</b> Canal 16 VHF (156,8 MHz) &mdash; frequ&ecirc;ncia internacional de socorro &mdash; e os telefones de emerg&ecirc;ncia do seu pa&iacute;s (192/193 no Brasil).<br>' +
+    '&#9875;&#65039; <b>Antes de navegar:</b> consulte os <a href="https://www.marinha.mil.br/chm/" target="_blank" rel="noopener" style="color:#60a5fa;">Avisos aos Navegantes da Marinha do Brasil (CHM/DHN)</a>, as Cartas N&aacute;uticas oficiais e as normas da <a href="https://www.imo.org" target="_blank" rel="noopener" style="color:#60a5fa;">IMO (Organiza&ccedil;&atilde;o Mar&iacute;tima Internacional)</a>.<br>' +
+    '&#127757; Banhistas: respeite as bandeiras dos salva-vidas, nade em &aacute;reas monitoradas e nunca subestime correntes de retorno.<br>' +
+    '&#127885; <b>Homenagem:</b> &agrave;s Marinhas de Guerra e Guardas Costeiras de todo o planeta, que guardam rios, mares e vidas &mdash; respeito, reconhecimento e gratid&atilde;o.<br>' +
+    '<span style="color:var(--text-muted);font-size:.68rem;">Dados de &aacute;gua: OpenStreetMap e Open-Meteo Marine. Os avisos oficiais de navega&ccedil;&atilde;o s&atilde;o emitidos pelas autoridades navais de cada pa&iacute;s.</span>' +
+    '</div>';
+  // 4) Marcadores de agua no mapa
+  try {
+    if (nauticLayer) { map.removeLayer(nauticLayer); nauticLayer = null; }
+    if (aguas.length && map && typeof L !== 'undefined') {
+      nauticLayer = L.layerGroup();
+      var nautIcon = L.divIcon({
+        className: '',
+        html: '<div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);"><span style="transform:rotate(45deg);font-size:14px;line-height:1;">&#128167;</span></div>',
+        iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30]
+      });
+      aguas.forEach(function(a) {
+        L.marker([a.lat, a.lng], { icon: nautIcon, zIndexOffset: 400 })
+          .addTo(nauticLayer)
+          .bindPopup('<b>' + nauticTipoLabel(a.tipo) + '</b>' + (a.nome ? '<br>' + nauticEsc(a.nome) : '') + '<br>' + a.d.toFixed(1) + ' km do ponto analisado');
+      });
+      if (currentMapView === 'dark' || currentMapView === 'satellite') { nauticLayer.addTo(map); }
+    }
+  } catch (e) { /* mapa em modo 3D ou nao iniciado */ }
+}
+
+// ============================================================
 // RENDER DASHBOARD
 // ============================================================
 function renderDashboard(data) {
@@ -1103,6 +1257,7 @@ function renderDashboard(data) {
   document.getElementById('result-meta').textContent = 'Lat ' + data.lat.toFixed(4) + ' | Lng ' + data.lng.toFixed(4) + (data.address.cep ? ' | CEP ' + data.address.cep : '') + ' | Raio de analise: 1.5km';
   WorldClock.setLocalClock(data.address.country_code || '', data.address.state || '');
   loadRoadAlerts(data.lat, data.lng);
+  loadNauticAlerts(data.lat, data.lng);
   try {
     if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
     map.setView([data.lat, data.lng], 15);
