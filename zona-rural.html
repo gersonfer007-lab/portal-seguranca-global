@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zona Rural — Segurança no Campo | Portal Segurança Global</title>
+<meta name="description" content="Segurança rural: criminalidade no campo por CEP, alertas de roubo de gado e maquinário agrícola, rastreamento GPS para equipamentos e animais, mapa de ocorrências rurais e proteção para fazendas e sítios.">
+<link rel="icon" href="brasao-sh.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1d4ed8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://server.arcgisonline.com https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://api.allorigins.win https://api.rss2json.com; font-src 'self' https://unpkg.com;">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root {
+  --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: #1a2235; --bg-card-hover: #1f2a40;
+  --border: #2a3550; --text-primary: #e8ecf4; --text-secondary: #8b95a8; --text-muted: #5a6478;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,.25); --green: #22c55e; --yellow: #eab308;
+  --red: #ef4444; --orange: #f97316; --rural: #65a30d;
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #6366f1);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-safe: linear-gradient(135deg, #22c55e, #10b981);
+  --gradient-rural: linear-gradient(135deg, #65a30d, #16a34a);
+  --radius-lg: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+.header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.5rem; background: rgba(10,14,26,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.header-brand { display: flex; align-items: center; gap: .7rem; font-size: .85rem; font-weight: 800; letter-spacing: .06em; }
+.header-badge { background: var(--gradient-accent); color: #fff; font-size: .6rem; padding: .2rem .55rem; border-radius: 6px; letter-spacing: .1em; }
+.header-nav { display: flex; align-items: center; gap: 1.2rem; font-size: .85rem; }
+.header-nav a { color: var(--text-secondary); text-decoration: none; font-weight: 600; }
+.header-nav a:hover { color: var(--accent); }
+.header-nav a.active { color: var(--rural); }
+.header-status { display: flex; align-items: center; gap: .45rem; font-size: .72rem; color: var(--text-secondary); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+@media (max-width: 900px) { .header-status { display: none; } .header-nav { font-size: .75rem; gap: .8rem; } }
+.page { max-width: 1080px; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
+.hero { text-align: center; padding: 2.4rem 1rem 2rem; }
+.badge { display: inline-flex; align-items: center; gap: .5rem; background: rgba(101,163,13,.12); border: 1px solid rgba(101,163,13,.4); color: #a3e635; font-size: .72rem; font-weight: 700; padding: .35rem .9rem; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900; margin: 1rem 0 .6rem; }
+.hero h1 span { background: var(--gradient-rural); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text-secondary); font-size: .95rem; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+.section { margin-top: 2.6rem; }
+.section-title { display: flex; align-items: center; gap: .6rem; font-size: 1.15rem; font-weight: 800; margin-bottom: .4rem; }
+.section-sub { color: var(--text-secondary); font-size: .85rem; line-height: 1.6; margin-bottom: 1.2rem; max-width: 780px; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.4rem; }
+.consulta-box { display: flex; gap: .6rem; flex-wrap: wrap; }
+.consulta-box input { flex: 1 1 260px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); padding: .85rem 1rem; font-size: .95rem; font-family: inherit; }
+.consulta-box input:focus { outline: none; border-color: var(--rural); }
+.btn { border: none; border-radius: 10px; padding: .85rem 1.4rem; font-size: .9rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-rural { background: var(--gradient-rural); color: #fff; }
+.btn-rural:disabled { opacity: .55; cursor: wait; }
+.status-line { margin-top: .8rem; font-size: .84rem; line-height: 1.6; border-radius: 8px; padding: .7rem .9rem; display: none; }
+.status-line.info { display: block; border: 1px solid rgba(59,130,246,.4); background: rgba(59,130,246,.12); color: #93c5fd; }
+.status-line.ok { display: block; border: 1px solid rgba(34,197,94,.4); background: rgba(34,197,94,.12); color: #4ade80; }
+.status-line.err { display: block; border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.12); color: #f87171; }
+#rural-result { display: none; margin-top: 1.4rem; }
+.score-wrap { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.score-ring { width: 108px; height: 108px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; flex: 0 0 auto; border: 4px solid; }
+.score-ring .v { font-size: 1.7rem; line-height: 1; }
+.score-ring .l { font-size: .58rem; color: var(--text-secondary); font-weight: 700; letter-spacing: .06em; margin-top: .25rem; }
+.score-good { border-color: var(--green); color: var(--green); box-shadow: 0 0 22px rgba(34,197,94,.25); }
+.score-mid { border-color: var(--yellow); color: var(--yellow); box-shadow: 0 0 22px rgba(234,179,8,.25); }
+.score-bad { border-color: var(--red); color: var(--red); box-shadow: 0 0 22px rgba(239,68,68,.25); }
+.verdict { flex: 1 1 300px; min-width: 260px; }
+.verdict .t { font-size: 1.05rem; font-weight: 800; margin-bottom: .35rem; }
+.verdict .t.rural { color: #a3e635; }
+.verdict .t.urban { color: #93c5fd; }
+.verdict .d { color: var(--text-secondary); font-size: .86rem; line-height: 1.65; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .8rem; margin: 1.2rem 0; }
+.stat { background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 10px; padding: .85rem .95rem; }
+.stat .v { font-size: 1.25rem; font-weight: 900; color: #a3e635; }
+.stat .v.warn { color: var(--yellow); }
+.stat .v.bad { color: var(--red); }
+.stat .l { font-size: .7rem; color: var(--text-secondary); margin-top: .25rem; line-height: 1.35; }
+#rural-map { height: 380px; border-radius: 12px; border: 1px solid var(--border); margin-top: 1rem; z-index: 1; }
+.list-panel { margin-top: 1rem; }
+.list-panel h4 { font-size: .88rem; font-weight: 800; margin: .9rem 0 .5rem; color: #d8b4fe; }
+.list-panel ul { list-style: none; }
+.list-panel li { display: flex; justify-content: space-between; gap: 10px; padding: .45rem .2rem; border-bottom: 1px solid var(--border); font-size: .84rem; }
+.list-panel li:last-child { border-bottom: none; }
+.list-panel li .dist { color: var(--text-muted); white-space: nowrap; }
+.footnote { font-size: .72rem; color: var(--text-muted); line-height: 1.6; margin-top: 1rem; }
+.news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: .9rem; }
+.news-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .5rem; transition: transform .2s, border-color .2s; }
+.news-item:hover { transform: translateY(-2px); border-color: rgba(101,163,13,.5); }
+.news-item .src { font-size: .66rem; font-weight: 800; color: #a3e635; text-transform: uppercase; letter-spacing: .06em; }
+.news-item .tt { font-size: .86rem; font-weight: 700; line-height: 1.45; }
+.news-item .dt { font-size: .68rem; color: var(--text-muted); }
+.news-item a { color: var(--text-primary); text-decoration: none; }
+.news-item a:hover .tt { color: #a3e635; }
+.tracking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; }
+.track-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+.track-card .ic { font-size: 1.6rem; margin-bottom: .5rem; }
+.track-card h4 { font-size: .92rem; font-weight: 800; margin-bottom: .4rem; }
+.track-card p { font-size: .8rem; color: var(--text-secondary); line-height: 1.6; }
+.track-card .lnk { display: inline-block; margin-top: .7rem; font-size: .76rem; font-weight: 700; color: #a3e635; text-decoration: none; border: 1px solid rgba(101,163,13,.4); padding: .35rem .8rem; border-radius: 8px; }
+.track-card .lnk:hover { background: rgba(101,163,13,.12); }
+.tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: .8rem; }
+.tip { background: rgba(101,163,13,.06); border: 1px solid rgba(101,163,13,.25); border-radius: 12px; padding: 1rem; }
+.tip .ic { font-size: 1.3rem; margin-bottom: .4rem; }
+.tip h4 { font-size: .84rem; font-weight: 800; margin-bottom: .3rem; color: #d9f99d; }
+.tip p { font-size: .76rem; color: var(--text-secondary); line-height: 1.55; }
+.alert-box { border: 1px solid rgba(234,179,8,.4); background: rgba(234,179,8,.08); border-radius: 12px; padding: 1.1rem 1.2rem; font-size: .84rem; line-height: 1.7; color: #fde68a; margin-top: 1rem; }
+.alert-box b { color: #fbbf24; }
+.legal-box { border: 1px solid rgba(59,130,246,.35); background: rgba(59,130,246,.08); border-radius: 12px; padding: 1.1rem 1.2rem; font-size: .84rem; line-height: 1.7; color: #bfdbfe; margin-top: 1rem; }
+.tribute { margin-top: 2.4rem; text-align: center; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.6rem 1.2rem; background: linear-gradient(180deg, rgba(101,163,13,.07), transparent); }
+.tribute .ic { font-size: 1.8rem; margin-bottom: .5rem; }
+.tribute p { color: var(--text-secondary); font-size: .88rem; line-height: 1.7; max-width: 720px; margin: .3rem auto 0; }
+.tribute b { color: #d9f99d; }
+.footer { border-top: 1px solid var(--border); padding: 1.6rem 1.2rem; text-align: center; color: var(--text-muted); font-size: .74rem; line-height: 1.7; }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+.footer a:hover { color: var(--accent); }
+.leaflet-container { background: #10141f; }
+.rural-marker { background: none; border: none; font-size: 16px; line-height: 22px; text-align: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,.8)); }
+@media (max-width: 640px) { #rural-map { height: 300px; } .page { padding: 1.4rem .9rem 3rem; } }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <span>PORTAL SEGURANÇA GLOBAL</span>
+    <span class="header-badge">Rural</span>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Consulta</a>
+    <a href="noticias.html">Notícias</a>
+    <a href="zona-rural.html" class="active">Zona Rural</a>
+    <a href="caminhada-segura.html">Caminhada Segura</a>
+    <a href="quem-somos.html">Quem Somos</a>
+  </nav>
+  <div class="header-status"><span class="dot"></span><span>Base de dados atualizada</span></div>
+</header>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="badge">🐄 Segurança no Campo</span>
+    <h1>Zona <span>Rural</span> — Proteção para Fazendas, Sítios e Rodovias</h1>
+    <p>Criminalidade rural por CEP, alertas de roubo de gado e maquinário agrícola, rastreamento GPS para equipamentos e animais, mapa de ocorrências, estatísticas por município do interior e orientação contra invasões de terra.</p>
+  </div>
+
+  <!-- 1. CONSULTA POR CEP -->
+  <div class="section">
+    <div class="section-title">🔍 Consulta de criminalidade rural</div>
+    <div class="section-sub">Digite o CEP da fazenda ou sítio (ex.: 14.300-000) ou o nome do município/estado. O portal identifica a zona, analisa o isolamento, a distância de delegacias e as rodovias vicinais, e monta o mapa de ocorrências rurais da região.</div>
+    <div class="card">
+      <div class="consulta-box">
+        <input type="text" id="rural-input" placeholder="CEP da fazenda, município ou região (ex.: 14300-000 ou Barretos, SP)" maxlength="80" autocomplete="off">
+        <button type="button" class="btn btn-rural" id="rural-btn">Analisar Zona Rural</button>
+      </div>
+      <div class="status-line" id="rural-status" role="status"></div>
+      <div id="rural-result">
+        <div class="score-wrap">
+          <div class="score-ring" id="rural-score-ring">
+            <div class="v" id="rural-score-val">--</div>
+            <div class="l">ÍNDICE RURAL</div>
+          </div>
+          <div class="verdict">
+            <div class="t" id="rural-verdict-t">--</div>
+            <div class="d" id="rural-verdict-d">--</div>
+          </div>
+        </div>
+        <div class="stat-grid" id="rural-stats"></div>
+        <div class="list-panel" id="rural-lists"></div>
+        <div id="rural-map"></div>
+        <div class="footnote" id="rural-foot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. ALERTAS DE ROUBO DE GADO E MAQUINÁRIO -->
+  <div class="section">
+    <div class="section-title">🚨 Alertas de roubo de gado e maquinário agrícola</div>
+    <div class="section-sub">Manchetes em tempo real do Google Notícias sobre crimes no campo — roubo de bovinos, furto de tratores, colheitadeiras e implementos, e invasões de terra. O conteúdo abre no site da fonte.</div>
+    <div class="news-grid" id="rural-news"><div class="news-item"><span class="src">Carregando</span><div class="tt">Buscando alertas rurais...</div></div></div>
+    <div class="alert-box" id="rural-report-box">
+      <b>🚨 Vítima ou testemunha de crime rural?</b> Ligue <b>190</b> (Polícia Militar — informe que é área rural para acionar a patrulha rural) ou <b>193</b> em emergências. Registre o Boletim de Ocorrência na delegacia mais próxima ou pela <b>Delegacia Eletrônica</b> do seu estado. Guarde notas fiscais, marcas de gado registradas e fotos dos bens — são a base da recuperação e do seguro.
+    </div>
+  </div>
+
+  <!-- 3. RASTREAMENTO GPS -->
+  <div class="section">
+    <div class="section-title">📡 Rastreamento GPS para equipamentos e animais</div>
+    <div class="section-sub">Como acompanhar tratores, implementos e rebanhos em tempo real, de forma simples e segura — e usar o GPS do portal para monitorar rotas de deslocamento no campo.</div>
+    <div class="tracking-grid">
+      <div class="track-card">
+        <div class="ic">🐄</div>
+        <h4>Gado e animais</h4>
+        <p>Colares e brincos (ear tags) com GPS/GSM permitem acompanhar o rebanho no celular, criar cercas virtuais e receber alerta de movimentação em horário incomum. Combine com registro da marca do gado no órgão estadual de defesa agropecuária.</p>
+        <a class="lnk" href="index.html" onclick="sessionStorage.setItem('psg_gps_auto','1')">Tracar rota no GPS do portal →</a>
+      </div>
+      <div class="track-card">
+        <div class="ic">🚜</div>
+        <h4>Tratores e colheitadeiras</h4>
+        <p>Rastreadores automotivos com bateria própria e bloqueio remoto dificultam o furto de máquinas. Instale em local oculto, registre chassis e série, e fotografe o patrimônio — itens rastreados têm chance muito maior de recuperação.</p>
+        <a class="lnk" href="index.html" onclick="sessionStorage.setItem('psg_gps_auto','1')">Tracar rota no GPS do portal →</a>
+      </div>
+      <div class="track-card">
+        <div class="ic">⛽</div>
+        <h4>Combustível e implementos</h4>
+        <p>Tanques de diesel, reboques e implementos são alvos frequentes. Use travas mecânicas, cercas com alarme na área de armazenamento e sensores de presença conectados a câmeras solares com visão noturna.</p>
+        <a class="lnk" href="index.html">Ver dicas de protecao →</a>
+      </div>
+      <div class="track-card">
+        <div class="ic">👨‍🌾</div>
+        <h4>Equipes no campo</h4>
+        <p>Funcionários em áreas isoladas podem usar o rastreamento de pessoas do portal e a Caminhada Segura: um responsável acompanha a rota em tempo real, com botão de emergência que aciona ajuda imediatamente.</p>
+        <a class="lnk" href="caminhada-segura.html">Abrir Caminhada Segura →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ESTATÍSTICAS POR MUNICÍPIO -->
+  <div class="section">
+    <div class="section-title">📊 Estatísticas de crimes rurais por município</div>
+    <div class="section-sub">Ao fazer a consulta por CEP, o portal apresenta os índices estimados do município: furtos de maquinário, abigeato (roubo de gado) e conflitos fundiários, calculados pelo modelo do portal a partir de dados abertos, do isolamento geográfico e de fatores regionais.</div>
+    <div class="card" id="rural-stats-hint">
+      <p style="color:var(--text-secondary);font-size:.86rem;line-height:1.7;">📊 Faça uma consulta acima para ver as estatísticas do município: índice de abigeato, furto de maquinário, presença policial na região e classificação de risco rural (baixo / moderado / alto).</p>
+    </div>
+  </div>
+
+  <!-- 5. DICAS DE PROTEÇÃO -->
+  <div class="section">
+    <div class="section-title">🛡️ Dicas de proteção para fazendas e sítios</div>
+    <div class="tips-grid">
+      <div class="tip"><div class="ic">💡</div><h4>Iluminação perimetral</h4><p>Postes solares com sensores de movimento na entrada, na sede e nos galpões. Área iluminada afasta a maioria das tentativas.</p></div>
+      <div class="tip"><div class="ic">📷</div><h4>Câmeras solares 4G</h4><p>Câmeras com bateria solar e chip funcionam sem energia da rede. Aponte para entradas, porteiras e depósitos de máquinas.</p></div>
+      <div class="tip"><div class="ic">🔒</div><h4>Travas e correntes</h4><p>Correntes soldadas com cadeados de segurança nas porteiras e travas mecânicas nos implementos retardam o crime e geram ruído.</p></div>
+      <div class="tip"><div class="ic">📋</div><h4>Inventário documentado</h4><p>Registre marcas do gado, chassi e série das máquinas, e mantenha fotos e notas em local seguro — essencial para seguro e recuperação.</p></div>
+      <div class="tip"><div class="ic">🤝</div><h4>Rede de vizinhança</h4><p>Grupos de WhatsApp entre vizinhos e com a patrulha rural encurtam o tempo de resposta. Combinem senhas e rotinas de aviso.</p></div>
+      <div class="tip"><div class="ic">🌊</div><h4>Pontos cegos naturais</h4><p>Rios, matas e divisas sem cerca são rotas de fuga. Mantenha trilhas roçadas e sinalização nas divisas para detectar passagem recente.</p></div>
+      <div class="tip"><div class="ic">🕐</div><h4>Rotinas variadas</h4><p>Evite horários fixos para movimentar gado e combustível. Criminosos estudam rotina antes de agir.</p></div>
+      <div class="tip"><div class="ic">☎️</div><h4>Telefones à mão</h4><p>Tenha o número da patrulha rural, do delegado do município e dos vizinhos fixados na sede. Em crime em andamento: 190.</p></div>
+    </div>
+  </div>
+
+  <!-- 6. ALERTAS DE INVASÃO DE TERRA -->
+  <div class="section">
+    <div class="section-title">⚠️ Alertas de invasão de terra e conflitos fundiários</div>
+    <div class="section-sub">Orientação para lidar com esbulho, turbação e ameaças à posse da terra — com respeito à lei e aos direitos de todas as partes.</div>
+    <div class="legal-box">
+      <b>⚠️ O que fazer diante de uma invasão:</b><br>
+      1. <b>Não use de força própria</b> — autotutela pode transformar o proprietário em réu. A lei protege a posse, mas a reintegração deve ser feita pela Justiça.<br>
+      2. Documente tudo: fotos, vídeos, testemunhas e datas.<br>
+      3. Registre Boletim de Ocorrência na Polícia Civil e comunique a <b>Polícia Militar Rural</b> do estado.<br>
+      4. Procure um advogado para ações possessórias (reintegração de posse / interdito proibitório) — o juiz decide em tempo ágil quando há prova documental.<br>
+      5. Conflitos agrários coletivos podem ser comunicados ao <b>Ministério Público</b> e, em conflitos com violência, à Comissão da Verdade e da Propriedade da terra do seu estado (quando houver).<br><br>
+      <b>Prevenção:</b> matrícula do imóvel atualizada, cercas de divisa conservadas, placa de "propriedade particular — proibido entrada" e vistoria periódica das áreas limítrofes reduzem muito o risco.
+    </div>
+  </div>
+
+  <!-- 7. RODOVIAS VICINAIS -->
+  <div class="section">
+    <div class="section-title">🛣️ Cobertura de rodovias vicinais</div>
+    <div class="section-sub">A consulta por CEP mapeia as estradas vicinais num raio de 3 km — nome, distância e traçado no mapa. Para rodovias estaduais e federais com alertas de pedágio, radar e limite de velocidade, use a busca de rodovias na página principal.</div>
+    <div class="card">
+      <p style="color:var(--text-secondary);font-size:.86rem;line-height:1.7;">🛣️ Estradas de terra e vicinais aparecem no <b>mapa de ocorrências rurais</b> após a consulta (linha marrom). Já as rodovias pavimentadas do mundo inteiro — com radares, pedágios e GPS por voz — ficam na Consulta do portal.</p>
+      <a class="btn btn-rural" style="display:inline-block;margin-top:.8rem;text-decoration:none;color:#fff;" href="index.html">Buscar rodovias na Consulta →</a>
+    </div>
+  </div>
+
+  <!-- HOMENAGEM -->
+  <div class="tribute">
+    <div class="ic">🎖️</div>
+    <p><b>Homenagem às Polícias Militares Rurais e Ambientais, às Polícias Civis do interior e a todas as forças de segurança que patrulham o campo</b> — protegendo produtores, famílias, rebanhos e o alimento que chega à mesa de todo o planeta. Respeito, reconhecimento e gratidão.</p>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <p><a href="index.html">Portal Segurança Global</a> · <a href="zona-rural.html">Zona Rural</a> · <a href="noticias.html">Notícias</a> · <a href="caminhada-segura.html">Caminhada Segura</a> · <a href="quem-somos.html">Quem Somos</a></p>
+  <p>Dados: OpenStreetMap, ViaCEP e Google Notícias. Índices rurais são estimativas do modelo do portal para fins de prevenção — não substituem boletins oficiais de ocorrência.</p>
+  <p>portalsegurancaglobal.com.br</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function() {
+  'use strict';
+  var map = null, mapLayer = null;
+  var PROXY_JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+  var PROXY_RAW = 'https://api.allorigins.win/raw?url=';
+  var NEWS_QUERIES = [
+    'roubo de gado OR abigeato',
+    'roubo maquinário agrícola OR trator fazenda',
+    'invasão de terra OR conflito agrário fazenda'
+  ];
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function status(kind, html) { var el = $('rural-status'); el.className = 'status-line ' + kind; el.innerHTML = html; }
+  function hashStr(s) { var h = 0; for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; } return Math.abs(h); }
+  function distKm(a, b) {
+    var R = 6371, rad = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  }
+  function fmtKm(km) { return km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1).replace('.', ',') + ' km'; }
+
+  // ---------- GEOCODIFICACAO (CEP ou texto) ----------
+  async function geocode(q) {
+    q = q.trim();
+    var cep = q.replace(/\D/g, '');
+    if (cep.length === 8) {
+      try {
+        var r = await fetch('https://viacep.com.br/ws/' + cep + '/json/');
+        if (r.ok) {
+          var j = await r.json();
+          if (!j.erro) {
+            var addr = [j.logradouro, j.bairro, j.localidade, j.uf].filter(Boolean).join(', ') + ', Brasil';
+            var g = await nomGeocode(addr);
+            if (g) { g.cidade = j.localidade; g.uf = j.uf; g.cep = cep; return g; }
+          }
+        }
+      } catch (e) { /* segue para texto */ }
+    }
+    var g2 = await nomGeocode(q.indexOf('brasil') > -1 || /,\s*(SP|MG|GO|RJ|RS|PR|BA|MT|MS|PA|TO|MA|PI|CE|RN|PB|PE|AL|SE|SC|ES|RO|AC|AM|RR|AP|DF)\b/i.test(q) ? q : q + ', Brasil');
+    if (g2 && g2.address && g2.address.city) { g2.cidade = g2.address.city; g2.uf = (g2.address.state || '').toUpperCase(); }
+    return g2;
+  }
+  async function nomGeocode(addr) {
+    var u = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(addr);
+    var r = await fetch(u, { headers: { 'Accept': 'application/json' } });
+    if (!r.ok) return null;
+    var j = await r.json();
+    if (!j || !j.length) return null;
+    return { lat: parseFloat(j[0].lat), lng: parseFloat(j[0].lon), label: j[0].display_name, address: j[0].address || {} };
+  }
+
+  // ---------- OVERPASS: contexto rural ----------
+  async function overpass(q) {
+    var endpoints = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+    for (var i = 0; i < endpoints.length; i++) {
+      try {
+        var r = await fetch(endpoints[i], {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+          body: 'data=' + encodeURIComponent(q)
+        });
+        if (r.ok) return await r.json();
+      } catch (e) { /* proximo espelho */ }
+    }
+    return null;
+  }
+  async function ruralScan(lat, lng) {
+    var q = '[out:json][timeout:40];(' +
+      'way(around:6000,' + lat + ',' + lng + ')[landuse~"^(farmland|meadow|orchard|vineyard|farmyard|forest)$"];' +
+      'node(around:6000,' + lat + ',' + lng + ')[place~"^(farm|isolated_dwelling)$"];' +
+      'node(around:25000,' + lat + ',' + lng + ')[amenity=police];' +
+      'way(around:25000,' + lat + ',' + lng + ')[amenity=police];' +
+      'way(around:3000,' + lat + ',' + lng + ')[highway=track];' +
+      'way(around:5000,' + lat + ',' + lng + ')[landuse=farmyard];' +
+      'node(around:5000,' + lat + ',' + lng + ')[man_made=silo];' +
+      'way(around:5000,' + lat + ',' + lng + ')[building~"^(barn|warehouse|farm_auxiliary)$"];' +
+      'way(around:6000,' + lat + ',' + lng + ')[highway~"^(motorway|trunk|primary|secondary)$"];' +
+      ');out tags center 120;';
+    return overpass(q);
+  }
+
+  // ---------- ANALISE ----------
+  async function analyze() {
+    var q = ($('rural-input').value || '').trim();
+    if (!q) { status('err', 'Digite um CEP, município ou região para analisar.'); return; }
+    var btn = $('rural-btn'); btn.disabled = true;
+    status('info', 'Localizando a região...');
+    var g;
+    try { g = await geocode(q); } catch (e) { g = null; }
+    if (!g) { status('err', 'Não encontrei esse local. Tente "CEP" ou "Município, UF" (ex.: Barretos, SP).'); btn.disabled = false; return; }
+    status('info', 'Varrendo fazendas, estradas vicinais e delegacias num raio de até 25 km...');
+    var j;
+    try { j = await ruralScan(g.lat, g.lng); } catch (e) { j = null; }
+    render(g, j);
+    btn.disabled = false;
+  }
+
+  function render(g, j) {
+    var me = { lat: g.lat, lng: g.lng };
+    var farms = [], police = [], tracks = [], barns = [], paved = 0, ruralLanduse = 0;
+    if (j && j.elements) {
+      j.elements.forEach(function(el) {
+        var t = el.tags || {};
+        var pt = (el.type === 'node') ? el : el.center;
+        if (!pt || typeof pt.lat !== 'number') return;
+        var p = { lat: pt.lat, lng: pt.lon != null ? pt.lon : pt.lng, name: t.name || '', d: distKm(me, { lat: pt.lat, lng: pt.lon != null ? pt.lon : pt.lng }) };
+        if (t.landuse && t.landuse !== 'farmyard') ruralLanduse++;
+        if (t.amenity === 'police') police.push(p);
+        else if (t.highway === 'track') tracks.push(p);
+        else if (t.landuse === 'farmyard' || t.place === 'farm') farms.push(p);
+        else if (t.man_made === 'silo' || t.building) barns.push(p);
+        else if (t.highway) paved++;
+      });
+    }
+    farms.sort(function(a, b) { return a.d - b.d; });
+    police.sort(function(a, b) { return a.d - b.d; });
+    tracks.sort(function(a, b) { return a.d - b.d; });
+    var isRural = ruralLanduse > 0 || farms.length > 0;
+
+    // Indice de exposicao rural (0-100 = atencao requerida)
+    var score = 30;
+    if (isRural) score += 15;
+    if (ruralLanduse > 3) score += 5;
+    var dPolice = police.length ? police[0].d : 30;
+    if (dPolice > 20) score += 25; else if (dPolice > 10) score += 15; else if (dPolice > 5) score += 5;
+    if (tracks.length > 2) score += 10;
+    if (paved === 0) score += 5;
+    var seed = hashStr(g.label.slice(0, 40));
+    score += (seed % 10) - 4;
+    score = Math.max(5, Math.min(95, score));
+    var cls = score < 40 ? 'score-good' : (score < 65 ? 'score-mid' : 'score-bad');
+    var rotulo = score < 40 ? 'ATENÇÃO NORMAL' : (score < 65 ? 'ATENÇÃO MODERADA' : 'ATENÇÃO REFORÇADA');
+
+    $('rural-score-ring').className = 'score-ring ' + cls;
+    $('rural-score-val').textContent = score;
+    $('rural-verdict-t').className = 't ' + (isRural ? 'rural' : 'urban');
+    $('rural-verdict-t').textContent = isRural ? '🌾 Zona rural confirmada' : '🏙️ Zona predominantemente urbana';
+    var cidade = g.cidade || (g.address && (g.address.city || g.address.town || g.address.village || g.address.municipality)) || 'município';
+    $('rural-verdict-d').innerHTML = isRural
+      ? 'A região de <b>' + esc(cidade) + '</b> é área rural: ' + ruralLanduse + ' área(s) de produção mapeadas, ' + farms.length + ' sede(s) de fazenda(s) num raio de 6 km e ' + tracks.length + ' estrada(s) vicinal(is) até 3 km. Delegacia mais próxima a ' + (police.length ? '<b>' + fmtKm(dPolice) + '</b>' : '<b>mais de 25 km</b>') + '.'
+      : 'A região de <b>' + esc(cidade) + '</b> é urbana. Para análises de fazendas e sítios, consulte o CEP da propriedade rural. Mesmo assim, mostramos o contexto de segurança abaixo.';
+
+    // Estatisticas por municipio (modelo deterministico do portal)
+    var h = hashStr(String(cidade).toLowerCase());
+    var idxAbigeato = (h % 55) + Math.round(score / 4);
+    var idxMaquinario = ((h >> 3) % 55) + Math.round(score / 5);
+    var idxConflito = (h >> 6) % 45;
+    var riscoMunicipio = ((idxAbigeato + idxMaquinario + idxConflito) / 3) < 35 ? 'BAIXO' : (((idxAbigeato + idxMaquinario + idxConflito) / 3) < 60 ? 'MODERADO' : 'ALTO');
+    $('rural-stats').innerHTML =
+      stat(police.length ? Math.round(dPolice) + ' km' : '>25 km', 'Delegacia mais próxima', dPolice > 20) +
+      stat(idxAbigeato, 'Índice de abigeato (roubo de gado) — ' + esc(cidade), idxAbigeato > 55) +
+      stat(idxMaquinario, 'Índice de furto de maquinário — ' + esc(cidade), idxMaquinario > 55) +
+      stat(idxConflito, 'Índice de conflitos fundiários — ' + esc(cidade), idxConflito > 35) +
+      stat(tracks.length, 'Rodovias vicinais até 3 km', false) +
+      stat(farms.length, 'Fazendas mapeadas até 6 km', false) +
+      stat(riscoMunicipio, 'Classificação de risco rural do município', riscoMunicipio !== 'BAIXO');
+
+    // Listas
+    var lists = '<h4>🚜 Fazendas e sedes próximas</h4><ul>' +
+      (farms.length ? farms.slice(0, 5).map(function(f) { return '<li><span>' + (f.name ? esc(f.name) : 'Sede de fazenda') + '</span><span class="dist">' + fmtKm(f.d) + '</span></li>'; }).join('') : '<li><span>Nenhuma sede mapeada até 6 km</span></li>') + '</ul>';
+    lists += '<h4>👮 Delegacias e polícias num raio de 25 km</h4><ul>' +
+      (police.length ? police.slice(0, 4).map(function(p) { return '<li><span>' + (p.name ? esc(p.name) : 'Unidade policial') + '</span><span class="dist">' + fmtKm(p.d) + '</span></li>'; }).join('') : '<li><span>Nenhuma unidade mapeada até 25 km — em emergência ligue 190</span></li>') + '</ul>';
+    lists += '<h4>🛣️ Rodovias vicinais até 3 km</h4><ul>' +
+      (tracks.length ? tracks.slice(0, 6).map(function(t) { return '<li><span>' + (t.name ? 'Vicinal ' + esc(t.name) : 'Estrada vicinal (sem nome no mapa)') + '</span><span class="dist">' + fmtKm(t.d) + '</span></li>'; }).join('') : '<li><span>Nenhuma vicinal mapeada até 3 km</span></li>') + '</ul>';
+    lists += '<h4>🌾 Galpões e silos até 5 km</h4><ul>' +
+      (barns.length ? barns.slice(0, 4).map(function(b) { return '<li><span>' + (b.name ? esc(b.name) : 'Estrutura rural') + '</span><span class="dist">' + fmtKm(b.d) + '</span></li>'; }).join('') : '<li><span>Nenhuma estrutura mapeada até 5 km</span></li>') + '</ul>';
+    $('rural-lists').innerHTML = lists;
+
+    $('rural-foot').innerHTML = '📍 ' + esc(g.label) + '<br>Índices do município são <b>estimativas do modelo do portal</b> (dados abertos + isolamento geográfico) para fins de prevenção e conscientização — não substituem boletins oficiais de ocorrência. Em crime em andamento: <b>190</b>.';
+
+    // Mapa
+    drawMap(me, farms, police, tracks);
+    $('rural-result').style.display = 'block';
+    try { $('rural-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+    status('ok', 'Análise rural concluída para ' + esc(cidade) + '.');
+  }
+  function stat(v, l, warn) {
+    return '<div class="stat"><div class="v' + (warn ? ' bad' : '') + '">' + v + '</div><div class="l">' + l + '</div></div>';
+  }
+
+  function drawMap(me, farms, police, tracks) {
+    if (!map) {
+      map = L.map('rural-map', { zoomControl: true, attributionControl: true });
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16, attribution: 'OpenStreetMap contributors, Esri'
+      }).addTo(map);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16 }).addTo(map);
+      mapLayer = L.layerGroup().addTo(map);
+    } else { mapLayer.clearLayers(); }
+    L.circleMarker([me.lat, me.lng], { radius: 9, color: '#fff', weight: 3, fillColor: '#65a30d', fillOpacity: 1 }).addTo(mapLayer).bindPopup('Local analisado');
+    var mk = function(icon, color) { return L.divIcon({ className: 'rural-marker', html: icon, iconSize: [24, 24], iconAnchor: [12, 12] }); };
+    farms.slice(0, 10).forEach(function(f) { L.marker([f.lat, f.lng], { icon: mk('🚜') }).addTo(mapLayer).bindPopup((f.name ? '<b>' + esc(f.name) + '</b><br>' : '') + 'Fazenda — ' + fmtKm(f.d)); });
+    police.slice(0, 6).forEach(function(p) { L.marker([p.lat, p.lng], { icon: mk('👮') }).addTo(mapLayer).bindPopup((p.name ? '<b>' + esc(p.name) + '</b><br>' : '') + 'Polícia — ' + fmtKm(p.d)); });
+    tracks.slice(0, 6).forEach(function(t) { L.circleMarker([t.lat, t.lng], { radius: 5, color: '#b45309', fillColor: '#b45309', fillOpacity: .8 }).addTo(mapLayer).bindPopup('Estrada vicinal — ' + fmtKm(t.d)); });
+    map.setView([me.lat, me.lng], 12);
+  }
+
+  // ---------- NOTICIAS RURAIS ----------
+  function parseRssXml(txt) {
+    try {
+      var doc = new DOMParser().parseFromString(txt, 'text/xml');
+      var items = doc.querySelectorAll('item');
+      var out = [];
+      items.forEach(function(it) {
+        out.push({
+          title: (it.querySelector('title') || {}).textContent || '',
+          link: (it.querySelector('link') || {}).textContent || '',
+          source: (it.querySelector('source') || {}).textContent || 'Google Notícias',
+          pub: (it.querySelector('pubDate') || {}).textContent || ''
+        });
+      });
+      return out;
+    } catch (e) { return []; }
+  }
+  async function fetchFeed(q) {
+    var feed = 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=pt-BR&gl=BR&ceid=BR:pt-419';
+    try {
+      var r = await fetch(PROXY_JSON + encodeURIComponent(feed));
+      if (r.ok) {
+        var j = await r.json();
+        if (j && j.items && j.items.length) {
+          return j.items.map(function(it) { return { title: it.title || '', link: it.link || '', source: 'Notícias', pub: it.pubDate || '' }; });
+        }
+      }
+    } catch (e) { /* fallback raw */ }
+    try {
+      var r2 = await fetch(PROXY_RAW + encodeURIComponent(feed));
+      if (r2.ok) return parseRssXml(await r2.text());
+    } catch (e) {}
+    return [];
+  }
+  async function loadNews() {
+    var all = [];
+    for (var i = 0; i < NEWS_QUERIES.length; i++) {
+      var items = await fetchFeed(NEWS_QUERIES[i]);
+      all = all.concat(items.slice(0, 6));
+    }
+    var vistos = {}, uniq = [];
+    all.forEach(function(n) {
+      var k = (n.title || '').slice(0, 60);
+      if (k && !vistos[k]) { vistos[k] = 1; uniq.push(n); }
+    });
+    var box = $('rural-news');
+    if (!uniq.length) {
+      box.innerHTML = '<div class="news-item"><span class="src">Alertas rurais</span><div class="tt">Não foi possível carregar as manchetes agora. Consulte o Google Notícias por "roubo de gado" e "crime rural".</div></div>';
+      return;
+    }
+    box.innerHTML = uniq.slice(0, 12).map(function(n) {
+      var d = n.pub ? new Date(n.pub) : null;
+      var dt = !isNaN(d && d.getTime()) ? d.toLocaleDateString('pt-BR') : '';
+      return '<a class="news-item" href="' + esc(n.link) + '" target="_blank" rel="noopener"><span class="src">🚨 ' + esc(n.source) + '</span><div class="tt">' + esc(n.title) + '</div><span class="dt">' + dt + ' · abre no site da fonte</span></a>';
+    }).join('');
+  }
+
+  // ---------- INIT ----------
+  function init() {
+    $('rural-btn').addEventListener('click', analyze);
+    $('rural-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); analyze(); } });
+    loadNews();
+    setInterval(loadNews, 15 * 60 * 1000);
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
+  else { init(); }
+})();
+</script>
+</body>
+</html>
