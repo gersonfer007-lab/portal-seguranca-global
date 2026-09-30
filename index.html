@@ -16,7 +16,7 @@
 
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems https://router.project-osrm.org; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -1671,6 +1671,10 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Gerar Relatorio PDF
       </button>
+      <button class="btn btn-outline" id="btn-gps">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        GPS de Estradas
+      </button>
       <button class="btn btn-outline" id="btn-share">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Compartilhar
@@ -2320,6 +2324,91 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 </div>
 
+<!-- ===== MODAL: GPS DE ESTRADAS ===== -->
+<style>
+.gps-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 2400; opacity: 0; pointer-events: none; transition: opacity .25s; padding: 1rem; }
+.gps-overlay.active { opacity: 1; pointer-events: auto; }
+.gps-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 580px; max-height: 92vh; overflow-y: auto; padding: 1.6rem; transform: translateY(14px) scale(.98); transition: transform .25s; }
+.gps-overlay.active .gps-box { transform: translateY(0) scale(1); }
+.gps-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.gps-head h3 { font-size: 1.15rem; font-weight: 800; }
+.gps-head p { color: var(--text-secondary); font-size: .8rem; margin-top: .25rem; line-height: 1.5; }
+.gps-close { background: none; border: none; color: var(--text-secondary); font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0; }
+.gps-close:hover { color: var(--text-primary); }
+.gps-field { margin-bottom: .8rem; }
+.gps-field label { display: block; font-size: .75rem; font-weight: 700; margin-bottom: .3rem; color: var(--text-secondary); }
+.gps-inputrow { display: flex; gap: .5rem; }
+.gps-inputrow input { flex: 1; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); padding: .7rem .85rem; font-size: .88rem; font-family: inherit; }
+.gps-inputrow input:focus { outline: none; border-color: var(--accent); }
+.gps-fixbtn { background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 10px; color: var(--text-secondary); cursor: pointer; padding: 0 .8rem; display: flex; align-items: center; }
+.gps-fixbtn:hover { color: var(--accent); border-color: var(--accent); }
+.gps-trace { width: 100%; margin-top: .3rem; padding: .85rem 1rem; border-radius: 10px; font-size: .9rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; background: var(--gradient-safe); color: #fff; }
+.gps-trace:disabled { opacity: .55; cursor: wait; }
+.gps-summary { display: none; margin: 1rem 0 .6rem; padding: .8rem 1rem; border-radius: 10px; border: 1px solid rgba(59,130,246,.35); background: rgba(59,130,246,.1); font-size: .85rem; line-height: 1.6; }
+.gps-summary.show { display: block; }
+.gps-summary b { color: #93c5fd; }
+.gps-steps { display: none; margin: 0 0 .4rem; padding: 0; list-style: none; max-height: 250px; overflow-y: auto; }
+.gps-steps.show { display: block; }
+.gps-steps li { display: flex; gap: .6rem; align-items: baseline; padding: .55rem .4rem; border-bottom: 1px solid var(--border); font-size: .82rem; line-height: 1.45; color: var(--text-primary); }
+.gps-steps li:last-child { border-bottom: none; }
+.gps-steps .gps-step-n { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: rgba(59,130,246,.15); color: #60a5fa; font-size: .68rem; font-weight: 800; display: flex; align-items: center; justify-content: center; align-self: center; }
+.gps-steps li.current .gps-step-n { background: var(--accent); color: #fff; }
+.gps-steps .gps-step-d { color: var(--text-secondary); font-size: .72rem; white-space: nowrap; margin-left: auto; padding-left: .5rem; }
+.gps-navrow { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .9rem; }
+.gps-navrow button { flex: 1 1 140px; padding: .75rem .8rem; border-radius: 10px; font-size: .84rem; font-weight: 700; cursor: pointer; font-family: inherit; border: none; }
+.gps-nav-start { background: var(--gradient-safe); color: #fff; }
+.gps-nav-stop { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid rgba(239,68,68,.4) !important; }
+.gps-sound { background: transparent; border: 1px solid var(--border) !important; color: var(--text-secondary); }
+.gps-status { display: none; margin-top: .9rem; font-size: .8rem; font-weight: 600; border-radius: 10px; padding: .75rem .9rem; line-height: 1.5; }
+.gps-status.info { display: block; border: 1px solid rgba(59,130,246,.4); background: rgba(59,130,246,.12); color: #93c5fd; }
+.gps-status.ok { display: block; border: 1px solid rgba(34,197,94,.4); background: rgba(34,197,94,.12); color: #4ade80; }
+.gps-status.err { display: block; border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.12); color: #f87171; }
+.gps-note { margin-top: .8rem; font-size: .68rem; color: var(--text-secondary); line-height: 1.5; }
+@media (max-width: 480px) { .gps-box { padding: 1.2rem; } .gps-navrow button { flex: 1 1 100%; } }
+</style>
+<div class="gps-overlay" id="gps-overlay">
+  <div class="gps-box" role="dialog" aria-modal="true" aria-labelledby="gps-title">
+    <div class="gps-head">
+      <div>
+        <h3 id="gps-title">&#128266; GPS de Estradas</h3>
+        <p>Trace a rota ate seu destino e receba navegacao guiada por voz, passo a passo.</p>
+      </div>
+      <button type="button" class="gps-close" id="gps-close" aria-label="Fechar">&times;</button>
+    </div>
+
+    <div class="gps-field">
+      <label for="gps-origem">Origem</label>
+      <div class="gps-inputrow">
+        <input type="text" id="gps-origem" maxlength="140" placeholder="Cidade, rodovia ou endereco de partida" autocomplete="off">
+        <button type="button" class="gps-fixbtn" id="gps-origem-fix" title="Usar minha localizacao" aria-label="Usar minha localizacao">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="gps-field">
+      <label for="gps-destino">Destino</label>
+      <div class="gps-inputrow">
+        <input type="text" id="gps-destino" maxlength="140" placeholder="Para onde voce quer ir?" autocomplete="off">
+      </div>
+    </div>
+
+    <button type="button" class="gps-trace" id="gps-trace">Tracar Rota</button>
+
+    <div class="gps-summary" id="gps-summary" role="status"></div>
+    <ol class="gps-steps" id="gps-steps"></ol>
+
+    <div class="gps-navrow">
+      <button type="button" class="gps-nav-start" id="gps-nav-start">Iniciar Navegacao</button>
+      <button type="button" class="gps-nav-stop" id="gps-nav-stop" style="display:none;">Parar Navegacao</button>
+      <button type="button" class="gps-sound" id="gps-sound">Voz: LIGADA</button>
+    </div>
+
+    <div class="gps-status" id="gps-status" role="status"></div>
+    <p class="gps-note">Rotas calculadas com dados abertos do OpenStreetMap (OSRM). Use com responsabilidade e atencao ao volante &mdash; a navegacao por voz precisa de GPS ativo no aparelho.</p>
+  </div>
+</div>
+
 
 <!-- ===== CENTRAL DE NOTÍCIAS (prévia) — blog completo em /noticias.html ===== -->
 <style>
@@ -2560,7 +2649,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r8"></script>
+<script defer src="app.js?v=20260930r9"></script>
 <script>
 (function(){
   var EDICOES={
