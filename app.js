@@ -2273,12 +2273,20 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
         traceBtn.disabled = false; return;
       }
       status('info', 'Calculando a melhor rota pelas estradas...');
-      var url = 'https://router.project-osrm.org/route/v1/driving/' +
+      var url = '/route/v1/driving/' +
         o.lng + ',' + o.lat + ';' + d.lng + ',' + d.lat +
         '?overview=full&geometries=geojson&steps=true&alternatives=false';
-      var r = await fetch(url);
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      var j = await r.json();
+      var routers = [
+        'https://router.project-osrm.org',
+        'https://routing.openstreetmap.de/routed-car'
+      ];
+      var r = null, j = null;
+      for (var ri = 0; ri < routers.length && !j; ri++) {
+        try {
+          r = await fetch(routers[ri] + url);
+          if (r.ok) j = await r.json();
+        } catch (e2) { /* tenta o proximo servidor de rotas */ }
+      }
       if (!j || !j.routes || !j.routes.length) throw new Error('sem rota');
       var rt = j.routes[0];
       var steps = [];
