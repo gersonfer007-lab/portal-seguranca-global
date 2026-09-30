@@ -2364,6 +2364,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 .gps-status.ok { display: block; border: 1px solid rgba(34,197,94,.4); background: rgba(34,197,94,.12); color: #4ade80; }
 .gps-status.err { display: block; border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.12); color: #f87171; }
 .gps-note { margin-top: .8rem; font-size: .68rem; color: var(--text-secondary); line-height: 1.5; }
+.gps-hazard-icon { background: none; border: none; font-size: 15px; line-height: 22px; text-align: center; filter: drop-shadow(0 1px 2px rgba(0,0,0,.8)); }
 @media (max-width: 480px) { .gps-box { padding: 1.2rem; } .gps-navrow button { flex: 1 1 100%; } }
 </style>
 <div class="gps-overlay" id="gps-overlay">
@@ -2405,7 +2406,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     </div>
 
     <div class="gps-status" id="gps-status" role="status"></div>
-    <p class="gps-note">Rotas calculadas com dados abertos do OpenStreetMap (OSRM). Use com responsabilidade e atencao ao volante &mdash; a navegacao por voz precisa de GPS ativo no aparelho.</p>
+    <p class="gps-note">Rotas calculadas com dados abertos do OpenStreetMap (OSRM). Durante a rota e a navegacao voce recebe <b>avisos automaticos de camaras, radares e pedagios</b> a frente, com limite de velocidade quando disponivel. Use com responsabilidade e atencao ao volante &mdash; a navegacao por voz precisa de GPS ativo no aparelho.</p>
   </div>
 </div>
 
@@ -2649,7 +2650,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r9"></script>
+<script defer src="app.js?v=20260930r10"></script>
 <script>
 (function(){
   var EDICOES={
