@@ -374,7 +374,7 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
     status('info', 'Varrendo fazendas, estradas vicinais e delegacias num raio de até 25 km...');
     var j;
     try { j = await ruralScan(g.lat, g.lng); } catch (e) { j = null; }
-    render(g, j);
+    try { render(g, j); } catch (e) { status('err', 'Análise concluída, mas o mapa não pôde ser desenhado (biblioteca de mapas indisponível). As listas e estatísticas acima seguem válidas.'); }
     btn.disabled = false;
   }
 
@@ -462,6 +462,7 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
   }
 
   function drawMap(me, farms, police, tracks) {
+    if (typeof L === 'undefined') return;
     if (!map) {
       map = L.map('rural-map', { zoomControl: true, attributionControl: true });
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
