@@ -1780,7 +1780,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
           <h4>Proteja sua Familia com Tecnologia de Ponta</h4>
           <p>Alarmes monitorados, cercas eletricas e cameras de seguranca. Orcamento gratis para moradores da regiao analisada.</p>
         </div>
-        <a class="btn btn-primary" href="mailto:contato@portalsegurancaglobal.com.br?subject=Orcamento%20-%20Alarmes%20e%20Cameras%20de%20Seguranca&body=Ola!%20Quero%20um%20orcamento%20gratuito%20de%20alarmes%20monitorados%2C%20cercas%20eletricas%20e%20cameras%20de%20seguranca%20para%20minha%20residencia." style="text-decoration:none;flex-shrink:0;">Solicitar Orcamento</a>
+        <button class="btn btn-primary" id="open-orcamento" type="button" style="flex-shrink:0;">Solicitar Orcamento</button>
       </div>
     </div>
   </div>
@@ -2197,6 +2197,77 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <div class="share-foot">
       <button type="button" class="share-btn-cancel" id="share-cancel">Fechar</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: SOLICITAR ORCAMENTO ===== -->
+<style>
+.orc-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 2300; opacity: 0; pointer-events: none; transition: opacity .25s; padding: 1rem; }
+.orc-overlay.active { opacity: 1; pointer-events: auto; }
+.orc-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 460px; padding: 1.6rem; transform: translateY(14px) scale(.98); transition: transform .25s; }
+.orc-overlay.active .orc-box { transform: translateY(0) scale(1); }
+.orc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.orc-head h3 { font-size: 1.15rem; font-weight: 800; }
+.orc-head p { color: var(--text-secondary); font-size: .8rem; margin-top: .25rem; line-height: 1.5; }
+.orc-close { background: none; border: none; color: var(--text-secondary); font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0; }
+.orc-close:hover { color: var(--text-primary); }
+.orc-field { margin-bottom: .8rem; }
+.orc-field label { display: block; font-size: .75rem; font-weight: 700; margin-bottom: .3rem; color: var(--text-secondary); }
+.orc-field input, .orc-field textarea, .orc-field select { width: 100%; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); padding: .7rem .85rem; font-size: .88rem; font-family: inherit; }
+.orc-field input:focus, .orc-field textarea:focus, .orc-field select:focus { outline: none; border-color: var(--accent); }
+.orc-field textarea { resize: vertical; min-height: 80px; }
+.orc-actions { display: flex; gap: .7rem; margin-top: 1.1rem; }
+.orc-actions button { flex: 1; padding: .85rem 1rem; border-radius: 10px; font-size: .88rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
+.orc-send { background: var(--gradient-safe); color: #fff; }
+.orc-send:disabled { opacity: .55; cursor: wait; }
+.orc-cancel { background: transparent; border: 1px solid var(--border) !important; color: var(--text-secondary); }
+.orc-msg { margin-top: .9rem; font-size: .8rem; font-weight: 600; border-radius: 10px; padding: .75rem .9rem; line-height: 1.5; display: none; }
+.orc-msg.ok { display: block; border: 1px solid rgba(34,197,94,.4); background: rgba(34,197,94,.12); color: #4ade80; }
+.orc-msg.err { display: block; border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.12); color: #f87171; }
+@media (max-width: 480px) { .orc-box { padding: 1.2rem; } }
+</style>
+<div class="orc-overlay" id="orc-overlay">
+  <div class="orc-box" role="dialog" aria-modal="true" aria-labelledby="orc-title">
+    <div class="orc-head">
+      <div>
+        <h3 id="orc-title">&#128274; Solicitar Orcamento Gratuito</h3>
+        <p>Alarmes monitorados, cercas eletricas e cameras de seguranca para sua residencia. Preencha e retornaremos o contato.</p>
+      </div>
+      <button type="button" class="orc-close" id="orc-close" aria-label="Fechar">&times;</button>
+    </div>
+    <form id="orc-form" novalidate>
+      <div class="orc-field">
+        <label for="orc-nome">Seu nome *</label>
+        <input type="text" id="orc-nome" name="nome" required maxlength="80" placeholder="Nome completo">
+      </div>
+      <div class="orc-field">
+        <label for="orc-contato">E-mail ou WhatsApp *</label>
+        <input type="text" id="orc-contato" name="contato" required maxlength="120" placeholder="ex.: (11) 99999-9999 ou voce@email.com">
+      </div>
+      <div class="orc-field">
+        <label for="orc-cidade">Cidade / Bairro</label>
+        <input type="text" id="orc-cidade" name="cidade" maxlength="120" placeholder="Onde fica a residencia">
+      </div>
+      <div class="orc-field">
+        <label for="orc-servico">Servico de interesse</label>
+        <select id="orc-servico" name="servico">
+          <option value="Alarme monitorado">Alarme monitorado</option>
+          <option value="Cameras de seguranca">Cameras de seguranca</option>
+          <option value="Cerca eletrica">Cerca eletrica</option>
+          <option value="Pacote completo">Pacote completo (alarme + cameras + cerca)</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="orc-field">
+        <label for="orc-msg">Mensagem (opcional)</label>
+        <textarea id="orc-msg-field" name="mensagem" maxlength="500" placeholder="Conte um pouco do que precisa..."></textarea>
+      </div>
+      <div class="orc-msg" id="orc-msg"></div>
+      <div class="orc-actions">
+        <button type="button" class="orc-cancel" id="orc-cancel">Cancelar</button>
+        <button type="submit" class="orc-send" id="orc-send">Enviar pedido</button>
+      </div>
+    </form>
   </div>
 </div>
 
