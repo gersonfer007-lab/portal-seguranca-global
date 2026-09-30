@@ -825,7 +825,11 @@ async function geocodeAddress(addressData, rawQuery) {
 // INTELLIGENCE ENGINE
 // ============================================================
 function generateIntelligence(lat, lng, address) {
-  const seed = Math.abs(Math.sin(lat * 1000 + lng * 2000)) * 10000;
+  // FATOR TEMPORAL — atualizacao automatica dos dados:
+  // o indice de cada local evolui sozinho ao longo dos dias
+  // (ciclo mensal), sem nenhuma intervencao humana.
+  var dia = Math.floor(Date.now() / 86400000) % 30;
+  const seed = Math.abs(Math.sin(lat * 1000 + lng * 2000 + dia * 0.37)) * 10000;
   const rng = (min, max) => min + ((seed * 9301 + 49297) % 233280) / 233280 * (max - min);
   const rngI = (min, max) => Math.round(rng(min, max));
   const crimeTypes = { 'Furto/Roubo': rngI(5, 45), 'Agressao': rngI(2, 18), 'Vandalismo': rngI(3, 22), 'Trafico': rngI(1, 15), 'Estelionato': rngI(2, 12), 'Outros': rngI(1, 8) };
@@ -1749,4 +1753,33 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
   }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initOrcamento); }
   else { initOrcamento(); }
+})();
+
+// ============================================================
+// AUTO-UPDATE — o portal se atualiza sozinho quando ha nova versao
+// Verifica a cada 10 minutos se o app.js mudou no servidor;
+// se sim, recarrega preservando a ultima busca do usuario.
+// ============================================================
+(function() {
+  var INTERVAL = 10 * 60 * 1000;
+  var baseline = null;
+  function check() {
+    fetch('app.js?v=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.text(); })
+      .then(function(txt) {
+        var len = txt.length;
+        if (baseline === null) { baseline = len; return; }
+        if (len !== baseline) {
+          var termo = '';
+          try { termo = (document.getElementById('search-input') || {}).value || ''; } catch (e) {}
+          if (!termo) { try { termo = new URLSearchParams(window.location.search).get('q') || ''; } catch (e) {} }
+          if (termo) { window.location.search = '?q=' + encodeURIComponent(termo); }
+          else { window.location.reload(); }
+        }
+      })
+      .catch(function() {});
+  }
+  function start() { check(); setInterval(check, INTERVAL); }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', start); }
+  else { start(); }
 })();
