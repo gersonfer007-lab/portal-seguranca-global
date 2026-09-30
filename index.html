@@ -1170,7 +1170,23 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   opacity: 0; transition: opacity .3s, transform .3s; transform: translateY(8px);
 }
 .to-top-btn.show { opacity: 1; transform: translateY(0); }
-@media (max-width: 768px) { .to-top-btn { display: flex; } }
+@media (max-width: 768px) { .to-top-btn { display: flex; bottom: 84px; } }
+
+/* BOTAO FLUTUANTE GPS — entrada rapida, sempre visivel */
+.gps-fab {
+  position: fixed; bottom: 18px; right: 14px; z-index: 160;
+  display: flex; align-items: center; gap: .5rem;
+  padding: .78rem 1.15rem; border-radius: 999px;
+  border: 1px solid rgba(59,130,246,.6); cursor: pointer;
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+  color: #fff; font-family: inherit; font-weight: 800; font-size: .85rem; line-height: 1;
+  box-shadow: 0 8px 28px rgba(37,99,235,.45), 0 2px 8px rgba(0,0,0,.35);
+  transition: transform .2s, box-shadow .2s; text-decoration: none;
+}
+.gps-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(37,99,235,.6), 0 3px 10px rgba(0,0,0,.4); }
+.gps-fab:active { transform: translateY(0); }
+.gps-fab svg { flex: 0 0 auto; }
+@media (max-width: 480px) { .gps-fab { padding: .7rem .95rem; font-size: .78rem; } .gps-fab .gps-fab-txt { display: none; } .gps-fab { padding: .85rem; } }
 
 /* MANUAL DE INSTRUCOES */
 .manual-section {
@@ -1456,6 +1472,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
   <nav class="header-nav" style="display:flex;align-items:center;gap:1.2rem;font-size:.85rem;">
     <a href="index.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Consulta</a>
+    <a href="#" id="nav-gps" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">GPS</a>
     <a href="noticias.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Notícias</a>
     <a href="caminhada-segura.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Caminhada Segura</a>
     <a href="quem-somos.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Quem Somos</a>
@@ -2688,7 +2705,13 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- BOTAO VOLTAR AO TOPO (celular) -->
 <button class="to-top-btn" id="to-top-btn" aria-label="Voltar ao topo" title="Voltar ao topo">&#8679;</button>
 
-<script defer src="app.js?v=20260930r17"></script>
+<!-- BOTAO FLUTUANTE GPS — abre o GPS de Estradas em 1 toque -->
+<button type="button" class="gps-fab" id="btn-gps-fab" aria-label="Abrir GPS de Estradas" title="GPS de Estradas">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+  <span class="gps-fab-txt">GPS</span>
+</button>
+
+<script defer src="app.js?v=20260930r18"></script>
 <script>
 (function(){
   var EDICOES={
