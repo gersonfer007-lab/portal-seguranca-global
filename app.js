@@ -447,7 +447,7 @@ async function handleSearch() {
     if (!addressData) { addressData = { street: query, neighborhood: '', city: '', state: '', country: '', country_code: '', cep: '', fullAddress: query }; }
     updateLoading('Geolocalizando endereco...');
     const geo = await geocodeAddress(addressData, query);
-    if (!geo) { throw new Error('Endereco nao encontrado. Tente incluir a cidade e o pais (ex.: Av. Brasil, Maringa, PR, Brasil).'); }
+    if (!geo) { throw new Error('Endereco nao encontrado. Tente incluir a cidade e o pais (ex.: Av. Brasil, Maringa, PR, Brasil) ou o nome completo da rodovia (ex.: Rodovia Presidente Dutra, SP, Brasil).'); }
     let lat = geo.lat, lng = geo.lng;
     if (geo.displayName) { addressData.fullAddress = geo.displayName; }
     if (!addressData.city && geo.city) { addressData.city = geo.city; }
@@ -712,18 +712,65 @@ async function analyzeCoords(lat, lng, addressData) {
 // GEOCODIFICACAO EM CASCATA (global, sem restricao de pais)
 // Tenta do mais especifico para o mais generico ate encontrar.
 // ============================================================
-async function geocodeQuery(q) {
+// --- RODOVIAS E ESTRADAS DO MUNDO INTEIRO ---
+// Detecta consultas rodoviarias (BR-116, Rodovia Dutra, Route 66,
+// Autobahn A7, Autoestrada A1, Ruta 40, M25, N-340, km 45...) e
+// prepara tentativas otimizadas para o Nominatim/OpenStreetMap,
+// que cobre estradas de todos os paises do planeta.
+var ROAD_WORD_RE = /(rodovia|estrada|trevo|highway|freeway|expressway|motorway|turnpike|parkway|interstate|autobahn|autostrada|autoestrada|autoroute|autopista|carretera|circunvalacion|periferico|ruta|camino|route\b|state road|national road|trunk road|a-road|b-road)/i;
+var ROAD_BR_CODE_RE = /\b(br|sp|rj|mg|pr|rs|sc|ba|pe|ce|go|mt|ms|pa|am|ma|pi|rn|al|pb|se|es|to|ro|rr|ap|ac|df)[- ]?\d{2,4}\b/i;
+function isRoadQuery(q) {
+  if (!q) return false;
+  var s = String(q);
+  if (ROAD_WORD_RE.test(s)) return true;
+  if (ROAD_BR_CODE_RE.test(s)) return true;
+  if (/\bkm\.?\s*\d+/i.test(s)) return true;
+  if (/\b(i|us|sr|sh|m|a|b|n|ap|ct|eu|d|e|a-?vel)\s?-?\s?\d{1,4}\b/i.test(s) && /\b(route|road|estrada|rodovia|autopista|carretera|autostrada|autobahn|autoroute|autoestrada|highway)\b/i.test(s)) return true;
+  return false;
+}
+// Nomes de paises das edicoes do site (para dar contexto a busca)
+var ROAD_COUNTRIES = { br:'Brasil', us:'United States', gb:'United Kingdom', fr:'France', de:'Deutschland', it:'Italia', es:'Espana', pt:'Portugal', ca:'Canada', mx:'Mexico', ar:'Argentina', co:'Colombia', cl:'Chile', pe:'Peru', uy:'Uruguay', py:'Paraguay', ve:'Venezuela', bo:'Bolivia', ec:'Ecuador', cu:'Cuba', do:'Republica Dominicana', jp:'Japan', cn:'China', ru:'Russia', in:'India', au:'Australia', za:'South Africa', nz:'New Zealand', kr:'South Korea', sa:'Saudi Arabia', ae:'United Arab Emirates', tr:'Turkiye', gr:'Greece', nl:'Nederland', be:'Belgique', ch:'Schweiz', at:'Osterreich', se:'Sverige', no:'Norge', dk:'Danmark', fi:'Finland', pl:'Polska', ie:'Ireland', il:'Israel', eg:'Egypt', ma:'Maroc', ng:'Nigeria', ke:'Kenya' };
+function roadSelectedCountry() {
+  try {
+    var cc = (localStorage.getItem('psg_feed_pais') || 'br').toLowerCase();
+    return ROAD_COUNTRIES[cc] || '';
+  } catch (e) { return ''; }
+}
+function roadAttempts(q) {
+  var raw = String(q);
+  // Remove marcadores de km (confundem o geocodificador) mantendo o nome da via
+  var base = raw.replace(/\bkm\.?\s*\d+(\s*[-–]\s*\d+)?/gi, '').replace(/\s{2,}/g, ' ').replace(/^[\s,]+|[\s,]+$/g, '');
+  var pais = roadSelectedCountry();
+  var out = [];
+  var push = function(s) { s = String(s).replace(/\s+/g, ' ').trim(); if (s && out.indexOf(s) === -1) out.push(s); };
+  if (pais) {
+    push(base + ', ' + pais);
+    push(raw + ', ' + pais);
+  }
+  push(base);
+  push(raw);
+  return out;
+}
+
+async function geocodeQuery(q, wantRoad) {
   if (!q) return null;
   try {
-    const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&accept-language=pt,en&q=' + encodeURIComponent(q));
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language=pt,en&q=' + encodeURIComponent(q));
     if (!r.ok) return null;
     const j = await r.json();
     if (!j || !j.length) return null;
-    const a = j[0].address || {};
+    // Em busca de rodovia, prefere resultados do tipo highway/estrada
+    var pick = j[0];
+    if (wantRoad) {
+      for (var i = 0; i < j.length; i++) {
+        if (j[i].category === 'highway' || j[i].category === 'amenity' && /fuel|police/.test(j[i].type || '')) { pick = j[i]; break; }
+      }
+    }
+    const a = pick.address || {};
     return {
-      lat: parseFloat(j[0].lat),
-      lng: parseFloat(j[0].lon),
-      displayName: j[0].display_name || q,
+      lat: parseFloat(pick.lat),
+      lng: parseFloat(pick.lon),
+      displayName: pick.display_name || q,
       city: a.city || a.town || a.village || a.municipality || '',
       state: a.state || '',
       country: a.country || '',
@@ -741,6 +788,14 @@ async function geocodeAddress(addressData, rawQuery) {
     const s = parts.filter(Boolean).join(', ').replace(/\s+/g, ' ').trim();
     if (s && attempts.indexOf(s) === -1) attempts.push(s);
   };
+
+  // RODOVIAS: se a consulta parece rodovia/estrada, tenta primeiro as
+  // combinacoes otimizadas (nome da via + pais da edicao selecionada)
+  const isRoad = isRoadQuery(rawQuery || A.street || '');
+  if (isRoad && rawQuery) {
+    roadAttempts(rawQuery).forEach(function(s) { if (attempts.indexOf(s) === -1) attempts.push(s); });
+    updateLoading('Localizando rodovia no mapa mundial...');
+  }
 
   push([A.street, A.neighborhood, A.city, A.state, A.country]);
   push([A.street, A.city, A.state, A.country]);
@@ -760,7 +815,7 @@ async function geocodeAddress(addressData, rawQuery) {
 
   for (let i = 0; i < attempts.length; i++) {
     if (i > 0) { updateLoading('Refinando localizacao...'); await sleep(1100); }
-    const hit = await geocodeQuery(attempts[i]);
+    const hit = await geocodeQuery(attempts[i], isRoad);
     if (hit && isFinite(hit.lat) && isFinite(hit.lng)) return hit;
   }
   return null;
