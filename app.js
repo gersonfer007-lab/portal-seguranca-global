@@ -1105,8 +1105,9 @@ function nauticEsc(s) { return roadEsc(s); }
 function nauticNomeLabel(a) {
   var rot = { rio: 'Rio', baia: 'Ba\u00eda', lago: 'Lago', canal: 'Canal', agua: 'Corpo d\u2019\u00e1gua' }[a.tipo] || 'Corpo d\u2019\u00e1gua';
   var nm = a.nome || rot;
+  if (!a.nome) return rot;
   var norm = function(x) { return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
-  if (a.nome && norm(a.nome).indexOf(norm(rot)) === 0) return nm;
+  if (norm(a.nome).indexOf(norm(rot)) === 0) return nm;
   return rot + ' \u2014 ' + nm;
 }
 function nauticTipoLabel(t) {
