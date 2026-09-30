@@ -941,6 +941,8 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-force .city { font-size: 11px; color: #666; }
 #pdf-report .pdf-footer { margin-top: 28px; padding: 16px 40px 0; border-top: 2px solid #c9a227; font-size: 10.5px; color: #888; text-align: center; line-height: 1.7; }
 #pdf-report .pdf-footer .verify { font-weight: 700; color: #0c1730; }
+#pdf-report .pdf-clauses .pdf-symbols-clause { border-left: 3px solid #c9a227; background: rgba(201,162,39,.08); padding: 8px 10px; border-radius: 4px; font-weight: 600; color: #3d3524; }
+#pdf-report .pdf-footer .pdf-footer-symbols { margin-top: 8px; font-weight: 700; color: #7a5c00; border-top: 1px dashed #c9a227; padding-top: 8px; }
 /* Elementos de documento oficial */
 #pdf-report { position: absolute; }
 #pdf-report .pdf-watermark {
@@ -1486,6 +1488,27 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="emblem-divider"></div>
 </section>
 
+<!-- AVISO SOBRE BRASOES E SIMBOLOS OFICIAIS (PM/PC) -->
+<style>
+.symbols-notice { max-width: 880px; margin: 0 auto 1.4rem; padding: 0 1rem; }
+.symbols-notice .sn-box { display: flex; gap: .9rem; align-items: flex-start; background: linear-gradient(180deg, rgba(201,162,39,.12), rgba(201,162,39,.06)); border: 1px solid rgba(201,162,39,.45); border-radius: 12px; padding: 1rem 1.2rem; }
+.symbols-notice .sn-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; margin-top: .1rem; }
+.symbols-notice .sn-title { font-size: .82rem; font-weight: 800; color: #e5c76b; letter-spacing: .02em; text-transform: uppercase; margin-bottom: .3rem; }
+.symbols-notice .sn-text { font-size: .8rem; color: var(--text-secondary); line-height: 1.65; }
+.symbols-notice .sn-text strong { color: var(--text-primary); }
+.symbols-notice .sn-text b { color: #e5c76b; }
+@media (max-width: 640px) { .symbols-notice .sn-box { flex-direction: column; gap: .5rem; } }
+</style>
+<section class="symbols-notice" id="aviso-simbolos">
+  <div class="sn-box" role="note">
+    <div class="sn-icon">&#9878;&#65039;</div>
+    <div>
+      <div class="sn-title">Aviso sobre bras&otilde;es e s&iacute;mbolos oficiais</div>
+      <div class="sn-text">Qualquer cidad&atilde;o pode <strong>visualizar, baixar ou compartilhar</strong> os bras&otilde;es institucionais e logomarcas oficiais da Pol&iacute;cia Militar (PM) e da Pol&iacute;cia Civil (PC) para fins informativos, jornal&iacute;sticos, educativos ou de estudo. Contudo, o <b>uso indevido</b> desses s&iacute;mbolos (como confeccionar uniformes, distintivos falsos ou us&aacute;-los para se passar por policial) &eacute; <b>crime previsto no Artigo 296 do C&oacute;digo Penal brasileiro</b> (falsifica&ccedil;&atilde;o de selo ou sinal p&uacute;blico).</div>
+    </div>
+  </div>
+</section>
+
 <!-- BANDEIRAS LATERAIS FIXAS (descem com a pagina toda) -->
 <!-- ESQUERDA (Americas + Europa) -->
 <div class="flags-column left" id="flags-left">
@@ -1929,6 +1952,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <p>A autenticidade deste documento pode ser verificada a qualquer tempo por meio do QR Code e do numero de protocolo impressos na secao de autenticacao, junto ao site oficial do emissor.</p>
       <p>A disponibilizacao deste documento ao solicitante considera o direito constitucional de acesso a informacao (art. 5&ordm;, XIV e XXXIII, da Constituicao Federal de 1988) e o direito social a seguranca (art. 6&ordm;), sem transformar o Portal Seguranca Global em orgao publico ou conferir a este relatorio presuncao de documento oficial estatal.</p>
       <p>O emissor reserva-se o direito de invalidar documentos adulterados, reproduzidos fora do site oficial ou cujo protocolo nao corresponda aos registros de emissao.</p>
+      <p class="pdf-symbols-clause">Qualquer cidad&atilde;o pode visualizar, baixar ou compartilhar os bras&otilde;es institucionais e logomarcas oficiais da Pol&iacute;cia Militar (PM) e da Pol&iacute;cia Civil (PC) para fins informativos, jornal&iacute;sticos, educativos ou de estudo. Contudo, o uso indevido desses s&iacute;mbolos (como confeccionar uniformes, distintivos falsos ou us&aacute;-los para se passar por policial) &eacute; crime previsto no Artigo 296 do C&oacute;digo Penal brasileiro (falsifica&ccedil;&atilde;o de selo ou sinal p&uacute;blico).</p>
     </div>
   </div>
 
@@ -1959,6 +1983,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="pdf-footer">
     <div class="verify">Verifique a autenticidade deste documento em portalsegurancaglobal.com.br</div>
     Documento gerado eletronicamente pelo Portal Seguranca Global. Este relatorio e baseado em dados publicos e estimativas estatisticas do perimetro analisado. Nao substitui consultoria profissional nem boletins oficiais de ocorrencia.
+    <div class="pdf-footer-symbols">Uso indevido de bras&otilde;es e s&iacute;mbolos oficiais de &oacute;rg&atilde;os policiais (PM/PC) &eacute; crime &mdash; Art. 296 do C&oacute;digo Penal (falsifica&ccedil;&atilde;o de selo ou sinal p&uacute;blico).</div>
   </div>
 </div>
 
