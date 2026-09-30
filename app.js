@@ -953,7 +953,8 @@ async function loadRoadAlerts(lat, lng) {
   var q = '[out:json][timeout:25];(' +
     'node(around:' + R + ',' + lat + ',' + lng + ')[barrier=toll_booth];' +
     'node(around:' + R + ',' + lat + ',' + lng + ')[highway=speed_camera];' +
-    ');out body 80;';
+    'way(around:300,' + lat + ',' + lng + ')[highway][maxspeed];' +
+    ');out body center 90;';
   var endpoints = [
     'https://overpass-api.de/api/interpreter',
     'https://overpass.kumi.systems/api/interpreter'
@@ -968,23 +969,41 @@ async function loadRoadAlerts(lat, lng) {
       });
       if (r.ok) {
         var j = await r.json();
-        var pedagios = [], radares = [];
+        var pedagios = [], radares = [], vias = [];
         (j.elements || []).forEach(function(el) {
-          if (typeof el.lat !== 'number' || typeof el.lon !== 'number') return;
           var tags = el.tags || {};
-          var item = {
-            lat: el.lat, lng: el.lon,
-            name: tags.name || tags.operator || tags.ref || '',
-            maxspeed: tags['maxspeed'] || ''
-          };
-          if (tags.barrier === 'toll_booth') pedagios.push(item);
-          else if (tags.highway === 'speed_camera') radares.push(item);
+          if (el.type === 'node' && typeof el.lat === 'number' && typeof el.lon === 'number') {
+            var item = {
+              lat: el.lat, lng: el.lon,
+              name: tags.name || tags.operator || tags.ref || '',
+              maxspeed: tags['maxspeed'] || ''
+            };
+            if (tags.barrier === 'toll_booth') pedagios.push(item);
+            else if (tags.highway === 'speed_camera') radares.push(item);
+          } else if (el.type === 'way' && el.center && tags.maxspeed) {
+            vias.push({
+              lat: el.center.lat, lng: el.center.lon,
+              name: tags.name || tags.ref || '',
+              maxspeed: String(tags.maxspeed)
+            });
+          }
         });
-        alerts = { pedagios: pedagios, radares: radares };
+        alerts = { pedagios: pedagios, radares: radares, vias: vias };
       }
     } catch (err) { /* tenta o proximo espelho */ }
   }
   renderRoadAlerts(alerts, lat, lng);
+}
+function roadSpeedLabel(ms) {
+  var s = String(ms || '').trim().toLowerCase();
+  if (!s) return null;
+  if (s === 'none' || s === 'unlimited') return 'sem limite';
+  if (s === 'walk') return 'area de pedestres';
+  if (/^\d+(\.\d+)?$/.test(s)) return s + ' km/h';
+  if (/^\d+(\.\d+)?\s*mph$/.test(s)) return String(ms).trim() + ' (mph)';
+  if (/^\d+/.test(s)) return String(ms).trim() + ' km/h';
+  if (/^[a-z]{2}:/.test(s)) return null; // valores regionais complexos do OSM
+  return String(ms).trim();
 }
 function renderRoadAlerts(alerts, lat, lng) {
   // Caixa de aviso no painel (abaixo do cabecalho do resultado)
@@ -996,6 +1015,25 @@ function renderRoadAlerts(alerts, lat, lng) {
     header.parentNode.insertBefore(box, header.nextSibling);
   }
   if (!box) return;
+  // Limite de velocidade da via mais proxima (badge amarelo sob o endereco)
+  var speedEl = document.getElementById('result-speed');
+  var vias = (alerts && alerts.vias && alerts.vias.length) ? alerts.vias : [];
+  if (speedEl) {
+    var mostrou = false;
+    if (vias.length) {
+      var ord = vias.map(function(v) { v._d = roadDistanceKm(lat, lng, v.lat, v.lng); return v; }).sort(function(a, b) { return a._d - b._d; });
+      for (var i = 0; i < ord.length; i++) {
+        var lbl = roadSpeedLabel(ord[i].maxspeed);
+        if (lbl) {
+          speedEl.style.display = 'block';
+          speedEl.innerHTML = '&#128678; Limite de velocidade: <b>' + roadEsc(lbl) + '</b>' + (ord[i].name ? ' &mdash; ' + roadEsc(ord[i].name) : '') + ' <span style="color:var(--text-muted);font-weight:500;">(via mais proxima)</span>';
+          mostrou = true;
+          break;
+        }
+      }
+    }
+    if (!mostrou) speedEl.style.display = 'none';
+  }
   if (!alerts) {
     box.style.cssText = 'display:none;';
     return;
