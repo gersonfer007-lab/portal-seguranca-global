@@ -859,6 +859,84 @@ function randomRecentDate() {
 }
 
 // ============================================================
+// RELOGIO MUNDIAL — horario e fuso horario de cada pais
+// Mostra a hora local do lugar analisado (painel de resultado)
+// e do pais selecionado nas bandeiras (cabecalho de noticias).
+// ============================================================
+var WorldClock = (function() {
+  // Fuso principal de cada pais (IANA) — cobertura mundial
+  var PAIS_TZ = {
+    br:'America/Sao_Paulo', ar:'America/Argentina/Buenos_Aires', bo:'America/La_Paz', cl:'America/Santiago', co:'America/Bogota', pe:'America/Lima', uy:'America/Montevideo', py:'America/Asuncion', ve:'America/Caracas', ec:'America/Guayaquil', gy:'America/Guyana', sr:'America/Paramaribo', gf:'America/Cayenne',
+    us:'America/New_York', ca:'America/Toronto', mx:'America/Mexico_City', gt:'America/Guatemala', cr:'America/Costa_Rica', pa:'America/Panama', cu:'America/Havana', do:'America/Santo_Domingo', ht:'America/Port-au-Prince', jm:'America/Jamaica', bs:'America/Nassau', tt:'America/Port_of_Spain',
+    gb:'Europe/London', ie:'Europe/Dublin', fr:'Europe/Paris', de:'Europe/Berlin', it:'Europe/Rome', es:'Europe/Madrid', pt:'Europe/Lisbon', nl:'Europe/Amsterdam', be:'Europe/Brussels', ch:'Europe/Zurich', at:'Europe/Vienna', se:'Europe/Stockholm', no:'Europe/Oslo', dk:'Europe/Copenhagen', fi:'Europe/Helsinki', is:'Atlantic/Reykjavik', pl:'Europe/Warsaw', cz:'Europe/Prague', gr:'Europe/Athens', tr:'Europe/Istanbul', hu:'Europe/Budapest', ro:'Europe/Bucharest', bg:'Europe/Sofia', hr:'Europe/Zagreb', rs:'Europe/Belgrade', sk:'Europe/Bratislava', si:'Europe/Ljubljana', ua:'Europe/Kyiv', by:'Europe/Minsk', lt:'Europe/Vilnius', lv:'Europe/Riga', ee:'Europe/Tallinn',
+    ru:'Europe/Moscow', kz:'Asia/Almaty', uz:'Asia/Tashkent',
+    jp:'Asia/Tokyo', cn:'Asia/Shanghai', kr:'Asia/Seoul', tw:'Asia/Taipei', hk:'Asia/Hong_Kong', mo:'Asia/Macau', mn:'Asia/Ulaanbaatar', in:'Asia/Kolkata', pk:'Asia/Karachi', bd:'Asia/Dhaka', lk:'Asia/Colombo', np:'Asia/Kathmandu', mv:'Indian/Maldives', bt:'Asia/Thimphu',
+    ae:'Asia/Dubai', sa:'Asia/Riyadh', qa:'Asia/Qatar', kw:'Asia/Kuwait', bh:'Asia/Bahrain', om:'Asia/Muscat', ye:'Asia/Aden', il:'Asia/Jerusalem', jo:'Asia/Amman', lb:'Asia/Beirut', sy:'Asia/Damascus', iq:'Asia/Baghdad', ir:'Asia/Tehran', af:'Asia/Kabul',
+    th:'Asia/Bangkok', vn:'Asia/Ho_Chi_Minh', id:'Asia/Jakarta', my:'Asia/Kuala_Lumpur', sg:'Asia/Singapore', ph:'Asia/Manila', kh:'Asia/Phnom_Penh', la:'Asia/Vientiane', mm:'Asia/Yangon', bn:'Asia/Brunei',
+    au:'Australia/Sydney', nz:'Pacific/Auckland', fj:'Pacific/Fiji', pg:'Pacific/Port_Moresby',
+    eg:'Africa/Cairo', ma:'Africa/Casablanca', dz:'Africa/Algiers', tn:'Africa/Tunis', ly:'Africa/Tripoli', sd:'Africa/Khartoum', et:'Africa/Addis_Ababa', ke:'Africa/Nairobi', ug:'Africa/Kampala', tz:'Africa/Dar_es_Salaam', rw:'Africa/Kigali', ng:'Africa/Lagos', gh:'Africa/Accra', ci:'Africa/Abidjan', sn:'Africa/Dakar', cm:'Africa/Douala', ao:'Africa/Luanda', zm:'Africa/Lusaka', zw:'Africa/Harare', mz:'Africa/Maputo', bw:'Africa/Gaborone', na:'Africa/Windhoek', za:'Africa/Johannesburg', mu:'Indian/Mauritius', sc:'Indian/Mahe', mg:'Africa/Antananarivo'
+  };
+  // Ajustes por estado/provincia (paises com varios fusos)
+  var BR_TZ = { am:'America/Manaus', rr:'America/Manaus', ro:'America/Porto_Velho', ac:'America/Rio_Branco', mt:'America/Cuiaba', ms:'America/Campo_Grande' };
+  var US_TZ = { az:'America/Phoenix', co:'America/Denver', id:'America/Denver', mt:'America/Denver', nm:'America/Denver', ut:'America/Denver', wy:'America/Denver', ca:'America/Los_Angeles', nv:'America/Los_Angeles', wa:'America/Los_Angeles', or:'America/Los_Angeles', ak:'America/Anchorage', hi:'Pacific/Honolulu', al:'America/Chicago', ar:'America/Chicago', il:'America/Chicago', ia:'America/Chicago', ks:'America/Chicago', la:'America/Chicago', mn:'America/Chicago', ms:'America/Chicago', mo:'America/Chicago', ne:'America/Chicago', nd:'America/Chicago', ok:'America/Chicago', sd:'America/Chicago', tn:'America/Chicago', tx:'America/Chicago', wi:'America/Chicago', ct:'America/New_York', de:'America/New_York', fl:'America/New_York', ga:'America/New_York', in:'America/New_York', ky:'America/New_York', me:'America/New_York', md:'America/New_York', ma:'America/New_York', mi:'America/New_York', nh:'America/New_York', nj:'America/New_York', ny:'America/New_York', nc:'America/New_York', oh:'America/New_York', pa:'America/New_York', ri:'America/New_York', sc:'America/New_York', vt:'America/New_York', va:'America/New_York', wv:'America/New_York', dc:'America/New_York' };
+
+  function tzDoLocal(countryCode, state) {
+    var cc = String(countryCode || '').toLowerCase().trim();
+    var uf = String(state || '').toLowerCase().replace(/[^a-z]/g, '').trim();
+    if (!cc) return null;
+    if (cc === 'br' && BR_TZ[uf]) return BR_TZ[uf];
+    if (cc === 'us' && US_TZ[uf]) return US_TZ[uf];
+    return PAIS_TZ[cc] || null;
+  }
+  function partesHora(tz) {
+    try {
+      var d = new Date();
+      var hora = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(d);
+      var fuso = '';
+      try {
+        fuso = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(d).filter(function(p) { return p.type === 'timeZoneName'; })[0].value;
+      } catch (e) {
+        try { fuso = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(d).filter(function(p) { return p.type === 'timeZoneName'; })[0].value; } catch (e2) { fuso = ''; }
+      }
+      if (fuso && /^GMT/i.test(fuso)) { fuso = 'UTC' + fuso.replace(/^GMT/i, ''); }
+      return { hora: hora, fuso: fuso };
+    } catch (e) { return null; }
+  }
+
+  // Relogio do lugar analisado (painel de resultado)
+  var tzLocal = null;
+  function setLocalClock(countryCode, state) {
+    tzLocal = tzDoLocal(countryCode, state);
+    var el = document.getElementById('result-clock');
+    if (!el) return;
+    if (!tzLocal) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    tickLocal();
+  }
+  function tickLocal() {
+    var el = document.getElementById('result-clock');
+    if (!el || !tzLocal) return;
+    var p = partesHora(tzLocal);
+    if (p) { el.innerHTML = '&#128337; Hor&aacute;rio local: <b>' + p.hora + '</b>' + (p.fuso ? ' <span style="color:var(--text-muted);font-weight:500;">(' + p.fuso + ')</span>' : ''); }
+  }
+
+  // Relogio do pais selecionado nas bandeiras (cabecalho de noticias)
+  function tickFeed() {
+    var el = document.getElementById('feed-clock');
+    if (!el) return;
+    var cc = '';
+    try { cc = (localStorage.getItem('psg_feed_pais') || 'br').toLowerCase(); } catch (e) { cc = 'br'; }
+    var tz = PAIS_TZ[cc] || null;
+    if (!tz) { el.style.display = 'none'; return; }
+    var p = partesHora(tz);
+    if (p) { el.innerHTML = '&#128337; ' + p.hora + ' ' + (p.fuso || ''); }
+  }
+
+  setInterval(function() { tickLocal(); tickFeed(); }, 1000);
+  return { setLocalClock: setLocalClock, tzDoLocal: tzDoLocal, partesHora: partesHora };
+})();
+
+// ============================================================
 // RENDER DASHBOARD
 // ============================================================
 function renderDashboard(data) {
@@ -867,6 +945,7 @@ function renderDashboard(data) {
   if (map) map.invalidateSize();
   document.getElementById('result-address').textContent = data.address.fullAddress;
   document.getElementById('result-meta').textContent = 'Lat ' + data.lat.toFixed(4) + ' | Lng ' + data.lng.toFixed(4) + (data.address.cep ? ' | CEP ' + data.address.cep : '') + ' | Raio de analise: 1.5km';
+  WorldClock.setLocalClock(data.address.country_code || '', data.address.state || '');
   try {
     if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
     map.setView([data.lat, data.lng], 15);
