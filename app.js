@@ -1266,12 +1266,42 @@ async function _doGeneratePDF() {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageW = pdf.internal.pageSize.getWidth();
     const pageHmm = pdf.internal.pageSize.getHeight();
-    const pxPerPage = Math.floor(canvas.width * pageHmm / pageW);
+    // MARGEM INFERIOR: deixa 10mm livres em cada pagina para a moldura,
+    // o rodape (protocolo/pagina) e o numero de serie nao colidirem com o texto
+    const pageContentHmm = pageHmm - 10;
+    const pxPerPage = Math.floor(canvas.width * pageContentHmm / pageW);
+    // CORTE INTELIGENTE: detecta faixas de linhas em branco (espaco entre
+    // paragrafos/secoes) para nunca cortar uma linha de texto no meio.
+    const srcCtx = canvas.getContext('2d');
+    function rowIsBlank(y) {
+      if (y < 0 || y >= canvas.height) return false;
+      try {
+        const row = srcCtx.getImageData(0, y, canvas.width, 1).data;
+        for (let x = 0; x < row.length; x += 4) {
+          if (row[x] < 246 || row[x + 1] < 246 || row[x + 2] < 246) return false;
+        }
+        return true;
+      } catch (e) { return false; }
+    }
+    function findSafeCut(ideal) {
+      // Sobe ate 150px (75px CSS) procurando uma faixa branca de 8px
+      for (let y = ideal - 2; y > Math.max(0, ideal - 150); y -= 2) {
+        if (rowIsBlank(y) && rowIsBlank(y - 2) && rowIsBlank(y - 4) && rowIsBlank(y - 6) && rowIsBlank(y - 8)) {
+          return y;
+        }
+      }
+      return ideal;
+    }
     // Fatia o relatorio em paginas
     const slices = [];
     let pos = 0;
     while (pos < canvas.height) {
-      const sliceH = Math.min(pxPerPage, canvas.height - pos);
+      let sliceH = Math.min(pxPerPage, canvas.height - pos);
+      if (pos + sliceH < canvas.height) {
+        // Nao e a ultima pagina: ajusta o corte para uma faixa em branco
+        const safe = findSafeCut(pos + sliceH);
+        if (safe > pos + 40) sliceH = safe - pos;
+      }
       const pageCanvas = document.createElement('canvas');
       pageCanvas.width = canvas.width;
       pageCanvas.height = sliceH;
