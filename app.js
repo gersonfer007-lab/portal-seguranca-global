@@ -1742,6 +1742,67 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
 })();
 
 // ============================================================
+// NEWSLETTER AJAX — mostra se a pessoa conseguiu ou nao se inscrever
+// ============================================================
+(function() {
+  function initNewsletter() {
+    var form = document.getElementById('nl-form');
+    if (!form) return;
+    var msg = document.getElementById('nl-msg');
+    var btn = document.getElementById('nl-btn');
+    function show(kind, html) {
+      if (!msg) return;
+      var cores = {
+        ok:  'border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#4ade80;',
+        err: 'border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.12);color:#f87171;',
+        load:'border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.12);color:#93c5fd;'
+      };
+      msg.style.cssText = 'display:block;margin:.8rem auto 0;max-width:420px;padding:.8rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;line-height:1.5;text-align:center;' + (cores[kind] || '');
+      msg.innerHTML = html;
+    }
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var input = form.querySelector('input[name=email]');
+      var email = (input && input.value || '').trim();
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+        show('err', '&#10060; <b>N&atilde;o foi poss&iacute;vel inscrever:</b> digite um e-mail v&aacute;lido (ex.: nome@email.com).');
+        if (input) { try { input.focus(); } catch (err) {} }
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+      show('load', '&#8987; Enviando sua inscri&ccedil;&atilde;o...');
+      fetch('https://formsubmit.co/ajax/gersonfer007@hotmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: 'Novo inscrito na newsletter - Portal Segurança Global',
+          _template: 'table',
+          _captcha: 'false',
+          email: email
+        })
+      })
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(j) {
+          if (j && (j.success === 'true' || j.success === true)) {
+            form.reset();
+            show('ok', '&#9989; <b>Inscri&ccedil;&atilde;o realizada com sucesso!</b> Voc&ecirc; receber&aacute; as pr&oacute;ximas novidades de seguran&ccedil;a por e-mail.');
+          } else {
+            show('err', '&#10060; <b>N&atilde;o foi poss&iacute;vel concluir a inscri&ccedil;&atilde;o.</b> O servi&ccedil;o de e-mail pode estar em ativa&ccedil;&atilde;o &mdash; tente novamente em alguns minutos.');
+          }
+        })
+        .catch(function() {
+          show('err', '&#10060; <b>Falha na inscri&ccedil;&atilde;o.</b> Sem conex&atilde;o com o servi&ccedil;o agora. Tente novamente em instantes.');
+        })
+        .finally(function() {
+          if (btn) { btn.disabled = false; btn.textContent = 'Inscrever-se'; }
+        });
+    });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initNewsletter); }
+  else { initNewsletter(); }
+})();
+
+// ============================================================
 // NEWSLETTER — mensagem de sucesso ao voltar com ?inscrito=1
 // ============================================================
 (function() {
