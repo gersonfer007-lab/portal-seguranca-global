@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Portal Segurança Global · Painel de Campanhas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#080c14;
+  --bg-2:#0f1624;
+  --panel:#141d2f;
+  --panel-2:#1b263e;
+  --panel-3:#23314d;
+  --border:#2a3c5f;
+  --ink:#eef3fb;
+  --muted:#94a3b8;
+  --brand:#3b82f6;
+  --brand-2:#60a5fa;
+  --green:#22c55e;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --purple:#a78bfa;
+  --cyan:#22d3ee;
+  --shadow:0 20px 50px -20px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Inter Tight",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{
+  background:
+    radial-gradient(1300px 700px at 85% -10%, rgba(59,130,246,.14), transparent 60%),
+    radial-gradient(1100px 600px at -10% 110%, rgba(167,139,250,.12), transparent 55%),
+    var(--bg);
+  min-height:100vh;
+}
+.mono{font-family:"JetBrains Mono",monospace}
+
+.top{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:18px 28px;border-bottom:1px solid var(--border);
+  background:rgba(8,12,20,.85);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:14px}
+.brand .logo{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg, var(--brand) 0%, var(--purple) 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 28px -8px rgba(59,130,246,.65);
+}
+.brand .logo svg{width:22px;height:22px;color:#fff}
+.brand h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;font-size:11px;color:var(--muted);font-family:"JetBrains Mono",monospace}
+
+.status-pill{display:flex;align-items:center;gap:10px;padding:7px 14px;border:1px solid var(--border);background:var(--panel);border-radius:999px;font-size:12px}
+.led{width:8px;height:8px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 3px rgba(142,163,199,.12)}
+.led.on{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2);animation:pulse 1.8s infinite}
+.led.warn{background:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.2)}
+.led.error{background:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.2)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+.wrap{max-width:1500px;margin:0 auto;padding:26px 28px 70px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.kpi{
+  background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px 20px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow);transition:transform .15s ease,border-color .15s ease;
+}
+.kpi:hover{transform:translateY(-2px);border-color:#3b517a}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+.kpi.k-sent::before{background:var(--green)}
+.kpi.k-err::before{background:var(--red)}
+.kpi.k-pending::before{background:var(--amber)}
+.kpi.k-quota::before{background:var(--purple)}
+.kpi.k-ai::before{background:var(--cyan)}
+.kpi .label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-family:"JetBrains Mono",monospace}
+.kpi .value{font-size:34px;font-weight:800;letter-spacing:-.03em;margin-top:6px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Alerts */
+.env-warn{
+  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);
+  color:#fbbf24;padding:14px 18px;border-radius:12px;font-size:13px;margin-bottom:22px;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.env-warn.err{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.35);color:#f87171}
+.env-warn strong{color:#fff}
+.env-warn code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-family:"JetBrains Mono",monospace;font-size:11px}
+
+/* Controls card */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.card-head{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:16px 20px;border-bottom:1px solid var(--border);background:var(--panel-2);
+}
+.card-head h3{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.card-head .k{font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-family:"JetBrains Mono",monospace}
+.card-body{padding:20px}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px}
+.btn{
+  padding:10px 16px;border-radius:10px;border:1px solid var(--border);
+  background:var(--panel-2);color:var(--ink);font-family:"Inter Tight",sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+  transition:all .15s ease;
+}
+.btn:hover{background:var(--panel-3);border-color:#3b517a}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:#2563eb;border-color:#2563eb}
+.btn.danger{background:transparent;color:var(--red);border-color:rgba(239,68,68,.35)}
+.btn.danger:hover{background:rgba(239,68,68,.12)}
+.btn.warn{background:transparent;color:var(--amber);border-color:rgba(245,158,11,.35)}
+.btn.warn:hover{background:rgba(245,158,11,.12)}
+.btn.ai{background:linear-gradient(135deg, rgba(34,211,238,.12), rgba(167,139,250,.12));border-color:rgba(34,211,238,.35);color:#a5f3fc}
+.btn.ai:hover{background:linear-gradient(135deg, rgba(34,211,238,.2), rgba(167,139,250,.2))}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:15px;height:15px}
+
+.progress{height:10px;background:var(--bg-2);border-radius:999px;overflow:hidden;margin-top:14px;border:1px solid var(--border)}
+.progress span{display:block;height:100%;background:linear-gradient(90deg, var(--brand), var(--purple));transition:width .4s ease}
+
+/* Grid */
+.grid{display:grid;grid-template-columns: 1.3fr .9fr;gap:20px;margin-top:22px}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:"JetBrains Mono",monospace;font-weight:600}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(59,130,246,.04)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+.badge.ok{background:rgba(34,197,94,.15);color:#4ade80}
+.badge.err{background:rgba(239,68,68,.15);color:#f87171}
+.badge.pen{background:rgba(245,158,11,.15);color:#fbbf24}
+.badge.sim{background:rgba(167,139,250,.15);color:#c4b5fd}
+
+/* AI sections */
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}
+.ai-card{border:1px solid rgba(34,211,238,.25);background:linear-gradient(180deg, rgba(34,211,238,.05), transparent 120px)}
+.ai-card .card-head{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2)}
+
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+input[type=text],input[type=email],input[type=number],textarea,select{
+  width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
+  color:var(--ink);padding:10px 12px;font-family:"Inter Tight",sans-serif;font-size:13px;
+  outline:none;transition:border-color .15s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--brand-2)}
+textarea{min-height:120px;resize:vertical;line-height:1.55}
+.field{margin-bottom:14px}
+
+.preview-box{background:var(--bg-2);border:1px dashed var(--border);border-radius:12px;padding:14px 16px;margin-top:12px;min-height:80px}
+.preview-box .to{font-size:12px;color:var(--muted);font-family:"JetBrains Mono",monospace}
+.preview-box .subj{font-size:15px;font-weight:700;margin:8px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.preview-box .body{font-size:13px;color:var(--ink);white-space:pre-wrap;line-height:1.65;font-family:"JetBrains Mono",monospace;max-height:260px;overflow-y:auto}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:2px}
+.tab{padding:10px 16px;background:transparent;border:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--brand-2);border-color:var(--brand-2)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Contact list */
+.contact-filters{display:flex;gap:10px;margin-bottom:14px}
+.contact-filters input{flex:1}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;right:22px;z-index:100;max-width:360px}
+.toast-item{
+  background:var(--panel-2);border:1px solid var(--border);border-left:4px solid var(--brand);
+  padding:14px 18px;border-radius:12px;margin-top:10px;box-shadow:var(--shadow);
+  animation:slideIn .25s ease;
+}
+.toast-item.success{border-left-color:var(--green)}
+.toast-item.error{border-left-color:var(--red)}
+.toast-item.warn{border-left-color:var(--amber)}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{margin:0;font-size:16px}
+.modal-close{background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.modal-close:hover{color:var(--ink)}
+.modal-body{padding:22px}
+
+/* Loading */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--brand-2);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Chart */
+.mini-chart{display:flex;align-items:flex-end;gap:4px;height:60px;padding-top:10px}
+.mini-chart .bar{flex:1;background:var(--brand);border-radius:3px 3px 0 0;opacity:.8;transition:opacity .15s}
+.mini-chart .bar:hover{opacity:1}
+
+.foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-family:"JetBrains Mono",monospace}
+
+@media(max-width:1100px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+  .ai-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .top{flex-direction:column;align-items:flex-start}
+  .kpis{grid-template-columns:1fr}
+  .controls .btn{width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Portal Segurança Global</h1>
+      <p>Painel de Campanhas · SendGrid + IA</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="status-pill">
+      <span class="led" id="led"></span>
+      <span id="statusText" class="mono">carregando…</span>
+    </div>
+    <button class="btn" id="btnSettings" title="Configurações do painel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="warnBox"></div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="label">Contatos no CSV</div><div class="value mono" id="kTotal">–</div><div class="sub">Total carregado</div></div>
+    <div class="kpi k-sent"><div class="label">Enviados</div><div class="value mono" id="kSent">–</div><div class="sub">Sucesso acumulado</div></div>
+    <div class="kpi k-err"><div class="label">Com erro</div><div class="value mono" id="kErr">–</div><div class="sub">Retornaram falha</div></div>
+    <div class="kpi k-pending"><div class="label">Pendentes</div><div class="value mono" id="kPending">–</div><div class="sub">Ainda não enviados</div></div>
+    <div class="kpi k-quota"><div class="label">Cota de hoje</div><div class="value mono" id="kQuota">–</div><div class="sub" id="kQuotaSub">de <span id="dailyLimit">90</span>/dia</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:22px">
+    <div class="card-head">
+      <h3>Controles da campanha</h3>
+      <span class="k" id="modeLabel">—</span>
+    </div>
+    <div class="card-body">
+      <div class="controls">
+        <button class="btn primary" id="btnStart">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Iniciar envio
+        </button>
+        <button class="btn warn" id="btnStop" disabled>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+          Parar
+        </button>
+        <button class="btn" id="btnPreview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview do e-mail
+        </button>
+        <button class="btn" id="btnReload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 20"/></svg>
+          Atualizar
+        </button>
+        <button class="btn danger" id="btnReset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6"/></svg>
+          Zerar logs
+        </button>
+        <button class="btn" id="btnExport">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+      <div class="progress"><span id="progBar" style="width:0%"></span></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="envios">Envios e erros</button>
+    <button class="tab" data-tab="contatos">Lista de contatos</button>
+    <button class="tab" data-tab="templates">Editor de templates</button>
+    <button class="tab" data-tab="ia">Assistente de IA</button>
+  </div>
+
+  <div id="tab-envios" class="tab-content active">
+    <div class="grid">
+      <div class="card">
+        <div class="card-head">
+          <h3>Envios recentes</h3>
+          <span class="k">últimos 50</span>
+        </div>
+        <div class="card-body" style="padding:0;max-height:520px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Hora</th><th>Empresa</th><th>E-mail</th><th>Cidade</th><th>Status</th></tr></thead>
+            <tbody id="tblRecent"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Sem envios ainda.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Erros de envio</h3>
+          <span class="k" id="errCount">0</span>
+        </div>
+        <div class="card-body" style="padding:0;max-height:520px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Empresa</th><th>E-mail</th><th>Motivo</th></tr></thead>
+            <tbody id="tblErrors"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:28px">Nenhum erro registrado.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-contatos" class="tab-content">
+    <div class="card">
+      <div class="card-head">
+        <h3>Contatos carregados do CSV</h3>
+        <span class="k" id="contactsCount">0</span>
+      </div>
+      <div class="card-body">
+        <div class="contact-filters">
+          <input type="text" id="contactSearch" placeholder="Buscar por empresa, cidade ou segmento…" />
+        </div>
+        <div style="max-height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:12px">
+          <table>
+            <thead><tr><th>Empresa</th><th>E-mail</th><th>Cidade</th><th>Segmento</th><th>Responsável</th><th>Pergunta</th></tr></thead>
+            <tbody id="tblContacts"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">Carregando contatos…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-templates" class="tab-content">
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <div class="card-head"><h3>Template do e-mail</h3><span class="k">use {{empresa}} {{cidade}} {{segmento}} {{responsavel}}</span></div>
+        <div class="card-body">
+          <div class="field"><label>Assunto</label><input type="text" id="tplSubject" /></div>
+          <div class="field"><label>Corpo do e-mail</label><textarea id="tplBody"></textarea></div>
+          <div class="controls">
+            <button class="btn primary" id="btnSaveTemplate">Salvar template</button>
+            <button class="btn" id="btnResetTemplate">Restaurar padrão</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Preview ao vivo</h3><span class="k">primeiro contato</span></div>
+        <div class="card-body">
+          <div id="tplPreview" class="preview-box">
+            <div class="to">Para: —</div>
+            <div class="subj">—</div>
+            <div class="body">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-ia" class="tab-content">
+    <div class="ai-grid">
+      <div class="card ai-card">
+        <div class="card-head"><h3>Gerar e-mail com IA</h3><span class="k">personalizado por empresa</span></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Selecionar contato</label>
+            <select id="aiContact"></select>
+          </div>
+          <div class="field"><label>Contexto adicional (opcional)</label><textarea id="aiContext" placeholder="Ex: estamos lançando promoção de GPS para frotas rurais"></textarea></div>
+          <button class="btn ai" id="btnAiEmail"><span id="spinnerAiEmail"></span> Gerar e-mail</button>
+          <div id="aiEmailResult" class="preview-box" style="display:none">
+            <div class="to">Assunto sugerido:</div>
+            <div class="subj" id="aiEmailSubject"></div>
+            <div class="body" id="aiEmailBody"></div>
+            <div class="controls" style="margin-top:12px">
+              <button class="btn primary" id="btnUseAiTemplate">Usar este template</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card ai-card">
+        <div class="card-head"><h3>Respostas inteligentes</h3><span class="k">Perguntas e Respostas com IA</span></div>
+        <div class="card-body">
+          <div class="field"><label>Pergunta da empresa</label><textarea id="aiQuestion" placeholder="Ex: Quanto custa monitorar uma fazenda de 500 hectares?"></textarea></div>
+          <div class="field"><label>Contexto do contato (opcional)</label><input type="text" id="aiQuestionContext" placeholder="Empresa, cidade, segmento…" /></div>
+          <button class="btn ai" id="btnAiAnswer"><span id="spinnerAiAnswer"></span> Gerar resposta</button>
+          <div id="aiAnswerResult" class="preview-box" style="display:none;margin-top:12px">
+            <div class="body" id="aiAnswerBody"></div>
+            <div class="controls" style="margin-top:12px">
+              <button class="btn primary" id="btnCopyAnswer">Copiar resposta</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Portal Segurança Global · Ferramenta de campanhas</span>
+    <span id="lastPing">—</span>
+  </div>
+</main>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Configurações da campanha</h3>
+      <button class="modal-close" id="btnCloseSettings">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-top:0;color:var(--muted);font-size:13px">As variáveis de ambiente (SendGrid, OpenAI, dry-run) ficam no arquivo <code>.env</code> do servidor. Edite o arquivo e reinicie o servidor para aplicar.</p>
+      <div class="field"><label>Status do SendGrid</label><input type="text" id="cfgSendgrid" readonly /></div>
+      <div class="field"><label>Status da IA (OpenAI)</label><input type="text" id="cfgOpenai" readonly /></div>
+      <div class="field"><label>Limite diário de envios</label><input type="text" id="cfgDaily" readonly /></div>
+      <div class="field"><label>Intervalo entre envios (ms)</label><input type="text" id="cfgDelay" readonly /></div>
+      <div class="field"><label>E-mail remetente</label><input type="text" id="cfgFrom" readonly /></div>
+      <div class="field"><label>Arquivo de contatos</label><input type="text" value="contacts.csv" readonly /></div>
+      <div class="controls" style="margin-top:18px">
+        <button class="btn" id="btnReloadContacts">Recarregar CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmtTime = ts => new Date(ts).toLocaleTimeString("pt-BR");
+const esc = s => (s||"").replace(/[&<>"']/g,c=>({"\u0026":"\u0026amp;","<":"\u0026lt;",">":"\u0026gt;",'"':"\u0026quot;","'":"\u0026#39;"}[c]));
+
+let currentStatus = null;
+let contacts = [];
+let generatedTemplate = null;
+let demoMode = false;
+
+const DEMO_STATUS = {
+  running: false,
+  config: {
+    hasApiKey: true,
+    dryRun: true,
+    from: "Portal Segurança Global <campanhas@portalsegurancaglobal.com.br>",
+    dailyLimit: 90,
+    sendDelayMs: 3000,
+    aiEnabled: true,
+    aiModel: "gpt-4o-mini"
+  },
+  contactsError: null,
+  stats: { totalContacts: 5, sent: 2, errors: 0, pending: 3, sentToday: 2, remainingToday: 88 },
+  recent: [
+    { ts: Date.now() - 120000, empresa: "Segurança Total Ltda", email: "contato@segurancatotal.com.br", cidade: "São Paulo", status: "sent", simulated: true },
+    { ts: Date.now() - 300000, empresa: "Proteção Rural S/A", email: "rural@protecaorural.com.br", cidade: "Ribeirão Preto", status: "sent", simulated: true }
+  ],
+  errorList: [],
+  templates: {
+    subject: "{{empresa}} — sua segurança merece tecnologia de ponta",
+    body: "Olá, {{responsavel}} da {{empresa}},\n\nTudo bem?\n\nSomos o Portal Segurança Global..."
+  }
+};
+
+const DEMO_CONTACTS = [
+  { empresa: "Segurança Total Ltda", email: "contato@segurancatotal.com.br", cidade: "São Paulo", segmento: "Monitoramento", responsavel: "Gerson", pergunta: "Como funciona o rastreamento GPS para frotas?" },
+  { empresa: "Proteção Rural S/A", email: "rural@protecaorural.com.br", cidade: "Ribeirão Preto", segmento: "Agronegócio", responsavel: "Ana", pergunta: "Qual o custo médio para segurança de uma fazenda de 500 hectares?" },
+  { empresa: "Câmeras Inteligentes Brasil", email: "vendas@camerasinteligentes.com.br", cidade: "Belo Horizonte", segmento: "CFTV", responsavel: "Carlos", pergunta: "Vocês integram câmeras com IA de reconhecimento facial?" },
+  { empresa: "Alarmes São João", email: "suporte@alarmessaojoao.com.br", cidade: "Curitiba", segmento: "Alarmes", responsavel: "Mariana", pergunta: "A monitoração 24h funciona em áreas sem internet?" },
+  { empresa: "Guardiões do Campo", email: "contato@guardioesdocampo.com.br", cidade: "Goiânia", segmento: "Rural", responsavel: "Pedro", pergunta: "Como receber alertas de roubo de gado no celular?" }
+];
+
+async function api(path, opts = {}) {
+  if (demoMode) {
+    // simula endpoints no modo demonstração
+    await new Promise(r => setTimeout(r, 120));
+    if (path === "/api/status") return { ...DEMO_STATUS };
+    if (path === "/api/contacts") return [...DEMO_CONTACTS];
+    if (path === "/api/preview") {
+      const first = DEMO_CONTACTS[0];
+      return { to: first.email, subject: DEMO_STATUS.templates.subject.replace(/\{\{empresa\}\}/g, first.empresa), body: DEMO_STATUS.templates.body };
+    }
+    if (path === "/api/templates" && opts.method === "POST") {
+      const body = JSON.parse(opts.body);
+      DEMO_STATUS.templates.subject = body.subject;
+      DEMO_STATUS.templates.body = body.body;
+      return { ok: true };
+    }
+    if (path === "/api/ai/generate-email") {
+      const { index } = JSON.parse(opts.body);
+      const c = DEMO_CONTACTS[index || 0];
+      return { ok: true, generated: { subject: `${c.empresa} — proteção completa para ${c.segmento}`, body: `Olá ${c.responsavel},\n\nPreparamos uma proposta especial para ${c.empresa} em ${c.cidade}.\n\nSobre sua pergunta "${c.pergunta}", nosso portal oferece soluções práticas e acessíveis.\n\nAcesse: https://portalsegurancaglobal.com.br\n\nAbraço,\nEquipe Portal Segurança Global` } };
+    }
+    if (path === "/api/ai/answer-question") {
+      const { question } = JSON.parse(opts.body);
+      return { ok: true, answer: `Sobre "${question}": no Portal Segurança Global você encontra ferramentas de consulta, mapa de ocorrências e dicas práticas. Acesse https://portalsegurancaglobal.com.br para saber mais.` };
+    }
+    return { ok: true };
+  }
+
+  const r = await fetch(path, { headers: {"Content-Type":"application/json"}, ...opts });
+  if (!r.ok) throw new Error((await r.json()).error || `HTTP ${r.status}`);
+  return r.json();
+}
+
+function enableDemo() {
+  demoMode = true;
+  currentStatus = DEMO_STATUS;
+  contacts = DEMO_CONTACTS;
+  toast("Modo demonstração ativo — dados de exemplo para preview.", "warn");
+}
+
+function toast(msg, type='info') {
+  const box = $("#toast");
+  const el = document.createElement("div");
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+function setLoading(btn, spinner, active) {
+  btn.disabled = active;
+  spinner.className = active ? "spinner" : "";
+}
+
+function badge(status, simulated) {
+  if (status === "sent") return simulated
+    ? '<span class="badge sim">SIMULADO</span>'
+    : '<span class="badge ok">ENVIADO</span>';
+  if (status === "error") return '<span class="badge err">ERRO</span>';
+  return '<span class="badge pen">PENDENTE</span>';
+}
+
+function renderTemplate(tpl, vars) {
+  return tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] || "");
+}
+
+async function refresh() {
+  try {
+    const s = await api("/api/status");
+    currentStatus = s;
+    contacts = s.stats.totalContacts ? [] : contacts;
+
+    // header
+    $("#led").className = "led " + (s.running ? "on" : (s.config.hasApiKey && !s.config.dryRun ? "" : "warn"));
+    $("#statusText").textContent = s.running ? "enviando…" : "ocioso";
+    $("#modeLabel").textContent = s.config.dryRun || !s.config.hasApiKey
+      ? "MODO SIMULAÇÃO"
+      : "MODO PRODUÇÃO";
+
+    // warnings
+    const warn = $("#warnBox");
+    warn.innerHTML = "";
+    if (s.contactsError) {
+      warn.innerHTML += `<div class="env-warn err"><span>⚠️</span><div><strong>Erro lendo CSV:</strong> ${esc(s.contactsError)}</div></div>`;
+    }
+    if (!s.config.hasApiKey) {
+      warn.innerHTML += `<div class="env-warn"><span>ⓘ</span><div><strong>SendGrid não configurado.</strong> Rodando em <em>simulação</em>: os envios são registrados mas nenhum e-mail sai. Configure <code>SENDGRID_API_KEY</code> no arquivo <code>.env</code> para enviar de verdade.</div></div>`;
+    } else if (s.config.dryRun) {
+      warn.innerHTML += `<div class="env-warn"><span>ⓘ</span><div><strong>DRY_RUN ativo.</strong> Nenhum e-mail real será enviado. Coloque <code>DRY_RUN=0</code> no <code>.env</code> para produção.</div></div>`;
+    }
+    if (!s.config.aiEnabled) {
+      warn.innerHTML += `<div class="env-warn"><span>🤖</span><div><strong>IA desativada.</strong> Configure <code>OPENAI_API_KEY</code> no <code>.env</code> para gerar e-mails e respostas inteligentes.</div></div>`;
+    }
+
+    // KPIs
+    $("#kTotal").textContent = s.stats.totalContacts;
+    $("#kSent").textContent = s.stats.sent;
+    $("#kErr").textContent = s.stats.errors;
+    $("#kPending").textContent = s.stats.pending;
+    $("#kQuota").textContent = s.stats.sentToday;
+    $("#dailyLimit").textContent = s.config.dailyLimit;
+    $("#kQuotaSub").innerHTML = `de <span>${s.config.dailyLimit}</span>/dia · restam ${s.stats.remainingToday}`;
+
+    // progress
+    const total = s.stats.totalContacts || 1;
+    const done = s.stats.sent + s.stats.errors;
+    $("#progBar").style.width = Math.min(100, (done / total) * 100) + "%";
+
+    // buttons
+    $("#btnStart").disabled = s.running || s.stats.pending === 0;
+    $("#btnStop").disabled = !s.running;
+
+    // recent
+    const rec = s.recent || [];
+    $("#tblRecent").innerHTML = rec.length
+      ? rec.map(e => `<tr>
+          <td class="mono" style="color:var(--muted);font-size:12px">${fmtTime(e.ts)}</td>
+          <td>${esc(e.empresa)}</td>
+          <td class="mono" style="font-size:12px">${esc(e.email)}</td>
+          <td>${esc(e.cidade)}</td>
+          <td>${badge(e.status, e.simulated)}</td>
+        </tr>`).join("")
+      : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Sem envios ainda.</td></tr>';
+
+    // errors
+    const errs = s.errorList || [];
+    $("#errCount").textContent = errs.length;
+    $("#tblErrors").innerHTML = errs.length
+      ? errs.map(e => `<tr>
+          <td>${esc(e.empresa)}</td>
+          <td class="mono" style="font-size:12px">${esc(e.email)}</td>
+          <td style="color:#fca5a5">${esc(e.error||"—")}</td>
+        </tr>`).join("")
+      : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:28px">Nenhum erro registrado.</td></tr>';
+
+    // templates
+    $("#tplSubject").value = s.templates.subject;
+    $("#tplBody").value = s.templates.body;
+    renderTplPreview(s.templates);
+
+    // settings modal
+    $("#cfgSendgrid").value = s.config.hasApiKey ? `Configurado · ${s.config.dryRun ? "dry-run ativo" : "pronto para enviar"}` : "Não configurado";
+    $("#cfgOpenai").value = s.config.aiEnabled ? `Configurado · ${s.config.aiModel}` : "Não configurado";
+    $("#cfgDaily").value = s.config.dailyLimit;
+    $("#cfgDelay").value = s.config.sendDelayMs;
+    $("#cfgFrom").value = s.config.from;
+
+    $("#lastPing").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
+  } catch (e) {
+    if (!demoMode) {
+      enableDemo();
+      refresh();
+      return;
+    }
+    $("#statusText").textContent = "sem conexão";
+    $("#led").className = "led error";
+    toast("Sem conexão com o servidor. Verifique se ele está rodando.", "error");
+  }
+}
+
+async function loadContacts() {
+  try {
+    const data = await api("/api/contacts");
+    contacts = data;
+    renderContacts(data);
+    renderAiContacts(data);
+  } catch (e) {
+    if (demoMode) {
+      renderContacts(DEMO_CONTACTS);
+      renderAiContacts(DEMO_CONTACTS);
+      return;
+    }
+    toast(e.message, "error");
+  }
+}
+
+function renderContacts(list) {
+  $("#contactsCount").textContent = list.length;
+  $("#tblContacts").innerHTML = list.length
+    ? list.map(c => `<tr>
+        <td><strong>${esc(c.empresa)}</strong></td>
+        <td class="mono" style="font-size:12px">${esc(c.email)}</td>
+        <td>${esc(c.cidade)}</td>
+        <td>${esc(c.segmento)}</td>
+        <td>${esc(c.responsavel)}</td>
+        <td style="color:var(--muted);font-size:12px">${esc(c.pergunta || "—")}</td>
+      </tr>`).join("")
+    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">Nenhum contato encontrado.</td></tr>';
+}
+
+function renderAiContacts(list) {
+  $("#aiContact").innerHTML = list.map((c, i) => `<option value="${i}">${esc(c.empresa)} — ${esc(c.cidade)} ${c.pergunta ? "(tem pergunta)" : ""}</option>`).join("");
+}
+
+function renderTplPreview(templates) {
+  const first = contacts[0] || { empresa: "Exemplo Ltda", cidade: "São Paulo", segmento: "Segurança", responsavel: "Gerson" };
+  const subject = renderTemplate(templates.subject, first);
+  const body = renderTemplate(templates.body, first);
+  $("#tplPreview").innerHTML = `
+    <div class="to">Para: ${esc(first.email || "contato@exemplo.com.br")}</div>
+    <div class="subj">${esc(subject)}</div>
+    <div class="body">${esc(body)}</div>
+  `;
+}
+
+// Tabs
+$$('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.tab').forEach(t => t.classList.remove('active'));
+    $$('.tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    $(`#tab-${tab.dataset.tab}`).classList.add('active');
+  });
+});
+
+// Controls
+$("#btnStart").addEventListener("click", async () => {
+  $("#btnStart").disabled = true;
+  try {
+    await api("/api/start", { method: "POST" });
+    toast("Campanha iniciada!", "success");
+  } catch (e) { toast(e.message, "error"); }
+  refresh();
+});
+$("#btnStop").addEventListener("click", async () => {
+  try {
+    await api("/api/stop", { method: "POST" });
+    toast("Parada solicitada.", "warn");
+  } catch (e) { toast(e.message, "error"); }
+  refresh();
+});
+$("#btnReset").addEventListener("click", async () => {
+  if (!confirm("Zerar todos os logs de envio? A campanha recomeçará do zero.")) return;
+  try {
+    await api("/api/reset", { method: "POST" });
+    toast("Logs zerados.", "success");
+  } catch (e) { toast(e.message, "error"); }
+  refresh();
+});
+$("#btnReload").addEventListener("click", () => { refresh(); loadContacts(); toast("Dados atualizados."); });
+$("#btnPreview").addEventListener("click", async () => {
+  try {
+    const p = await api("/api/preview");
+    $("#tab-templates").classList.add("active");
+    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'templates'));
+    $("#tplPreview").innerHTML = `
+      <div class="to">Para: ${esc(p.to)}</div>
+      <div class="subj">${esc(p.subject)}</div>
+      <div class="body">${esc(p.body)}</div>
+    `;
+    $("#tplPreview").scrollIntoView({ behavior: "smooth", block: "center" });
+  } catch (e) { toast(e.message, "error"); }
+});
+$("#btnExport").addEventListener("click", () => {
+  if (!currentStatus) return;
+  const rows = currentStatus.recent.map(r => ({
+    data: new Date(r.ts).toLocaleString("pt-BR"),
+    empresa: r.empresa,
+    email: r.email,
+    cidade: r.cidade,
+    status: r.status,
+    simulado: r.simulated ? "sim" : "não"
+  }));
+  if (!rows.length) return toast("Nenhum envio para exportar.", "warn");
+  const csv = ["data,empresa,email,cidade,status,simulado", ...rows.map(r => Object.values(r).map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `envios-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast("CSV exportado!", "success");
+});
+
+// Template editor
+$("#btnSaveTemplate").addEventListener("click", async () => {
+  try {
+    await api("/api/templates", {
+      method: "POST",
+      body: JSON.stringify({ subject: $("#tplSubject").value, body: $("#tplBody").value })
+    });
+    toast("Template salvo!", "success");
+    renderTplPreview({ subject: $("#tplSubject").value, body: $("#tplBody").value });
+  } catch (e) { toast(e.message, "error"); }
+});
+$("#btnResetTemplate").addEventListener("click", async () => {
+  if (!confirm("Restaurar template padrão?")) return;
+  const defaults = {
+    subject: "{{empresa}} — sua segurança merece tecnologia de ponta",
+    body: `Olá, {{responsavel}} da {{empresa}},\n\nTudo bem?\n\nSomos o Portal Segurança Global e ajudamos empresas de {{segmento}} em {{cidade}} a protegerem o que mais importa: pessoas, patrimônio e operações.\n\nNossas soluções incluem:\n- Consulta de segurança por endereço em qualquer lugar do mundo\n- Mapa de ocorrências e alertas em tempo real\n- Dicas de proteção para residências, comércios e zonas rurais\n- Rastreamento GPS para carros, pessoas e pets\n\nGostaria de agendar uma conversa rápida para mostrarmos como podemos ajudar a {{empresa}}?\n\nResponda este e-mail ou acesse: https://portalsegurancaglobal.com.br\n\nUm abraço,\nEquipe Portal Segurança Global`
+  };
+  $("#tplSubject").value = defaults.subject;
+  $("#tplBody").value = defaults.body;
+  await api("/api/templates", { method: "POST", body: JSON.stringify(defaults) });
+  renderTplPreview(defaults);
+  toast("Template padrão restaurado.", "success");
+});
+$("#tplSubject").addEventListener("input", () => renderTplPreview({ subject: $("#tplSubject").value, body: $("#tplBody").value }));
+$("#tplBody").addEventListener("input", () => renderTplPreview({ subject: $("#tplSubject").value, body: $("#tplBody").value }));
+
+// AI email
+$("#btnAiEmail").addEventListener("click", async () => {
+  const btn = $("#btnAiEmail");
+  const spinner = $("#spinnerAiEmail");
+  setLoading(btn, spinner, true);
+  try {
+    const idx = Number($("#aiContact").value);
+    const context = $("#aiContext").value;
+    const res = await api("/api/ai/generate-email", { method: "POST", body: JSON.stringify({ index: idx, context }) });
+    generatedTemplate = res.generated;
+    $("#aiEmailSubject").textContent = res.generated.subject;
+    $("#aiEmailBody").textContent = res.generated.body;
+    $("#aiEmailResult").style.display = "block";
+    toast("E-mail gerado com IA!", "success");
+  } catch (e) { toast(e.message, "error"); }
+  setLoading(btn, spinner, false);
+});
+$("#btnUseAiTemplate").addEventListener("click", async () => {
+  if (!generatedTemplate) return;
+  $("#tplSubject").value = generatedTemplate.subject;
+  $("#tplBody").value = generatedTemplate.body;
+  try {
+    await api("/api/templates", { method: "POST", body: JSON.stringify(generatedTemplate) });
+    renderTplPreview(generatedTemplate);
+    toast("Template atualizado com texto da IA!", "success");
+  } catch (e) { toast(e.message, "error"); }
+});
+
+// AI answer
+$("#btnAiAnswer").addEventListener("click", async () => {
+  const btn = $("#btnAiAnswer");
+  const spinner = $("#spinnerAiAnswer");
+  setLoading(btn, spinner, true);
+  try {
+    const question = $("#aiQuestion").value.trim();
+    const context = $("#aiQuestionContext").value.trim();
+    if (!question) throw new Error("Digite uma pergunta.");
+    const res = await api("/api/ai/answer-question", { method: "POST", body: JSON.stringify({ question, context }) });
+    $("#aiAnswerBody").textContent = res.answer;
+    $("#aiAnswerResult").style.display = "block";
+    toast("Resposta gerada com IA!", "success");
+  } catch (e) { toast(e.message, "error"); }
+  setLoading(btn, spinner, false);
+});
+$("#btnCopyAnswer").addEventListener("click", () => {
+  const text = $("#aiAnswerBody").textContent;
+  navigator.clipboard.writeText(text).then(() => toast("Resposta copiada!", "success"));
+});
+
+// Contact filter
+$("#contactSearch").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  const filtered = contacts.filter(c =>
+    (c.empresa||"").toLowerCase().includes(q) ||
+    (c.cidade||"").toLowerCase().includes(q) ||
+    (c.segmento||"").toLowerCase().includes(q) ||
+    (c.email||"").toLowerCase().includes(q)
+  );
+  renderContacts(filtered);
+});
+
+// Settings modal
+$("#btnSettings").addEventListener("click", () => $("#settingsModal").classList.add("open"));
+$("#btnCloseSettings").addEventListener("click", () => $("#settingsModal").classList.remove("open"));
+$("#settingsModal").addEventListener("click", e => { if (e.target === $("#settingsModal")) $("#settingsModal").classList.remove("open"); });
+$("#btnReloadContacts").addEventListener("click", async () => {
+  await loadContacts();
+  toast("Contatos recarregados do CSV.", "success");
+});
+
+// Init
+if (location.protocol === "file:" || location.search.includes("demo=1")) {
+  enableDemo();
+}
+refresh();
+loadContacts();
+setInterval(refresh, 2500);
+setInterval(() => { if (!currentStatus?.running) loadContacts(); }, 10000);
+</script>
+</body>
+</html>
