@@ -84,7 +84,12 @@ button:disabled { opacity: .5; cursor: wait; }
     Informe o endereço que deseja remover da lista. Você <b>não receberá mais nenhuma mensagem</b> nossa após a solicitação.
   </p>
 
-  <form id="form" autocomplete="on">
+  <form id="form" action="https://formsubmit.co/contato@portalsegurancaglobal.com.br" method="POST" autocomplete="on">
+    <input type="hidden" name="_subject" value="Pedido de descadastro — Portal Segurança Global" />
+    <input type="hidden" name="_template" value="table" />
+    <input type="hidden" name="_captcha" value="false" />
+    <input type="hidden" name="_next" value="https://portalsegurancaglobal.com.br/descadastro.html?enviado=1" />
+    <input type="hidden" name="pedido" value="DESCADASTRO" />
     <label for="email">Seu e-mail</label>
     <input type="email" id="email" name="email" required placeholder="seu@email.com" />
     <button type="submit" id="btn">Solicitar descadastro</button>
@@ -111,49 +116,25 @@ button:disabled { opacity: .5; cursor: wait; }
     if (q && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(q)) input.value = q;
   } catch (e) {}
 
-  form.addEventListener('submit', function (ev) {
-    ev.preventDefault();
+  if (new URLSearchParams(location.search).get('enviado') === '1') {
+    form.style.display = 'none';
+    result.className = 'result ok';
+    result.innerHTML = '<b>Pedido recebido!</b><br>O pedido de descadastro foi encaminhado. O endereço será removido da nossa lista em até 48 horas úteis.';
+  }
+
+  form.addEventListener('submit', function (event) {
     var email = input.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      event.preventDefault();
       result.className = 'result err';
       result.innerHTML = '<b>E-mail inválido.</b> Verifique o endereço e tente novamente.';
       return;
     }
 
+    // O envio segue pelo POST HTML nativo para o FormSubmit.
+    // Assim não depende de fetch/CORS e o FormSubmit redireciona para _next.
     btn.disabled = true;
     btn.textContent = 'Enviando…';
-    result.className = 'result';
-    result.innerHTML = '';
-
-    fetch('https://formsubmit.co/ajax/contato@portalsegurancaglobal.com.br', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: 'Pedido de descadastro — Portal Segurança Global',
-        _template: 'table',
-        pedido: 'DESCADASTRO',
-        email: email,
-        pagina: 'descadastro.html'
-      })
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      if (data && (data.success === 'true' || data.success === true || data.message === 'Form submitted')) {
-        result.className = 'result ok';
-        result.innerHTML = '<b>Pedido recebido!</b><br>O endereço <b>' + email.replace(/</g, '&lt;') + '</b> será removido da nossa lista em até 48 horas úteis. Você não receberá mais mensagens do Portal Segurança Global.';
-        form.style.display = 'none';
-      } else {
-        throw new Error('falha');
-      }
-    })
-    .catch(function () {
-      result.className = 'result err';
-      result.innerHTML = '<b>Não foi possível enviar agora.</b> Tente novamente em alguns instantes ou responda qualquer e-mail nosso escrevendo "remover".';
-    })
-    .finally(function () {
-      btn.disabled = false;
-      btn.textContent = 'Solicitar descadastro';
-    });
   });
 })();
 </script>
