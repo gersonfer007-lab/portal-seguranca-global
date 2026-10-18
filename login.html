@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — Portal Segurança Global</title>
+<link rel="icon" href="brasao-sh.png" type="image/png">
+<style>
+:root{--bg:#0a1128;--bg2:#0d1730;--card:#101d3f;--border:rgba(59,130,246,.3);--accent:#3b82f6;--accent2:#f59e0b;--text:#e8eefc;--muted:#8b95a8}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,#12245a 0%,var(--bg) 60%);color:var(--text);padding:20px}
+.box{width:min(420px,96vw);background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:30px 28px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.topo{text-align:center;margin-bottom:22px}
+.topo img{width:64px;height:64px;object-fit:contain;margin-bottom:10px}
+.topo h1{font-size:1.15rem;letter-spacing:.02em}
+.topo h1 span{color:var(--accent2)}
+.topo p{color:var(--muted);font-size:.8rem;margin-top:4px}
+.abas{display:flex;gap:6px;background:rgba(10,17,40,.7);border-radius:10px;padding:4px;margin-bottom:18px}
+.aba{flex:1;text-align:center;padding:9px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--muted);transition:.18s;user-select:none}
+.aba.ativa{background:linear-gradient(90deg,#1e3a8a,#3b82f6);color:#fff}
+label{display:block;font-size:.75rem;color:var(--muted);margin:12px 0 5px;font-weight:600}
+input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--border);background:rgba(10,17,40,.8);color:var(--text);font-size:.9rem;outline:none}
+input:focus{border-color:var(--accent)}
+button.enviar{width:100%;margin-top:18px;padding:12px;border:0;border-radius:10px;font-size:.95rem;font-weight:800;cursor:pointer;background:linear-gradient(90deg,#f59e0b,#f97316);color:#0a1128}
+button.enviar:disabled{opacity:.6;cursor:wait}
+.msg{margin-top:14px;padding:10px 14px;border-radius:9px;font-size:.82rem;display:none}
+.msg.ok{display:block;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#4ade80}
+.msg.erro{display:block;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#f87171}
+.roda{margin-top:18px;text-align:center;font-size:.72rem;color:var(--muted)}
+.roda a{color:var(--accent);text-decoration:none}
+.voltar{position:fixed;top:18px;left:18px;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:600}
+.info-plano{display:none;margin-bottom:14px;padding:10px 14px;border-radius:9px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);font-size:.78rem;color:var(--accent2);text-align:center}
+</style>
+</head>
+<body>
+<a class="voltar" href="/">&#8592; Voltar ao portal</a>
+<div class="box">
+  <div class="topo">
+    <img src="brasao-sh.png" alt="Portal Segurança Global">
+    <h1>PORTAL SEGURANÇA GLOBAL <span>Pro</span></h1>
+    <p id="subtitulo">Entre com sua conta ou crie uma nova</p>
+  </div>
+
+  <div class="info-plano" id="info-plano"></div>
+
+  <div class="abas">
+    <div class="aba ativa" id="aba-entrar" onclick="mostrarAba('entrar')">Entrar</div>
+    <div class="aba" id="aba-criar" onclick="mostrarAba('criar')">Criar conta</div>
+  </div>
+
+  <form id="form-entrar" onsubmit="return entrar(event)">
+    <label for="email-e">E-mail</label>
+    <input type="email" id="email-e" required autocomplete="email" placeholder="seu@email.com">
+    <label for="senha-e">Senha</label>
+    <input type="password" id="senha-e" required autocomplete="current-password" placeholder="Sua senha">
+    <button class="enviar" type="submit" id="btn-entrar">Entrar</button>
+  </form>
+
+  <form id="form-criar" style="display:none" onsubmit="return criar(event)">
+    <label for="email-c">E-mail</label>
+    <input type="email" id="email-c" required autocomplete="email" placeholder="seu@email.com">
+    <label for="senha-c">Senha (mínimo 8 caracteres)</label>
+    <input type="password" id="senha-c" required minlength="8" autocomplete="new-password" placeholder="Crie uma senha forte">
+    <label for="senha-c2">Confirmar senha</label>
+    <input type="password" id="senha-c2" required minlength="8" autocomplete="new-password" placeholder="Repita a senha">
+    <button type="submit" class="enviar" id="btn-criar">Criar conta grátis</button>
+    <p style="margin-top:10px;font-size:.7rem;color:var(--muted);text-align:center">Conta nova ganha <b style="color:#f59e0b">1 consulta completa de cortesia</b>.</p>
+  </form>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="roda">
+    Ao continuar você concorda com os <a href="termos.html">Termos de Uso</a> e a <a href="privacidade.html">Política de Privacidade</a>.
+  </div>
+</div>
+
+<script>
+var plano = new URLSearchParams(window.location.search).get('plano');
+var NOMES = { avulsa: 'Consulta Avulsa (R$ 4,90)', pro_mensal: 'Pro Mensal (R$ 19,90/mês)', pro_anual: 'Pro Anual (R$ 149,90/ano)' };
+if (plano && NOMES[plano]) {
+  var ip = document.getElementById('info-plano');
+  ip.style.display = 'block';
+  ip.textContent = 'Plano escolhido: ' + NOMES[plano] + ' — entre ou crie sua conta para continuar';
+}
+function mostrarAba(qual) {
+  document.getElementById('aba-entrar').classList.toggle('ativa', qual === 'entrar');
+  document.getElementById('aba-criar').classList.toggle('ativa', qual === 'criar');
+  document.getElementById('form-entrar').style.display = qual === 'entrar' ? 'block' : 'none';
+  document.getElementById('form-criar').style.display = qual === 'criar' ? 'block' : 'none';
+  document.getElementById('msg').className = 'msg';
+}
+function mostrarMsg(texto, ok) {
+  var m = document.getElementById('msg');
+  m.textContent = texto;
+  m.className = 'msg ' + (ok ? 'ok' : 'erro');
+}
+function desabilitar(bots, estado) {
+  ['btn-entrar', 'btn-criar'].forEach(function (id) {
+    var b = document.getElementById(id);
+    if (b) b.disabled = estado;
+  });
+}
+async function entrar(ev) {
+  ev.preventDefault();
+  desabilitar(true, true);
+  try {
+    var r = await fetch('/api/auth/login', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('email-e').value, senha: document.getElementById('senha-e').value })
+    });
+    var j = await r.json();
+    if (r.ok) { finalizar(); return false; }
+    mostrarMsg(j.error || 'Não foi possível entrar.', false);
+  } catch (e) { mostrarMsg('Erro de conexão.', false); }
+  desabilitar(true, false);
+  return false;
+}
+async function criar(ev) {
+  ev.preventDefault();
+  var s1 = document.getElementById('senha-c').value, s2 = document.getElementById('senha-c2').value;
+  if (s1 !== s2) { mostrarMsg('As senhas não conferem.', false); return false; }
+  desabilitar(true, true);
+  try {
+    var r = await fetch('/api/auth/registrar', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('email-c').value, senha: s1 })
+    });
+    var j = await r.json();
+    if (r.ok) { finalizar(); return false; }
+    mostrarMsg(j.error || 'Não foi possível criar a conta.', false);
+  } catch (e) { mostrarMsg('Erro de conexão.', false); }
+  desabilitar(true, false);
+  return false;
+}
+function finalizar() {
+  window.location.href = plano ? '/?assinar=' + encodeURIComponent(plano) : '/';
+}
+// Ja logado? Vai direto
+fetch('/api/auth/eu', { credentials: 'same-origin' })
+  .then(function (r) { return r.json(); })
+  .then(function (j) { if (j && j.logado) finalizar(); })
+  .catch(function () {});
+</script>
+</body>
+</html>
