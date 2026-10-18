@@ -103,6 +103,11 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   display: flex; align-items: center; gap: 12px;
   font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em;
 }
+.header-brand > img {
+  display: block; flex: 0 0 36px; width: 36px; height: 36px;
+  object-fit: contain; border-radius: 0; animation: none !important; transform: none;
+}
+.emblem-img { animation: none !important; transform: none; }
 .header-brand .icon {
   width: 36px; height: 36px; background: var(--gradient-accent);
   border-radius: 10px; display: flex; align-items: center; justify-content: center;
@@ -1071,7 +1076,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   /* HEADER compacto — nao quebra em 3 linhas */
   .header { padding: 0 .7rem; height: 54px; gap: .5rem; }
   .header-brand { font-size: .76rem; letter-spacing: 0; gap: 7px; line-height: 1.1; min-width: 0; }
-  .header-brand img { width: 28px !important; height: 28px !important; }
+  .header-brand img { width: 28px !important; height: 28px !important; flex-basis: 28px; }
   .header-brand > span:not(.header-badge) {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw;
   }
@@ -1503,7 +1508,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <!-- HEADER -->
 <header class="header">
   <div class="header-brand">
-    <img src="brasao-sh.png" alt="SH" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">
+    <img src="brasao-sh.png" alt="Brasão Portal Segurança Global">
     <span>PORTAL SEGURANÇA GLOBAL</span>
     <span class="header-badge">Intel</span>
   </div>
@@ -1515,6 +1520,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <a href="constituicao.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Constituição</a>
     <a href="caminhada-segura.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Caminhada Segura</a>
     <a href="quem-somos.html" style="color:var(--text-secondary);text-decoration:none;font-weight:600;">Quem Somos</a>
+    <a href="login.html" id="psg-nav-conta" style="color:var(--accent);text-decoration:none;font-weight:600;">Entrar</a>
   </nav>
   <div class="header-status">
     <span class="dot"></span>
@@ -2770,7 +2776,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=20261001r23"></script>
+<script defer src="app.js?v=paywall1"></script>
 <script>
 (function(){
   var EDICOES={
@@ -3051,5 +3057,51 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   setInterval(function(){ try { carregar(); } catch(e){} }, 15*60*1000);
 })();
 </script>
+
+<!-- ============================================================ -->
+<!-- PAYWALL — modal de planos (abre quando o resumo gratis aparece) -->
+<!-- ============================================================ -->
+<style>
+.psg-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(5,10,25,.8);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:18px}
+.psg-modal .psg-modal-box{position:relative;width:min(680px,96vw);max-height:92vh;overflow:auto;background:#0d1730;border:1px solid rgba(59,130,246,.35);border-radius:18px;padding:28px;transform:translateY(14px);opacity:0;transition:.22s}
+.psg-modal.active .psg-modal-box{transform:translateY(0);opacity:1}
+.psg-modal-close{position:absolute;top:10px;right:12px;background:none;border:0;color:#8b95a8;font-size:26px;cursor:pointer;line-height:1}
+.psg-planos{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0 8px}
+.psg-plano{border:1px solid rgba(59,130,246,.3);border-radius:14px;padding:16px;background:rgba(30,58,138,.12);text-align:center}
+.psg-plano.destaque{border-color:#f59e0b;background:rgba(245,158,11,.08)}
+.psg-plano h4{margin:0 0 4px;font-size:.95rem;color:#e8eefc}
+.psg-preco{font-size:1.5rem;font-weight:800;color:#f59e0b;margin:6px 0 2px}
+.psg-plano small{color:#8b95a8;font-size:.72rem;display:block;min-height:32px}
+.psg-btn{margin-top:12px;width:100%;cursor:pointer;border:0;border-radius:9px;padding:10px;font-weight:800;font-size:.85rem;background:linear-gradient(90deg,#f59e0b,#f97316);color:#0a1128}
+.psg-btn.azul{background:linear-gradient(90deg,#1e3a8a,#3b82f6);color:#fff}
+</style>
+<div id="psg-paywall" class="psg-modal">
+  <div class="psg-modal-box">
+    <button class="psg-modal-close" onclick="psgFecharPaywall()" aria-label="Fechar">&times;</button>
+    <h3 style="margin:0;color:#e8eefc;font-size:1.15rem">Portal Segurança Global <span style="color:#f59e0b">Pro</span></h3>
+    <p id="psg-paywall-msg" style="color:#8b95a8;font-size:.85rem;margin:8px 0 0">Escolha um plano:</p>
+    <div class="psg-planos">
+      <div class="psg-plano">
+        <h4>Consulta Avulsa</h4>
+        <div class="psg-preco" id="psg-preco-avulsa">R$ 4,90</div>
+        <small>1 consulta completa, sem assinatura</small>
+        <button class="psg-btn azul" onclick="psgAssinar('avulsa')">Comprar</button>
+      </div>
+      <div class="psg-plano destaque">
+        <h4>Pro Mensal</h4>
+        <div class="psg-preco" id="psg-preco-pro_mensal">R$ 19,90</div>
+        <small>por mês — ilimitado, renova automática, cancele quando quiser</small>
+        <button class="psg-btn" onclick="psgAssinar('pro_mensal')">Assinar</button>
+      </div>
+      <div class="psg-plano">
+        <h4>Pro Anual</h4>
+        <div class="psg-preco" id="psg-preco-pro_anual">R$ 149,90</div>
+        <small>por ano — ilimitado, renova automática, cancele quando quiser</small>
+        <button class="psg-btn azul" onclick="psgAssinar('pro_anual')">Assinar</button>
+      </div>
+    </div>
+    <p style="color:#8b95a8;font-size:.72rem;margin:10px 0 0">Nova conta ganha 1 consulta completa de cortesia. Pagamento processado pelo Mercado Pago (Pix ou cartão). Ao assinar você concorda com os <a href="termos.html" style="color:#3b82f6">Termos de Uso</a> e a <a href="privacidade.html" style="color:#3b82f6">Política de Privacidade</a>. <a href="planos.html" style="color:#3b82f6">Ver página de planos</a></p>
+  </div>
+</div>
 </body>
 </html>
