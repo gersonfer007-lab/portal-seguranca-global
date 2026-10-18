@@ -470,8 +470,10 @@ async function handleSearch() {
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
     updateLoading('Compilando Safety Score...'); await sleep(300);
-    currentData = generateIntelligence(lat, lng, addressData);
+    var respConsulta = await psgConsultar(lat, lng, addressData);
+    currentData = respConsulta.dados;
     renderDashboard(currentData);
+    psgAposConsulta(respConsulta);
     if (currentMapView === '3d') { loadGlobeOnDemand(); }
     hideLoading();
   } catch (err) { hideLoading(); alert('Erro: ' + err.message); }
@@ -710,8 +712,10 @@ async function analyzeCoords(lat, lng, addressData) {
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
     updateLoading('Compilando Safety Score...'); await sleep(300);
 
-    currentData = generateIntelligence(lat, lng, addressData);
+    var respConsulta = await psgConsultar(lat, lng, addressData);
+    currentData = respConsulta.dados;
     renderDashboard(currentData);
+    psgAposConsulta(respConsulta);
     if (currentMapView === '3d') { loadGlobeOnDemand(); }
     hideLoading();
   } catch (err) {
@@ -834,41 +838,159 @@ async function geocodeAddress(addressData, rawQuery) {
 }
 
 // ============================================================
-// INTELLIGENCE ENGINE
+// PAYWALL — a analise agora e calculada no SERVIDOR (/api/consulta).
+// O navegador so recebe o que o servidor liberar:
+//   assinante/avulsa/cortesia -> resultado completo
+//   visitante/bloqueado       -> resumo publico (score aproximado)
+// A formula NAO existe mais aqui no cliente de proposito:
+// e isso que impede burlar o paywall pelo codigo-fonte.
 // ============================================================
-function generateIntelligence(lat, lng, address) {
-  // FATOR TEMPORAL â€” atualizacao automatica dos dados:
-  // o indice de cada local evolui sozinho ao longo dos dias
-  // (ciclo mensal), sem nenhuma intervencao humana.
-  var dia = Math.floor(Date.now() / 86400000) % 30;
-  const seed = Math.abs(Math.sin(lat * 1000 + lng * 2000 + dia * 0.37)) * 10000;
-  const rng = (min, max) => min + ((seed * 9301 + 49297) % 233280) / 233280 * (max - min);
-  const rngI = (min, max) => Math.round(rng(min, max));
-  const crimeTypes = { 'Furto/Roubo': rngI(5, 45), 'Agressao': rngI(2, 18), 'Vandalismo': rngI(3, 22), 'Trafico': rngI(1, 15), 'Estelionato': rngI(2, 12), 'Outros': rngI(1, 8) };
-  const totalOccurrences = Object.values(crimeTypes).reduce((a, b) => a + b, 0);
-  const crimeScore = Math.max(5, Math.min(100, 100 - (totalOccurrences / 1.2)));
-  const cameras = rngI(2, 35), lightCoverage = rngI(40, 98), commerce = rngI(8, 120), policeStations = rngI(0, 4), hospitals = rngI(0, 3);
-  const infraScore = Math.min(100, Math.round((cameras / 35 * 25) + (lightCoverage / 100 * 35) + (commerce / 120 * 25) + ((policeStations + hospitals) / 7 * 15)));
-  const pedestrianFlow = rngI(30, 100), publicTransport = rngI(2, 20), nightActivity = rngI(10, 90);
-  const movementScore = Math.round((pedestrianFlow * .4) + (publicTransport / 20 * 100 * .3) + (nightActivity * .3));
-  const safetyScore = Math.round(crimeScore * 0.45 + infraScore * 0.30 + movementScore * 0.25);
-  const heatPoints = [], markerPoints = [];
-  const crimeLabels = ['Furto', 'Roubo', 'Agressao', 'Vandalismo', 'Estelionato'];
-  for (let i = 0; i < totalOccurrences; i++) {
-    const pLat = lat + (Math.random() - .5) * .025, pLng = lng + (Math.random() - .5) * .03, intensity = .3 + Math.random() * .7;
-    heatPoints.push([pLat, pLng, intensity]);
-    if (i < 30) { markerPoints.push({ lat: pLat, lng: pLng, type: crimeLabels[Math.floor(Math.random() * crimeLabels.length)], date: randomRecentDate() }); }
+function psgToast(msg) {
+  var t = document.getElementById('psg-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'psg-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e3a8a;color:#fff;padding:12px 22px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:99999;box-shadow:0 8px 30px rgba(0,0,0,.45);border:1px solid rgba(59,130,246,.5);max-width:90vw;text-align:center;display:none;';
+    document.body.appendChild(t);
   }
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const monthlyData = months.map(() => rngI(Math.max(5, totalOccurrences - 20), totalOccurrences + 15));
-  const occurrences = heatPoints.map(function(hp) { return { lat: hp[0], lng: hp[1], intensity: hp[2] }; });
-  return { lat, lng, address, safetyScore, crimeScore: Math.round(crimeScore), infraScore, movementScore: Math.min(100, movementScore), crimeTypes, totalOccurrences, cameras, lightCoverage, commerce, policeStations, hospitals, pedestrianFlow, publicTransport, nightActivity, heatPoints, markerPoints, occurrences, monthlyData, months };
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function () { t.style.display = 'none'; }, 6500);
 }
 
-function randomRecentDate() {
-  const d = new Date(); d.setDate(d.getDate() - Math.floor(Math.random() * 90));
-  return d.toLocaleDateString('pt-BR');
+async function psgConsultar(lat, lng, addressData) {
+  var r = await fetch('/api/consulta', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ lat: lat, lng: lng, address: addressData })
+  });
+  var j = null;
+  try { j = await r.json(); } catch (e) {}
+  if (r.ok && j && j.dados) { return j; }
+  if (r.status === 402 && j && j.dados) { j.acesso = 'bloqueado'; return j; }
+  throw new Error((j && j.error) || 'Nao foi possivel concluir a consulta agora. Tente novamente em instantes.');
 }
+
+function psgAposConsulta(resp) {
+  try {
+    if (resp.acesso === 'visitante' || resp.acesso === 'bloqueado') {
+      setTimeout(function () { psgAbrirPaywall(resp.acesso, resp.planos); }, 900);
+    } else if (resp.acesso === 'cortesia') {
+      psgToast('Esta foi sua consulta gratuita de cortesia. Assine o Pro para consultas ilimitadas.');
+    } else if (resp.acesso === 'avulsa') {
+      psgToast('Consulta avulsa utilizada. Obrigado!');
+    }
+    psgAtualizarConta();
+  } catch (e) {}
+}
+
+function psgMostrarSeloPaywall() {
+  var ja = document.getElementById('psg-teaser-banner');
+  if (ja) { ja.style.display = 'flex'; return; }
+  var alvo = document.getElementById('main-content');
+  if (!alvo) return;
+  var b = document.createElement('div');
+  b.id = 'psg-teaser-banner';
+  b.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:14px 0;padding:14px 18px;border:1px solid #f59e0b;border-radius:12px;background:linear-gradient(90deg,rgba(245,158,11,.12),rgba(30,58,138,.18));';
+  b.innerHTML = '<div style="font-size:.9rem;font-weight:600;flex:1;min-width:220px">Resumo gratuito &#8212; o relat&#243;rio completo (score exato, ocorr&#234;ncias, mapa de calor e hist&#243;rico) &#233; exclusivo dos planos.</div>' +
+    '<button type="button" id="psg-banner-btn" style="cursor:pointer;background:linear-gradient(90deg,#f59e0b,#f97316);color:#0a1128;border:0;font-weight:800;padding:10px 20px;border-radius:9px;font-size:.85rem;white-space:nowrap">Ver planos</button>';
+  alvo.insertBefore(b, alvo.firstChild);
+  var btn = document.getElementById('psg-banner-btn');
+  if (btn) btn.onclick = function () { psgAbrirPaywall('bloqueado'); };
+}
+
+function psgAbrirPaywall(modo, planos) {
+  var ov = document.getElementById('psg-paywall');
+  if (!ov) return;
+  var msg = document.getElementById('psg-paywall-msg');
+  if (msg) {
+    if (modo === 'bloqueado') {
+      msg.textContent = 'Sua consulta gratuita acabou. Escolha um plano para ver o relat\u00f3rio completo deste endere\u00e7o:';
+    } else {
+      msg.textContent = 'Voc\u00ea est\u00e1 vendo o resumo gr\u00e1tis. Crie sua conta e escolha um plano para o relat\u00f3rio completo:';
+    }
+  }
+  if (planos && planos.length) {
+    for (var i = 0; i < planos.length; i++) {
+      var el = document.getElementById('psg-preco-' + planos[i].id);
+      if (el) el.textContent = planos[i].preco;
+    }
+  }
+  ov.style.display = 'flex';
+  setTimeout(function () { ov.classList.add('active'); }, 10);
+}
+
+function psgFecharPaywall() {
+  var ov = document.getElementById('psg-paywall');
+  if (!ov) return;
+  ov.classList.remove('active');
+  setTimeout(function () { ov.style.display = 'none'; }, 220);
+}
+
+async function psgAssinar(plano) {
+  try {
+    var r = await fetch('/api/assinatura', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ plano: plano })
+    });
+    if (r.status === 401) { window.location.href = 'login.html?plano=' + encodeURIComponent(plano); return; }
+    var j = null;
+    try { j = await r.json(); } catch (e) {}
+    if (r.ok && j && j.url) {
+      psgToast('Abrindo o pagamento seguro do Mercado Pago...');
+      window.open(j.url, '_blank');
+    } else {
+      psgToast((j && j.error) || 'Nao foi possivel iniciar o pagamento agora.');
+    }
+  } catch (e) {
+    psgToast('Erro de conexao com o servidor.');
+  }
+}
+
+function psgAtualizarConta() {
+  var nav = document.getElementById('psg-nav-conta');
+  if (!nav) return;
+  fetch('/api/auth/eu', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (j && j.logado) {
+        nav.textContent = 'Sair';
+        nav.removeAttribute('href');
+        nav.style.cursor = 'pointer';
+        nav.onclick = function (ev) {
+          ev.preventDefault();
+          fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
+            .then(function () { window.location.href = '/'; });
+        };
+      } else {
+        nav.textContent = 'Entrar';
+        nav.setAttribute('href', 'login.html');
+        nav.onclick = null;
+      }
+    })
+    .catch(function () {});
+}
+
+// Ao abrir a pagina: atualiza o botao de conta e, se veio de um
+// login com plano escolhido (?assinar=xxx), ja abre o pagamento.
+(function () {
+  try {
+    psgAtualizarConta();
+    var qp = new URLSearchParams(window.location.search);
+    var pl = qp.get('assinar');
+    if (pl) {
+      var tenta = function (n) {
+        if (typeof psgAssinar === 'function') { psgAssinar(pl); }
+        else if (n < 40) { setTimeout(function () { tenta(n + 1); }, 150); }
+      };
+      setTimeout(function () { tenta(0); }, 400);
+    }
+  } catch (e) {}
+})();
 
 // ============================================================
 // RELOGIO MUNDIAL â€” horario e fuso horario de cada pais
@@ -1296,6 +1418,35 @@ function renderDashboard(data) {
       markersLayer.addLayer(L.circleMarker([p.lat, p.lng], { radius: 5, color: '#ef4444', fillColor: '#ef4444', fillOpacity: .7, weight: 1 }).bindPopup('<b>' + p.type + '</b><br>' + p.date));
     });
     L.marker([data.lat, data.lng]).addTo(markersLayer).bindPopup('<b>Local pesquisado</b><br>' + data.address.fullAddress).openPopup();
+  }
+  if (data.teaser) {
+    // RESUMO PUBLICO (visitante / sem plano): so o score aproximado,
+    // arredondado para baixo. Nenhum dado pago e renderizado.
+    const apr = (data.scoreAproximado != null) ? data.scoreAproximado : data.safetyScore;
+    const corFaixa = apr >= 70 ? 'var(--green)' : apr >= 40 ? 'var(--yellow)' : 'var(--red)';
+    const rotFaixa = apr >= 70 ? 'SEGURO' : apr >= 40 ? 'MODERADO' : 'CRITICO';
+    const circ = 2 * Math.PI * 78;
+    const off = circ - (apr / 100) * circ;
+    document.getElementById('score-circle').style.stroke = corFaixa;
+    document.getElementById('score-circle').style.strokeDashoffset = off;
+    const sn = document.getElementById('score-number');
+    sn.textContent = '\u2248 ' + apr;
+    sn.style.color = corFaixa;
+    document.getElementById('score-label').textContent = rotFaixa + ' \u2014 RESUMO';
+    document.getElementById('score-label').style.color = corFaixa;
+    document.getElementById('score-timestamp').textContent = new Date().toLocaleString('pt-BR');
+    animatePillar('pillar-crime', 'pillar-crime-val', 0); document.getElementById('pillar-crime-val').textContent = '\u2014';
+    animatePillar('pillar-infra', 'pillar-infra-val', 0); document.getElementById('pillar-infra-val').textContent = '\u2014';
+    animatePillar('pillar-movement', 'pillar-movement-val', 0); document.getElementById('pillar-movement-val').textContent = '\u2014';
+    document.getElementById('stat-occurrences').textContent = '\u2014';
+    document.getElementById('stat-cameras').textContent = '\u2014';
+    document.getElementById('stat-lights').textContent = '\u2014';
+    document.getElementById('stat-commerce').textContent = '\u2014';
+    try { if (chartTypes) { chartTypes.destroy(); chartTypes = null; } } catch (e) {}
+    try { if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; } } catch (e) {}
+    psgMostrarSeloPaywall();
+    document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
+    return;
   }
   const circumference = 2 * Math.PI * 78;
   const offset = circumference - (data.safetyScore / 100) * circumference;
