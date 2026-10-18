@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planos — Portal Segurança Global</title>
+<link rel="icon" href="brasao-sh.png" type="image/png">
+<style>
+:root{--bg:#0a1128;--bg2:#0d1730;--border:rgba(59,130,246,.3);--accent:#3b82f6;--accent2:#f59e0b;--text:#e8eefc;--muted:#8b95a8}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+body{background:radial-gradient(ellipse at top,#12245a 0%,var(--bg) 60%);color:var(--text);min-height:100vh}
+.topo{display:flex;align-items:center;justify-content:center;gap:12px;padding:22px;border-bottom:1px solid rgba(59,130,246,.15)}
+.topo img{width:40px;height:40px;object-fit:contain}
+.topo b{letter-spacing:.02em}
+.topo a{color:var(--muted);text-decoration:none;font-size:.82rem;font-weight:600;margin-left:14px}
+main{max-width:960px;margin:0 auto;padding:36px 20px 60px}
+h1{text-align:center;font-size:1.6rem}
+.sub{text-align:center;color:var(--muted);font-size:.9rem;margin:10px 0 30px}
+.grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.plano{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:26px 22px;display:flex;flex-direction:column}
+.plano.destaque{border-color:var(--accent2);box-shadow:0 0 40px rgba(245,158,11,.12);position:relative}
+.plano.destaque::before{content:"MAIS ESCOLHIDO";position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#f59e0b,#f97316);color:#0a1128;font-size:.62rem;font-weight:800;padding:4px 12px;border-radius:99px}
+.plano h2{font-size:1.05rem;margin-bottom:4px}
+.plano .preco{font-size:2rem;font-weight:800;color:var(--accent2);margin:12px 0 2px}
+.plano .periodo{color:var(--muted);font-size:.78rem}
+.plano ul{list-style:none;margin:16px 0;flex:1}
+.plano li{font-size:.83rem;color:var(--text);padding:5px 0 5px 24px;position:relative}
+.plano li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+.botao{display:block;text-align:center;text-decoration:none;padding:12px;border-radius:10px;font-weight:800;font-size:.9rem;background:linear-gradient(90deg,#1e3a8a,#3b82f6);color:#fff}
+.plano.destaque .botao{background:linear-gradient(90deg,#f59e0b,#f97316);color:#0a1128}
+.faq{margin-top:44px}
+.faq h3{font-size:1rem;margin-bottom:14px}
+.faq p{font-size:.83rem;color:var(--muted);margin-bottom:12px;line-height:1.55}
+.faq b{color:var(--text)}
+.rodape{text-align:center;color:var(--muted);font-size:.72rem;margin-top:40px}
+.rodape a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="topo">
+  <img src="brasao-sh.png" alt="Portal Segurança Global">
+  <b>PORTAL SEGURANÇA GLOBAL</b>
+  <a href="/">Voltar ao portal</a>
+</div>
+<main>
+  <h1>Escolha seu plano</h1>
+  <p class="sub">Consulta de segurança por endereço: score exato, ocorrências, mapa de calor, histórico e relatório em PDF.</p>
+
+  <div class="grade">
+    <div class="plano">
+      <h2>Consulta Avulsa</h2>
+      <div class="preco">R$ 4,90</div>
+      <div class="periodo">pagamento único</div>
+      <ul>
+        <li>1 consulta completa</li>
+        <li>Score exato do endereço</li>
+        <li>Mapa de calor e ocorrências</li>
+        <li>Relatório em PDF</li>
+        <li>Sem assinatura, sem renovação</li>
+      </ul>
+      <a class="botao" href="login.html?plano=avulsa">Comprar avulsa</a>
+    </div>
+
+    <div class="plano destaque">
+      <h2>Pro Mensal</h2>
+      <div class="preco">R$ 19,90</div>
+      <div class="periodo">por mês — renova automaticamente</div>
+      <ul>
+        <li>Consultas ilimitadas</li>
+        <li>Todos os recursos do portal</li>
+        <li>Relatórios em PDF sem limite</li>
+        <li>Sem marca de cortesia</li>
+        <li>Cancele quando quiser</li>
+      </ul>
+      <a class="botao" href="login.html?plano=pro_mensal">Assinar Pro Mensal</a>
+    </div>
+
+    <div class="plano">
+      <h2>Pro Anual</h2>
+      <div class="preco">R$ 149,90</div>
+      <div class="periodo">por ano — renova automaticamente</div>
+      <ul>
+        <li>Tudo do Pro Mensal</li>
+        <li>Economia de mais de 35%</li>
+        <li>Consultas ilimitadas por 12 meses</li>
+        <li>Cancele quando quiser</li>
+      </ul>
+      <a class="botao" href="login.html?plano=pro_anual">Assinar Pro Anual</a>
+    </div>
+  </div>
+
+  <div class="faq">
+    <h3>Perguntas frequentes</h3>
+    <p><b>Como funciona o grátis?</b> Qualquer pessoa pode consultar e ver o resumo gratuito (faixa de segurança e score aproximado). Ao criar uma conta, você ganha 1 consulta completa de cortesia, uma única vez.</p>
+    <p><b>Como pago?</b> Pelo Mercado Pago, com Pix ou cartão, em ambiente seguro do próprio Mercado Pago. O portal não guarda dados de cartão.</p>
+    <p><b>A assinatura renova sozinha?</b> Sim, o Pro Mensal e o Pro Anual renovam automaticamente no fim do período. Você pode cancelar a renovação quando quiser e continua com acesso até o fim do que já pagou.</p>
+    <p><b>E se eu pagar com um e-mail diferente do cadastro?</b> Entre em contato pelo e-mail do portal informando o e-mail usado na compra que resgatamos o plano para sua conta.</p>
+  </div>
+
+  <div class="rodape">
+    Pagamento processado pelo Mercado Pago · <a href="termos.html">Termos de Uso</a> · <a href="privacidade.html">Política de Privacidade</a> · <a href="descadastro.html">Descadastro de e-mails</a>
+  </div>
+</main>
+</body>
+</html>
