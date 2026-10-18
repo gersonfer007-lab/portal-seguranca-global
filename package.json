@@ -1,7 +1,7 @@
 {
   "name": "portal-seguranca-global",
-  "version": "2.0.0",
-  "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Analise de Localizacao (100% Gratuito)",
+  "version": "3.0.0",
+  "description": "Portal Seguranca Global — Inteligencia em Seguranca Urbana e Analise de Localizacao (Free + Pro)",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0"
@@ -11,11 +11,12 @@
     "dev": "node server.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
-    "helmet": "^8.0.0",
-    "express-rate-limit": "^7.4.0",
+    "axios": "^1.7.2",
     "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^8.0.0",
     "morgan": "^1.10.0",
-    "axios": "^1.7.2"
+    "pg": "^8.12.0"
   }
 }
