@@ -210,6 +210,16 @@ app.get('/api/health', function(req, res) {
 });
 
 // ============================================================
+// PAYWALL — conta, consulta controlada e assinaturas
+// (carregado com try/catch: se algo falhar, o portal segue no ar)
+// ============================================================
+try {
+  require('./paywall')(app);
+} catch (paywallErr) {
+  console.error('[PAYWALL] modulo nao carregou (portal segue em modo livre):', paywallErr.message);
+}
+
+// ============================================================
 // 404 Handler
 // ============================================================
 app.use(function(req, res) {
