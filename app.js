@@ -410,6 +410,36 @@ function switchMapView(mode) {
 }
 
 // ============================================================
+// COORDENADAS GPS — reconhece latitude/longitude digitadas
+// Formatos aceitos:
+//   -23.4205, -51.9331
+//   -23.4205 -51.9331
+//   lat -23.4205 lon -51.9331
+//   -23.4205,-51.9331
+// Valida os limites (lat -90..90, lng -180..180).
+// ============================================================
+function parseCoordinates(texto) {
+  if (!texto) return null;
+  var t = String(texto).trim();
+  // so procede se a string tiver numeros; evita tratar rua "Rua 123" como coord
+  var m = t.match(/(-?\d+(?:[.,]\d+)?)[^\d+\-,.]+(-?\d+(?:[.,]\d+)?)/);
+  if (!m) return null;
+  // exige que nao seja CEP (8 digitos seguidos)
+  if (/^\d{8}$/.test(t.replace(/\D/g, ''))) return null;
+  var a = parseFloat(m[1].replace(',', '.'));
+  var b = parseFloat(m[2].replace(',', '.'));
+  if (!isFinite(a) || !isFinite(b)) return null;
+  // tenta (lat, lng); se o primeiro estourar o limite de lat, inverte
+  if (Math.abs(a) <= 90 && Math.abs(b) <= 180) {
+    return { lat: a, lng: b };
+  }
+  if (Math.abs(b) <= 90 && Math.abs(a) <= 180) {
+    return { lat: b, lng: a };
+  }
+  return null;
+}
+
+// ============================================================
 // SEARCH (com validacao server-side)
 // ============================================================
 async function handleSearch() {
@@ -444,6 +474,41 @@ async function handleSearch() {
   SH_SECURITY.logEvent('SEARCH_START', query.substring(0, 80));
   showLoading('Consultando endereco...');
   try {
+    // ---- COORDENADAS GPS (latitude, longitude) ----
+    // Aceita: "-23.4205, -51.9331" | "-23.4205 -51.9331" | "lat -23.4205 lon -51.9331"
+    // Se a pessoa digitar coordenadas, vai direto pro ponto e o Nominatim
+    // descobre o endereco mais proximo (rua, bairro, cidade).
+    const coord = parseCoordinates(query);
+    if (coord) {
+      updateLoading('Localizando as coordenadas no mapa...');
+      let addressData = { street: '', neighborhood: '', city: '', state: '', country: '', country_code: '', cep: '', fullAddress: 'Latitude ' + coord.lat + ', Longitude ' + coord.lng };
+      try {
+        const revRes = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&lat=' + coord.lat + '&lon=' + coord.lng + '&accept-language=pt-BR', { headers: { 'Accept': 'application/json' } });
+        const rev = await revRes.json();
+        if (rev && rev.display_name) {
+          const a = rev.address || {};
+          addressData = {
+            street: a.road || a.pedestrian || a.highway || a.hamlet || '',
+            neighborhood: a.suburb || a.neighbourhood || a.quarter || '',
+            city: a.city || a.town || a.village || a.municipality || a.county || '',
+            state: a.state || '',
+            country: a.country || '',
+            country_code: a.country_code || '',
+            cep: a.postcode || '',
+            fullAddress: rev.display_name
+          };
+        }
+      } catch (revErr) { console.warn('Reverse geocode falhou, usando coordenadas diretas:', revErr.message); }
+      updateLoading('Analisando dados de criminalidade...'); await sleep(500);
+      updateLoading('Compilando Safety Score...'); await sleep(300);
+      var respCoord = await psgConsultar(coord.lat, coord.lng, addressData);
+      currentData = respCoord.dados;
+      renderDashboard(currentData);
+      psgAposConsulta(respCoord);
+      if (currentMapView === '3d') { loadGlobeOnDemand(); }
+      hideLoading();
+      return;
+    }
     const cepClean = query.replace(/\D/g, '');
     let addressData;
     if (cepClean.length === 8 && /^\d{8}$/.test(cepClean)) {
@@ -1402,7 +1467,30 @@ function renderDashboard(data) {
   if (!map) { try { initMap(); } catch(e) { console.error('[MAP] initMap falhou:', e); } }
   if (map) map.invalidateSize();
   document.getElementById('result-address').textContent = data.address.fullAddress;
-  document.getElementById('result-meta').textContent = 'Lat ' + data.lat.toFixed(4) + ' | Lng ' + data.lng.toFixed(4) + (data.address.cep ? ' | CEP ' + data.address.cep : '') + ' | Raio de analise: 1.5km';
+  var metaEl = document.getElementById('result-meta');
+  var coordsTxt = data.lat.toFixed(5) + ', ' + data.lng.toFixed(5);
+  metaEl.textContent = 'Lat ' + data.lat.toFixed(4) + ' | Lng ' + data.lng.toFixed(4) + (data.address.cep ? ' | CEP ' + data.address.cep : '') + ' | Raio de analise: 1.5km';
+  // Botao "Copiar GPS" — facilita o usuario guardar/compartilhar o ponto exato
+  if (!document.getElementById('psg-copy-gps')) {
+    var btn = document.createElement('button');
+    btn.id = 'psg-copy-gps';
+    btn.type = 'button';
+    btn.style.cssText = 'margin-top:6px;cursor:pointer;background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.4);border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;';
+    btn.textContent = 'Copiar coordenadas GPS';
+    btn.onclick = function () {
+      var copiar = data.lat.toFixed(5) + ', ' + data.lng.toFixed(5);
+      function ok() { btn.textContent = 'Copiado!'; setTimeout(function () { btn.textContent = 'Copiar coordenadas GPS'; }, 2000); }
+      function falhou() {
+        var area = document.createElement('textarea');
+        area.value = copiar; document.body.appendChild(area); area.select();
+        try { document.execCommand('copy'); ok(); } catch (e) { btn.textContent = copiar; }
+        document.body.removeChild(area);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(copiar).then(ok).catch(falhou); }
+      else { falhou(); }
+    };
+    metaEl.parentElement.insertBefore(btn, metaEl.nextSibling);
+  }
   WorldClock.setLocalClock(data.address.country_code || '', data.address.state || '');
   loadRoadAlerts(data.lat, data.lng);
   loadNauticAlerts(data.lat, data.lng);
