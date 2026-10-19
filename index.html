@@ -329,6 +329,16 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
   font-size: .72rem;
 }
+.search-gps-help {
+  margin-top: .7rem; font-size: .75rem; color: var(--text-muted);
+  line-height: 1.6; background: rgba(59,130,246,.06); border: 1px solid rgba(59,130,246,.18);
+  border-radius: 9px; padding: 9px 13px; text-align: left;
+}
+.search-gps-help code {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem; color: var(--accent);
+}
 
 /* ============================================================
    PESQUISAR PELO MAPA — botoes na area de busca
@@ -1715,13 +1725,14 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <h1 class="search-title">Consulte a Segurança de Qualquer Lugar do Mundo</h1>
   <p class="search-subtitle">Análise com dados atualizados regularmente baseada em criminalidade, infraestrutura e movimentação urbana — cobertura global</p>
   <div class="search-box">
-    <input type="text" id="search-input" placeholder="Endere&ccedil;o, CEP ou rodovia (ex.: BR-116)..." autocomplete="off">
+    <input type="text" id="search-input" placeholder="Endere&ccedil;o, CEP, rodovia ou GPS (ex.: -23.4205, -51.9331)..." autocomplete="off">
     <button id="search-btn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       Analisar
     </button>
   </div>
-  <p class="search-hint">Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd> | <kbd>Champs-Elysees, Paris</kbd> | <kbd>coordenadas GPS</kbd></p>
+  <p class="search-hint">Exemplos: <kbd>87020-025</kbd> | <kbd>Times Square, New York</kbd> | <kbd>Shibuya, Tokyo</kbd> | <kbd>Champs-Elysees, Paris</kbd> | <kbd>-23.4205, -51.9331</kbd></p>
+  <p class="search-gps-help">&#128205; <b>Como usar GPS (latitude/longitude):</b> no Google Maps, clique com o bot&atilde;o direito num ponto e copie os n&uacute;meros que aparecem em cima (ex.: <code>-23.4205, -51.9331</code>). Cole aqui e clique em Analisar. O portal encontra a rua, o bairro e a cidade mais pr&oacute;ximos daquele ponto. Funciona para qualquer lugar do mundo &mdash; rua, fazenda, praia ou ponto de refer&ecirc;ncia.</p>
 
   <!-- OPCAO DE PESQUISA PELO MAPA -->
   <div class="search-divider"><span id="search-divider-text">ou</span></div>
@@ -2776,7 +2787,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=paywall1"></script>
+<script defer src="app.js?v=paywall2"></script>
 <script>
 (function(){
   var EDICOES={
