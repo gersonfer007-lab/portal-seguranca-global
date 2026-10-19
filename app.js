@@ -1347,6 +1347,33 @@ async function nauticMarine(lat, lng) {
     return null;
   } catch (e) { return null; }
 }
+// Detecta se o ponto esta em MAR ABERTO (oceano, longe da terra).
+// Se a API marinha responder com ondas e nao houver endereco em terra,
+// e mar aberto. Funciona em qualquer oceano do planeta.
+async function detectarMarAberto(lat, lng, addressData) {
+  try {
+    var mar = await nauticMarine(lat, lng);
+    if (!mar || typeof mar.wave_height !== 'number') return false;
+    var temEndereco = addressData && (addressData.street || addressData.city || addressData.country);
+    var full = ((addressData && addressData.fullAddress) || '').toLowerCase();
+    var eAgua = /(oceano|ocean|mar do|mar de|atlantic|pacific|indian ocean|atlantico|pacifico|indico)/.test(full);
+    if (!temEndereco || eAgua) return true;
+  } catch (e) {}
+  return false;
+}
+// Altitude do terreno no ponto (Open-Elevation) — para informar
+// o relevo e situacoes aereas/em voo.
+async function fetchAltitude(lat, lng) {
+  try {
+    var r = await fetch('https://api.open-elevation.com/api/v1/lookup?locations=' + lat + ',' + lng);
+    if (!r.ok) return null;
+    var j = await r.json();
+    if (j && j.results && j.results[0] && typeof j.results[0].elevation === 'number') {
+      return Math.round(j.results[0].elevation);
+    }
+  } catch (e) {}
+  return null;
+}
 async function loadNauticAlerts(lat, lng) {
   var box = document.getElementById('nautic-alerts');
   var header = document.querySelector('.result-header');
@@ -1460,6 +1487,42 @@ async function loadNauticAlerts(lat, lng) {
 }
 
 // ============================================================
+// PAINEL DE AMBIENTE — informa se o GPS caiu em TERRA, MAR ou
+// mostra a ALTITUDE do terreno (util para voo/montanha). Aparece
+// logo acima do resultado, em qualquer consulta.
+// ============================================================
+async function mostrarPainelAmbiente(lat, lng, address) {
+  var alvo = document.getElementById('result-meta');
+  var header = document.querySelector('.result-header');
+  var box = document.getElementById('ambiente-info');
+  if (!box && header && header.parentNode) {
+    box = document.createElement('div');
+    box.id = 'ambiente-info';
+    var ref = document.getElementById('road-alerts') || header;
+    header.parentNode.insertBefore(box, ref.nextSibling);
+  }
+  if (!box) return;
+  box.style.cssText = 'margin:12px 0;padding:10px 16px;border-radius:11px;font-size:.82rem;line-height:1.5;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.07);color:#93c5fd;';
+  box.innerHTML = '&#128205; <b>Localiza&ccedil;&atilde;o do GPS:</b> analisando ambiente...';
+
+  var altitude = await fetchAltitude(lat, lng);
+  var marAberto = await detectarMarAberto(lat, lng, address);
+  var partes = [];
+  var icone = '&#128205;';
+  if (marAberto) {
+    icone = '&#127754;';
+    partes.push('<b>Mar aberto / oceano</b> &mdash; o ponto caiu na &aacute;gua, longe da costa. Veja os avisos n&aacute;uticos abaixo (ondas, temperatura do mar e orienta&ccedil;&otilde;es de navega&ccedil;&atilde;o).');
+  } else {
+    var temEndereco = address && (address.street || address.city);
+    partes.push('<b>Terra firme</b>' + (temEndereco ? ' &mdash; ' + (address.street ? address.street + (address.city ? ', ' + address.city : '') : (address.city || address.country || '')) : '') + '.');
+  }
+  if (altitude != null) {
+    partes.push('&#9968;&#65039; Altitude: <b>' + altitude.toLocaleString('pt-BR') + ' m</b> acima do n&iacute;vel do mar' + (altitude > 2500 ? ' (alta montanha &mdash; aten&ccedil;&atilde;o a clima e altitude)' : '') + '.');
+  }
+  box.innerHTML = icone + ' <b>Ambiente do ponto:</b> ' + partes.join(' ');
+}
+
+// ============================================================
 // RENDER DASHBOARD
 // ============================================================
 function renderDashboard(data) {
@@ -1492,6 +1555,7 @@ function renderDashboard(data) {
     metaEl.parentElement.insertBefore(btn, metaEl.nextSibling);
   }
   WorldClock.setLocalClock(data.address.country_code || '', data.address.state || '');
+  mostrarPainelAmbiente(data.lat, data.lng, data.address);
   loadRoadAlerts(data.lat, data.lng);
   loadNauticAlerts(data.lat, data.lng);
   try {
