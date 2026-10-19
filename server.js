@@ -131,6 +131,49 @@ app.use(function(req, res, next) {
 var ONE_DAY = 86400;
 var ONE_WEEK = 604800;
 
+// ============================================================
+// BLOQUEIO DE ARQUIVOS DO SERVIDOR (ANTES do static)
+// Nenhum arquivo de codigo, configuracao ou dados internos pode
+// ser baixado por visitante. Devolve 404 identico ao de rota
+// inexistente, sem revelar que o arquivo existe.
+// ============================================================
+var JS_PUBLICO_RAIZ = ['app.js', 'sw.js', 'constituicao-data.js'];
+var JSON_PUBLICO_RAIZ = ['manifest.json'];
+
+app.use(function(req, res, next) {
+  var p;
+  try { p = decodeURIComponent(req.path); } catch (e) { p = req.path; }
+  p = String(p).replace(/\/+/g, '/');
+
+  var negado = false;
+
+  // Arquivos exatos do servidor (inclui o store do paywall com dados de usuarios)
+  if (['/server.js', '/paywall.js', '/validation.js', '/package.json',
+       '/package-lock.json', '/psg-app-corrigido.zip', '/assinatura-gerson.png',
+       '/psg-paywall-dados.json', '/psg-paywall-dados.json.tmp', '/.gitignore'].indexOf(p) !== -1) {
+    negado = true;
+  }
+  // Diretorios internos e dotfiles (.git, .github, .env*)
+  if (!negado && (/^\/node_modules(\/|$)/.test(p) || /^\/\.git(\/|$)/.test(p) ||
+      /^\/\.github(\/|$)/.test(p) || /(^|\/)\.env/i.test(p))) {
+    negado = true;
+  }
+  // .zip na raiz (pacotes de codigo)
+  if (!negado && /^\/[^/]+\.zip$/i.test(p)) { negado = true; }
+  // .js na raiz: somente os tres scripts publicos do site
+  var mj = p.match(/^\/([^/]+\.js)$/i);
+  if (!negado && mj && JS_PUBLICO_RAIZ.indexOf(mj[1]) === -1) { negado = true; }
+  // .json na raiz: somente o manifest do PWA
+  var mjn = p.match(/^\/([^/]+\.json)$/i);
+  if (!negado && mjn && JSON_PUBLICO_RAIZ.indexOf(mjn[1]) === -1) { negado = true; }
+
+  if (negado) {
+    logEvent('SERVER_FILE_BLOCKED', req.ip + ' — ' + p);
+    return res.status(404).json({ error: 'Rota nao encontrada.', code: 'NOT_FOUND' });
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname), {
   extensions: ['html'],
   setHeaders: function(res, filePath) {
@@ -192,14 +235,6 @@ app.post('/api/search', searchLimiter, function(req, res) {
 
   logEvent('SEARCH_VALIDATED', req.ip + ' — ' + sanitized.substring(0, 50));
   return res.json({ validated: true, query: sanitized });
-});
-
-// ============================================================
-// API: Log de seguranca
-// ============================================================
-app.get('/api/security-log', function(req, res) {
-  var log = getLog();
-  res.json({ total: log.length, entries: log.slice(-50) });
 });
 
 // ============================================================
