@@ -26,6 +26,7 @@ button.enviar:disabled{opacity:.6;cursor:wait}
 .msg{margin-top:14px;padding:10px 14px;border-radius:9px;font-size:.82rem;display:none}
 .msg.ok{display:block;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#4ade80}
 .msg.erro{display:block;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#f87171}
+.msg.aguarde{display:block;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.4);color:#93c5fd}
 .roda{margin-top:18px;text-align:center;font-size:.72rem;color:var(--muted)}
 .roda a{color:var(--accent);text-decoration:none}
 .voltar{position:fixed;top:18px;left:18px;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:600}
@@ -104,7 +105,19 @@ function mostrarAba(qual) {
 function mostrarMsg(texto, ok) {
   var m = document.getElementById('msg');
   m.textContent = texto;
-  m.className = 'msg ' + (ok ? 'ok' : 'erro');
+  m.className = 'msg ' + (ok === 'aguarde' ? 'aguarde' : (ok ? 'ok' : 'erro'));
+}
+function fetchComTimeout(url, opcoes, ms) {
+  var ctrl = new AbortController();
+  opcoes.signal = ctrl.signal;
+  var t = setTimeout(function () { ctrl.abort(); }, ms || 90000);
+  return fetch(url, opcoes).finally(function () { clearTimeout(t); });
+}
+function avisoDemora() {
+  // Servidor gratuito "dorme": avisa que a 1a conexao pode demorar
+  return setTimeout(function () {
+    mostrarMsg('Conectando ao servidor... na primeira vez ele pode levar ate 1 minuto para acordar. Aguarde.', 'aguarde');
+  }, 4000);
 }
 function desabilitar(bots, estado) {
   ['btn-entrar', 'btn-criar'].forEach(function (id) {
@@ -115,16 +128,21 @@ function desabilitar(bots, estado) {
 async function entrar(ev) {
   ev.preventDefault();
   desabilitar(true, true);
+  mostrarMsg('Entrando...', 'aguarde');
+  var demora = avisoDemora();
   try {
-    var r = await fetch('/api/auth/login', {
+    var r = await fetchComTimeout('/api/auth/login', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: document.getElementById('email-e').value, senha: document.getElementById('senha-e').value })
     });
     var j = await r.json();
-    if (r.ok) { finalizar(); return false; }
+    if (r.ok) { clearTimeout(demora); mostrarMsg('Tudo certo! Redirecionando...', true); finalizar(); return false; }
     mostrarMsg(j.error || 'Não foi possível entrar.', false);
-  } catch (e) { mostrarMsg('Erro de conexão.', false); }
+  } catch (e) {
+    mostrarMsg(e.name === 'AbortError' ? 'O servidor demorou demais para responder. Tente de novo.' : 'Erro de conexão. Verifique sua internet e tente de novo.', false);
+  }
+  clearTimeout(demora);
   desabilitar(true, false);
   return false;
 }
@@ -133,16 +151,21 @@ async function criar(ev) {
   var s1 = document.getElementById('senha-c').value, s2 = document.getElementById('senha-c2').value;
   if (s1 !== s2) { mostrarMsg('As senhas não conferem.', false); return false; }
   desabilitar(true, true);
+  mostrarMsg('Criando sua conta...', 'aguarde');
+  var demora = avisoDemora();
   try {
-    var r = await fetch('/api/auth/registrar', {
+    var r = await fetchComTimeout('/api/auth/registrar', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: document.getElementById('email-c').value, senha: s1 })
     });
     var j = await r.json();
-    if (r.ok) { finalizar(); return false; }
+    if (r.ok) { clearTimeout(demora); mostrarMsg('Conta criada! Redirecionando...', true); finalizar(); return false; }
     mostrarMsg(j.error || 'Não foi possível criar a conta.', false);
-  } catch (e) { mostrarMsg('Erro de conexão.', false); }
+  } catch (e) {
+    mostrarMsg(e.name === 'AbortError' ? 'O servidor demorou demais para responder. Tente de novo.' : 'Erro de conexão. Verifique sua internet e tente de novo.', false);
+  }
+  clearTimeout(demora);
   desabilitar(true, false);
   return false;
 }
