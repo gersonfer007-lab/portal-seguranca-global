@@ -339,6 +339,35 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
   font-size: .7rem; color: var(--accent);
 }
+.pdf-sample-section {
+  max-width: 1120px; margin: 0 auto 2.5rem; padding: 0 1rem;
+}
+.pdf-sample-card {
+  overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(59,130,246,.1), rgba(17,24,39,.94));
+  box-shadow: var(--shadow);
+}
+.pdf-sample-copy { padding: 1.2rem 1.4rem .9rem; }
+.pdf-sample-copy h2 { font-size: 1.05rem; margin-bottom: .35rem; }
+.pdf-sample-copy p { color: var(--text-secondary); font-size: .82rem; line-height: 1.55; }
+.pdf-sample-image-wrap { padding: 0 1.2rem 1.2rem; }
+.pdf-sample-pages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.pdf-sample-page { min-width: 0; }
+.pdf-sample-page a { display: block; margin: 0; }
+.pdf-sample-page img {
+  display: block; width: 100%; height: auto; border: 1px solid rgba(255,255,255,.16);
+  border-radius: 8px; background: #fff;
+}
+.pdf-sample-page figcaption { margin: .55rem 0; color: var(--text-secondary); font-size: .8rem; text-align: center; }
+.pdf-sample-open { display: block; margin-top: .45rem; color: #93c5fd; font-size: .78rem; text-align: center; text-decoration: none; }
+.pdf-sample-open:hover { text-decoration: underline; }
+@media (max-width: 760px) {
+  .pdf-sample-pages { grid-template-columns: 1fr; max-width: 500px; margin: 0 auto; }
+}
+@media (max-width: 600px) {
+  .pdf-sample-copy { padding: 1rem 1rem .75rem; }
+  .pdf-sample-image-wrap { padding: 0 .7rem .8rem; }
+}
 
 /* ============================================================
    PESQUISAR PELO MAPA — botoes na area de busca
@@ -996,6 +1025,14 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-clauses .pdf-symbols-clause { border-left: 3px solid #c9a227; background: rgba(201,162,39,.08); padding: 8px 10px; border-radius: 4px; font-weight: 600; color: #3d3524; }
 #pdf-report .pdf-footer .pdf-footer-symbols { margin-top: 8px; font-weight: 700; color: #7a5c00; border-top: 1px dashed #c9a227; padding-top: 8px; }
 #pdf-report .pdf-footer .pdf-footer-tribute { margin-top: 6px; font-weight: 600; color: #1a4d8f; }
+#pdf-report .pdf-company-block {
+  margin: 14px 40px 20px; padding: 10px 14px; border: 1.5px dashed #9a7b1e;
+  border-radius: 6px; background: #fffdf6; color: #333;
+}
+#pdf-report .pdf-company-title { margin-bottom: 8px; color: #0c1730; font-size: 11px; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: .05em; }
+#pdf-report .pdf-company-fields { display: flex; gap: 12px; align-items: stretch; }
+#pdf-report .pdf-company-lines { flex: 1; font-size: 10px; line-height: 2; }
+#pdf-report .pdf-company-stamp { width: 145px; min-height: 78px; display: flex; align-items: center; justify-content: center; border: 1px dashed #9a7b1e; color: #777; font-size: 9px; text-align: center; }
 /* Elementos de documento oficial */
 #pdf-report { position: absolute; }
 #pdf-report .pdf-watermark {
@@ -1764,6 +1801,34 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 </section>
 
+<section class="pdf-sample-section" aria-labelledby="pdf-sample-title">
+  <div class="pdf-sample-card">
+    <div class="pdf-sample-copy">
+      <h2 id="pdf-sample-title">Veja como fica o relatório em PDF</h2>
+      <p>Esta pr&eacute;via mostra as tr&ecirc;s folhas do modelo impresso, com bras&atilde;o, marca-d'&aacute;gua e p&aacute;ginas especiais. Na &uacute;ltima folha, h&aacute; espa&ccedil;o para a empresa contratante preencher seus dados e colocar o carimbo. Endere&ccedil;o, coordenadas, data e protocolo da consulta foram ocultados por privacidade. No relat&oacute;rio da sua consulta, a bandeira do pa&iacute;s aparece conforme o local; as bandeiras oficiais da regi&atilde;o/estado e da cidade/munic&iacute;pio s&atilde;o inclu&iacute;das quando h&aacute; uma imagem correspondente dispon&iacute;vel para aquela localidade, em qualquer parte do mundo.</p>
+    </div>
+    <div class="pdf-sample-image-wrap">
+      <div class="pdf-sample-pages">
+        <figure class="pdf-sample-page">
+          <a href="amostra-pdf-pagina-1-publica.png" target="_blank" rel="noopener" aria-label="Abrir a folha 1 do modelo de relatório em tamanho original"><img src="amostra-pdf-pagina-1-publica.png" width="1800" height="2546" loading="lazy" decoding="async" alt="Folha 1 do modelo de relatório; endereço e coordenadas ocultados"></a>
+          <figcaption>Folha 1 — Identificação e análise</figcaption>
+          <a class="pdf-sample-open" href="amostra-pdf-pagina-1-publica.png" target="_blank" rel="noopener">Abrir folha 1 em tamanho original</a>
+        </figure>
+        <figure class="pdf-sample-page">
+          <a href="amostra-pdf-pagina-2-publica.png" target="_blank" rel="noopener" aria-label="Abrir a folha 2 do modelo de relatório em tamanho original"><img src="amostra-pdf-pagina-2-publica.png" width="1800" height="2546" loading="lazy" decoding="async" alt="Folha 2 do modelo de relatório; localidade e data omitidas"></a>
+          <figcaption>Folha 2 — Indicadores e condições</figcaption>
+          <a class="pdf-sample-open" href="amostra-pdf-pagina-2-publica.png" target="_blank" rel="noopener">Abrir folha 2 em tamanho original</a>
+        </figure>
+        <figure class="pdf-sample-page">
+          <a href="amostra-pdf-pagina-3-publica.png" target="_blank" rel="noopener" aria-label="Abrir a folha 3 do modelo de relatório em tamanho original"><img src="amostra-pdf-pagina-3-publica.png" width="1800" height="2546" loading="lazy" decoding="async" alt="Folha 3 do modelo de relatório; protocolo e data omitidos"></a>
+          <figcaption>Folha 3 — Autenticação, encerramento e carimbo da empresa</figcaption>
+          <a class="pdf-sample-open" href="amostra-pdf-pagina-3-publica.png" target="_blank" rel="noopener">Abrir folha 3 em tamanho original</a>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- LOADING -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
@@ -1984,13 +2049,13 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <div class="pdf-flag-box">
         <img id="pdf-state-flag" src="" alt="Bandeira do estado" crossorigin="anonymous" style="display:none;">
         <div class="pdf-city-seal" id="pdf-state-seal" style="display:none;">--</div>
-        <span>Estado</span>
+        <span>Estado/Região</span>
         <b id="pdf-state-name">--</b>
       </div>
       <div class="pdf-flag-box">
         <img id="pdf-city-flag" src="" alt="Bandeira do municipio" crossorigin="anonymous" style="display:none;">
         <div class="pdf-city-seal" id="pdf-city-seal">--</div>
-        <span>Municipio</span>
+        <span>Cidade/Município</span>
         <b id="pdf-city-name">--</b>
       </div>
     </div>
@@ -2141,6 +2206,17 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     Documento gerado eletronicamente pelo Portal Seguranca Global. Este relatorio e baseado em dados publicos e estimativas estatisticas do perimetro analisado. Nao substitui consultoria profissional nem boletins oficiais de ocorrencia.
     <div class="pdf-footer-symbols">Uso indevido de bras&otilde;es e s&iacute;mbolos oficiais de &oacute;rg&atilde;os policiais (PM/PC) &eacute; crime &mdash; Art. 296 do C&oacute;digo Penal (falsifica&ccedil;&atilde;o de selo ou sinal p&uacute;blico).</div>
     <div class="pdf-footer-tribute">&#127894;&#65039; Homenagem e reconhecimento &agrave;s Pol&iacute;cias e For&ccedil;as Armadas de todo o mundo, que mant&ecirc;m a ordem e protegem a sociedade.</div>
+  </div>
+  <div class="pdf-company-block">
+    <div class="pdf-company-title">Espa&ccedil;o reservado &agrave; empresa contratante</div>
+    <div class="pdf-company-fields">
+      <div class="pdf-company-lines">
+        <div>Empresa / raz&atilde;o social: ______________________________________________</div>
+        <div>Nome do respons&aacute;vel: _________________________________________________</div>
+        <div>Assinatura: _____________________________________ Data: ____ / ____ / ______</div>
+      </div>
+      <div class="pdf-company-stamp">Carimbo da empresa</div>
+    </div>
   </div>
 </div>
 
@@ -2787,7 +2863,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=paywall3"></script>
+<script defer src="app.js?v=paywall4-bandeiras"></script>
 <script>
 (function(){
   var EDICOES={
