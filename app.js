@@ -995,11 +995,15 @@ function psgFecharPaywall() {
 }
 
 async function psgAssinar(plano) {
+  var controller = new AbortController();
+  var timeout = setTimeout(function () { controller.abort(); }, 45000);
+  psgToast('Conectando ao pagamento seguro...');
   try {
     var r = await fetch('/api/assinatura', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
+      signal: controller.signal,
       body: JSON.stringify({ plano: plano })
     });
     if (r.status === 401) { window.location.href = 'login.html?plano=' + encodeURIComponent(plano); return; }
@@ -1007,12 +1011,14 @@ async function psgAssinar(plano) {
     try { j = await r.json(); } catch (e) {}
     if (r.ok && j && j.url) {
       psgToast('Abrindo o pagamento seguro do Mercado Pago...');
-      window.open(j.url, '_blank');
+      window.location.assign(j.url);
     } else {
-      psgToast((j && j.error) || 'Nao foi possivel iniciar o pagamento agora.');
+      psgToast((j && j.error) || 'Nao foi possivel iniciar o pagamento agora. Tente novamente.');
     }
   } catch (e) {
-    psgToast('Erro de conexao com o servidor.');
+    psgToast(e.name === 'AbortError' ? 'O servidor demorou demais. Feche e tente novamente.' : 'Erro de conexao com o servidor. Tente novamente.');
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -1714,6 +1720,9 @@ function _psgUF(stateRaw) {
   for (var k in PSG_BR_STATE_NAMES) { if (_psgNorm(PSG_BR_STATE_NAMES[k]) === n) return k.toUpperCase(); }
   return '';
 }
+function _psgInitials(s) {
+  return ((s || '').normalize('NFC').match(/[\p{L}\p{M}]+/gu) || []).map(function(w) { return Array.from(w)[0]; }).slice(0, 2).join('').toLocaleUpperCase();
+}
 async function _psgResolveCommonsUrl(fileName) {
   try {
     var api = 'https://pt.wikipedia.org/w/api.php?action=query&titles=File:' + encodeURIComponent(fileName)
@@ -1728,6 +1737,49 @@ async function _psgResolveCommonsUrl(fileName) {
     }
     return '';
   } catch (e) { return ''; }
+}
+async function _psgSearchCommonsFlag(placeName, context, level) {
+  if (!placeName) return '';
+  var terms = [
+    'filetype:bitmap ' + placeName + ' ' + (context || '') + ' (flag OR bandeira OR bandera OR drapeau OR fahne OR flagge OR pavillon)',
+    'filetype:bitmap "Flag of ' + placeName + '"'
+  ];
+  var stop = { 'the': 1, 'of': 1, 'and': 1, 'do': 1, 'da': 1, 'de': 1, 'dos': 1, 'das': 1, 'state': 1, 'province': 1, 'city': 1, 'municipality': 1 };
+  var norm = function(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(); };
+  var words = function(s) { return norm(s).split(/[^\p{L}\p{N}]+/u).filter(function(w) { return w.length > 2 && !stop[w]; }); };
+  var placeTerms = words(placeName);
+  if (!placeTerms.length) return '';
+  for (var qi = 0; qi < terms.length; qi++) {
+    try {
+      var api = 'https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=' + encodeURIComponent(terms[qi])
+        + '&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*';
+      var ctrl = new AbortController();
+      var timer = setTimeout(function(c) { return function() { c.abort(); }; }(ctrl), 5000);
+      var r = await fetch(api, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!r.ok) continue;
+      var d = await r.json();
+      var pages = Object.keys((d.query && d.query.pages) || {}).map(function(k) { return d.query.pages[k]; });
+      var candidates = [];
+      pages.forEach(function(page) {
+        var info = page && page.imageinfo && page.imageinfo[0];
+        var title = norm((page && page.title || '').replace(/^File:/i, ''));
+        var titleWords = words(title);
+        var hasFlagWord = titleWords.some(function(w) { return /^(flag|bandeira|bandera|drapeau|fahne|flagge|pavillon)$/.test(w); });
+        if (!info || !info.thumburl || !hasFlagWord || !placeTerms.every(function(w) { return titleWords.indexOf(w) >= 0; })) return;
+        if (titleWords.some(function(w) { return /^(proposal|proposed|historical|former|map|vista|photo|cerimonial|proposta|antiga)$/.test(w); })) return;
+        if (level === 'state' && titleWords.some(function(w) { return /^(municipal|municipality|municipio|city|cidade|municipio)$/.test(w); })) return;
+        var score = 100 - (page.index || 0);
+        if (level === 'city' && titleWords.some(function(w) { return /^(municipal|municipality|municipio|city|commune|cidade)$/.test(w); })) score += 20;
+        if (level === 'state' && titleWords.some(function(w) { return /^(state|province|region|federal|regional|estado|provincia|departamento)$/.test(w); })) score += 20;
+        if (words(context).some(function(w) { return titleWords.indexOf(w) >= 0; })) score += 5;
+        candidates.push({ score: score, url: info.thumburl });
+      });
+      candidates.sort(function(a, b) { return b.score - a.score; });
+      if (candidates.length) return candidates[0].url;
+    } catch (e) { if (typeof timer !== 'undefined') clearTimeout(timer); }
+  }
+  return '';
 }
 function _psgWaitImg(img) {
   return new Promise(function(resolve) {
@@ -1824,6 +1876,7 @@ async function _doGeneratePDF() {
   var stateFile = PSG_BR_STATE_FLAGS[_psgNorm(stateRaw)];
   var stateUrl = '';
   if (countryCode === 'br' && stateFile) stateUrl = await _psgResolveCommonsUrl(stateFile);
+  if (!stateUrl && stateName) stateUrl = await _psgSearchCommonsFlag(stateName, countryName, 'state');
   if (stateUrl) {
     stateFlagImg.style.display = 'block';
     stateSeal.style.display = 'none';
@@ -1835,7 +1888,7 @@ async function _doGeneratePDF() {
     stateFlagImg.src = stateUrl;
   } else {
     stateFlagImg.style.display = 'none';
-    stateSeal.textContent = _psgUF(stateRaw) || (countryCode || '--').toUpperCase();
+    stateSeal.textContent = _psgUF(stateRaw) || _psgInitials(stateName) || (countryCode || '--').toUpperCase();
     stateSeal.style.display = 'flex';
   }
 
@@ -1843,22 +1896,23 @@ async function _doGeneratePDF() {
   var citySeal = document.getElementById('pdf-city-seal');
   cityFlagImg.style.display = 'none';
   citySeal.style.display = 'flex';
-  citySeal.textContent = (city || '?').replace(/[^A-Za-z\u00C0-\u00FF ]/g, '').split(' ').filter(Boolean).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+  citySeal.textContent = _psgInitials(city) || '?';
+  var cityUrl = '';
   if (countryCode === 'br' && city) {
     var uf = _psgNorm(stateRaw).length === 2 ? stateRaw.toUpperCase() : '';
     var candidates = ['Bandeira da cidade de ' + city + '.svg', 'Bandeira de ' + city + (uf ? ' (' + uf + ')' : '') + '.svg', 'Bandeira de ' + city + '.svg'];
-    var cityUrl = '';
     for (var ci = 0; ci < candidates.length; ci++) {
       cityUrl = await _psgResolveCommonsUrl(candidates[ci]);
       if (cityUrl) break;
     }
-    if (cityUrl) {
+  }
+  if (!cityUrl && city) cityUrl = await _psgSearchCommonsFlag(city, [stateName, countryName].filter(Boolean).join(' '), 'city');
+  if (cityUrl) {
       cityFlagImg.onerror = function() { cityFlagImg.style.display = 'none'; citySeal.style.display = 'flex'; };
       cityFlagImg.onload = function() {
         if (cityFlagImg.naturalWidth > 0) { cityFlagImg.style.display = 'block'; citySeal.style.display = 'none'; }
       };
       cityFlagImg.src = cityUrl;
-    }
   }
 
   // ---- Identificacao, protocolo, periodo ----
