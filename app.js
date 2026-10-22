@@ -1013,7 +1013,14 @@ async function psgAssinar(plano) {
       psgToast('Abrindo o pagamento seguro do Mercado Pago...');
       window.location.assign(j.url);
     } else {
-      psgToast((j && j.error) || 'Nao foi possivel iniciar o pagamento agora. Tente novamente.');
+      var detalhe = j && j.error ? j.error : '';
+      var erro = /unauthorized/i.test(detalhe)
+        ? 'O Mercado Pago recusou a autorizacao do pagamento. Sua conta foi criada, mas nenhuma cobranca foi feita. A configuracao do pagamento precisa ser revisada.'
+        : (detalhe || 'Nao foi possivel iniciar o pagamento agora. Nenhuma cobranca foi feita. Tente novamente.');
+      psgAbrirPaywall('bloqueado');
+      var aviso = document.getElementById('psg-paywall-msg');
+      if (aviso) aviso.textContent = erro;
+      psgToast(erro);
     }
   } catch (e) {
     psgToast(e.name === 'AbortError' ? 'O servidor demorou demais. Feche e tente novamente.' : 'Erro de conexao com o servidor. Tente novamente.');
@@ -1684,9 +1691,11 @@ function ensurePdfLibs() {
   if (window.jspdf && window.html2canvas) return Promise.resolve();
   if (_psgPdfLibsPromise) return _psgPdfLibsPromise;
   _psgPdfLibsPromise = Promise.all([
-    window.jspdf ? Promise.resolve() : _psgLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
-    window.html2canvas ? Promise.resolve() : _psgLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')
-  ]).catch(function(e) { _psgPdfLibsPromise = null; throw e; });
+    window.jspdf ? Promise.resolve() : _psgLoadScript('/vendor/jspdf.umd.min.js?v=2.5.1'),
+    window.html2canvas ? Promise.resolve() : _psgLoadScript('/vendor/html2canvas.min.js?v=1.4.1')
+  ]).then(function() {
+    if (!window.jspdf || !window.html2canvas) throw new Error('As bibliotecas de PDF nao inicializaram.');
+  }).catch(function(e) { _psgPdfLibsPromise = null; throw e; });
   return _psgPdfLibsPromise;
 }
 
