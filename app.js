@@ -1006,7 +1006,7 @@ async function psgAssinar(plano) {
       signal: controller.signal,
       body: JSON.stringify({ plano: plano })
     });
-    if (r.status === 401) { window.location.href = 'login.html?plano=' + encodeURIComponent(plano); return; }
+    if (r.status === 401) { window.location.href = 'login.html?plano=' + encodeURIComponent(plano) + '&v=psg-auth-csp-1'; return; }
     var j = null;
     try { j = await r.json(); } catch (e) {}
     if (r.ok && j && j.url) {
