@@ -1022,6 +1022,21 @@ async function psgAssinar(plano) {
   }
 }
 
+document.addEventListener('click', function (ev) {
+  var alvo = ev.target && ev.target.closest ? ev.target.closest('[data-psg-plan], [data-psg-close]') : null;
+  if (!alvo) return;
+  if (alvo.hasAttribute('data-psg-close')) {
+    ev.preventDefault();
+    psgFecharPaywall();
+    return;
+  }
+  var plano = alvo.getAttribute('data-psg-plan');
+  if (plano) {
+    ev.preventDefault();
+    psgAssinar(plano);
+  }
+});
+
 function psgAtualizarConta() {
   var nav = document.getElementById('psg-nav-conta');
   if (!nav) return;
