@@ -2863,7 +2863,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=paywall5-checkout-nav"></script>
+<script defer src="app.js?v=paywall6-csp-clicks"></script>
 <script>
 (function(){
   var EDICOES={
@@ -3164,7 +3164,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 </style>
 <div id="psg-paywall" class="psg-modal">
   <div class="psg-modal-box">
-    <button class="psg-modal-close" onclick="psgFecharPaywall()" aria-label="Fechar">&times;</button>
+    <button class="psg-modal-close" data-psg-close aria-label="Fechar">&times;</button>
     <h3 style="margin:0;color:#e8eefc;font-size:1.15rem">Portal Segurança Global <span style="color:#f59e0b">Pro</span></h3>
     <p id="psg-paywall-msg" style="color:#8b95a8;font-size:.85rem;margin:8px 0 0">Escolha um plano:</p>
     <div class="psg-planos">
@@ -3172,19 +3172,19 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <h4>Consulta Avulsa</h4>
         <div class="psg-preco" id="psg-preco-avulsa">R$ 4,90</div>
         <small>1 consulta completa, sem assinatura</small>
-        <button class="psg-btn azul" onclick="psgAssinar('avulsa')">Comprar</button>
+        <button class="psg-btn azul" data-psg-plan="avulsa">Comprar</button>
       </div>
       <div class="psg-plano destaque">
         <h4>Pro Mensal</h4>
         <div class="psg-preco" id="psg-preco-pro_mensal">R$ 19,90</div>
         <small>por mês — ilimitado, renova automática, cancele quando quiser</small>
-        <button class="psg-btn" onclick="psgAssinar('pro_mensal')">Assinar</button>
+        <button class="psg-btn" data-psg-plan="pro_mensal">Assinar</button>
       </div>
       <div class="psg-plano">
         <h4>Pro Anual</h4>
         <div class="psg-preco" id="psg-preco-pro_anual">R$ 149,90</div>
         <small>por ano — ilimitado, renova automática, cancele quando quiser</small>
-        <button class="psg-btn azul" onclick="psgAssinar('pro_anual')">Assinar</button>
+        <button class="psg-btn azul" data-psg-plan="pro_anual">Assinar</button>
       </div>
     </div>
     <p style="color:#8b95a8;font-size:.72rem;margin:10px 0 0">Nova conta ganha 1 consulta completa de cortesia. Pagamento processado pelo Mercado Pago (Pix ou cartão). Ao assinar você concorda com os <a href="termos.html" style="color:#3b82f6">Termos de Uso</a> e a <a href="privacidade.html" style="color:#3b82f6">Política de Privacidade</a>. <a href="planos.html" style="color:#3b82f6">Ver página de planos</a></p>
