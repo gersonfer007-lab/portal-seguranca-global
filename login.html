@@ -48,20 +48,20 @@ button.enviar:disabled{opacity:.6;cursor:wait}
   <div class="info-plano" id="info-plano"></div>
 
   <div class="abas">
-    <div class="aba ativa" id="aba-entrar" onclick="mostrarAba('entrar')">Entrar</div>
-    <div class="aba" id="aba-criar" onclick="mostrarAba('criar')">Criar conta</div>
+    <div class="aba ativa" id="aba-entrar" data-auth-tab="entrar">Entrar</div>
+    <div class="aba" id="aba-criar" data-auth-tab="criar">Criar conta</div>
   </div>
 
-  <form id="form-entrar" onsubmit="return entrar(event)">
+  <form id="form-entrar" data-auth-form="entrar">
     <label for="email-e">E-mail</label>
     <input type="email" id="email-e" required autocomplete="email" placeholder="seu@email.com">
     <label for="senha-e">Senha</label>
     <input type="password" id="senha-e" required autocomplete="current-password" placeholder="Sua senha">
     <button class="enviar" type="submit" id="btn-entrar">Entrar</button>
-    <div class="troca"><a href="#" onclick="mostrarAba('criar');return false">Ainda não tem conta? Criar conta grátis</a></div>
+    <div class="troca"><a href="#" data-auth-tab="criar">Ainda não tem conta? Criar conta grátis</a></div>
   </form>
 
-  <form id="form-criar" style="display:none" onsubmit="return criar(event)">
+  <form id="form-criar" data-auth-form="criar" style="display:none">
     <label for="email-c">E-mail</label>
     <input type="email" id="email-c" required autocomplete="email" placeholder="seu@email.com">
     <label for="senha-c">Senha (mínimo 8 caracteres)</label>
@@ -70,7 +70,7 @@ button.enviar:disabled{opacity:.6;cursor:wait}
     <input type="password" id="senha-c2" required minlength="8" autocomplete="new-password" placeholder="Repita a senha">
     <button type="submit" class="enviar" id="btn-criar">Criar conta grátis</button>
     <p style="margin-top:10px;font-size:.7rem;color:var(--muted);text-align:center">Conta nova ganha <b style="color:#f59e0b">1 consulta completa de cortesia</b>.</p>
-    <div class="troca"><a href="#" onclick="mostrarAba('entrar');return false">Já tem conta? Entrar</a></div>
+    <div class="troca"><a href="#" data-auth-tab="entrar">Já tem conta? Entrar</a></div>
   </form>
 
   <div class="msg" id="msg"></div>
@@ -177,6 +177,15 @@ fetch('/api/auth/eu', { credentials: 'same-origin' })
   .then(function (r) { return r.json(); })
   .then(function (j) { if (j && j.logado) finalizar(); })
   .catch(function () {});
+
+document.addEventListener('click', function (ev) {
+  var aba = ev.target && ev.target.closest ? ev.target.closest('[data-auth-tab]') : null;
+  if (!aba) return;
+  ev.preventDefault();
+  mostrarAba(aba.getAttribute('data-auth-tab'));
+});
+document.getElementById('form-entrar').addEventListener('submit', entrar);
+document.getElementById('form-criar').addEventListener('submit', criar);
 </script>
 </body>
 </html>
