@@ -22,7 +22,7 @@
 
 
 <!-- SECURITY HEADERS -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems https://router.project-osrm.org https://routing.openstreetmap.de https://marine-api.open-meteo.com https://server.arcgisonline.com; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://*.arcgisonline.com https://*.googleapis.com https://*.google.com https://flagcdn.com https://upload.wikimedia.org https://thumb.wikimedia.org https://commons.wikimedia.org https://api.qrserver.com https://unpkg.com; connect-src 'self' https://viacep.com.br https://nominatim.openstreetmap.org https://pt.wikipedia.org https://commons.wikimedia.org https://formsubmit.co https://overpass-api.de https://overpass.kumi.systems https://router.project-osrm.org https://routing.openstreetmap.de https://marine-api.open-meteo.com https://server.arcgisonline.com; frame-src https://www.google.com https://maps.google.com https://earth.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -951,7 +951,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report {
   position: absolute; left: -9999px; top: 0;
   width: 800px; background: #fff; color: #111; padding: 0 0 40px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif; line-height: 1.5;
 }
 #pdf-report h1 { font-size: 24px; color: #1a2235; margin-bottom: 4px; }
 #pdf-report .pdf-subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
@@ -979,7 +979,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-score-label { font-size: 14px; opacity: .8; margin-top: 4px; }
 #pdf-report .pdf-section { margin-bottom: 20px; }
 #pdf-report .pdf-section h3 {
-  font-size: 15px; color: #0c1730; border-bottom: 2px solid #c9a227; padding-bottom: 6px; margin-bottom: 12px;
+  font-size: 15px; line-height: 1.5; color: #0c1730; border-bottom: 2px solid #c9a227; padding-bottom: 8px; margin: 0 0 14px;
   text-transform: uppercase; letter-spacing: .06em;
 }
 #pdf-report .pdf-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
@@ -2863,7 +2863,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=paywall8-payment-pdf-local"></script>
+<script defer src="app.js?v=paywall9-pdf-flags-csp"></script>
 <script>
 (function(){
   var EDICOES={
