@@ -1765,8 +1765,9 @@ async function _psgResolveCommonsUrl(fileName) {
 async function _psgSearchCommonsFlag(placeName, context, level) {
   if (!placeName) return '';
   var terms = [
-    'filetype:bitmap ' + placeName + ' ' + (context || '') + ' (flag OR bandeira OR bandera OR drapeau OR fahne OR flagge OR pavillon)',
-    'filetype:bitmap "Flag of ' + placeName + '"'
+    '"Bandeira de ' + placeName + '"',
+    '"Flag of ' + placeName + '"',
+    placeName + ' ' + (context || '') + ' bandeira'
   ];
   var stop = { 'the': 1, 'of': 1, 'and': 1, 'do': 1, 'da': 1, 'de': 1, 'dos': 1, 'das': 1, 'state': 1, 'province': 1, 'city': 1, 'municipality': 1 };
   var norm = function(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(); };
