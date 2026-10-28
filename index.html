@@ -1020,6 +1020,8 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 #pdf-report .pdf-force .pc { background: linear-gradient(135deg,#7c2d12,#f97316); }
 #pdf-report .pdf-force .name { font-size: 12px; font-weight: 700; color: #1a2235; margin-bottom: 4px; }
 #pdf-report .pdf-force .city { font-size: 11px; color: #666; }
+#pdf-report .pdf-force .detail { font-size: 10px; color: #0c1730; margin-top: 5px; line-height: 1.5; font-weight: 600; }
+#pdf-report .pdf-score-legend { margin-top: 14px; background: #f8f9fb; border: 1px solid #e5e7eb; border-left: 3px solid #1e3a8a; border-radius: 6px; padding: 10px 14px; font-size: 10.5px; color: #333; line-height: 1.65; }
 #pdf-report .pdf-footer { margin-top: 28px; padding: 16px 40px 0; border-top: 2px solid #c9a227; font-size: 10.5px; color: #888; text-align: center; line-height: 1.7; }
 #pdf-report .pdf-footer .verify { font-weight: 700; color: #0c1730; }
 #pdf-report .pdf-clauses .pdf-symbols-clause { border-left: 3px solid #c9a227; background: rgba(201,162,39,.08); padding: 8px 10px; border-radius: 4px; font-weight: 600; color: #3d3524; }
@@ -2025,7 +2027,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <img class="pdf-brasao" src="brasao-sh.png" alt="Brasao Portal Seguranca Global" crossorigin="anonymous">
     <div class="pdf-top-text">
       <div class="pdf-org">PORTAL SEGURANCA GLOBAL</div>
-      <div class="pdf-doc-title">Relatorio Oficial de Analise de Seguranca</div>
+      <div class="pdf-doc-title">Relat&oacute;rio de An&aacute;lise de Seguran&ccedil;a</div>
       <div class="pdf-doc-sub">Inteligencia e estatistica aplicadas a protecao de pessoas, familias e patrimonios</div>
     </div>
     <div class="pdf-protocol">
@@ -2096,6 +2098,9 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <div class="pdf-stat"><div class="val" id="pdf-infra">--</div><div class="lbl">Infraestrutura</div></div>
       <div class="pdf-stat"><div class="val" id="pdf-movement">--</div><div class="lbl">Movimentacao</div></div>
     </div>
+    <div class="pdf-score-legend">
+      <b>Como ler as notas:</b> o <b>Safety Score</b> vai de 0 a 100 e, quanto maior, maior a seguran&ccedil;a estimada. Classifica&ccedil;&atilde;o: <b>Alto (70 a 100)</b> = melhores indicadores estimados; <b>Moderado (40 a 69)</b> = aten&ccedil;&atilde;o e preven&ccedil;&atilde;o refor&ccedil;adas; <b>Baixo (0 a 39)</b> = indicadores menos favor&aacute;veis, redobre os cuidados. O <b>&Iacute;ndice Criminal</b> mais alto indica menos ocorr&ecirc;ncias registradas; <b>Infraestrutura</b> mais alta indica maior presen&ccedil;a de recursos e servi&ccedil;os; <b>Movimenta&ccedil;&atilde;o</b> estima o fluxo de pessoas e transporte, mas mais movimento n&atilde;o significa, por si s&oacute;, maior seguran&ccedil;a. As notas s&atilde;o estimativas informativas, n&atilde;o garantias nem estat&iacute;sticas oficiais.
+    </div>
   </div>
 
   <div class="pdf-section">
@@ -2103,15 +2108,18 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <div class="pdf-force-box">
       <div class="pdf-force">
         <div class="badge pm">PM</div>
-        <div class="name">Policia Militar</div>
+        <div class="name" id="pdf-pm-name">Policia Militar</div>
         <div class="city" id="pdf-pm-city">--</div>
+        <div class="detail" id="pdf-pm-detail"></div>
       </div>
       <div class="pdf-force">
         <div class="badge pc">PC</div>
-        <div class="name">Policia Civil</div>
+        <div class="name" id="pdf-pc-name">Policia Civil</div>
         <div class="city" id="pdf-pc-city">--</div>
+        <div class="detail" id="pdf-pc-detail"></div>
       </div>
     </div>
+    <p class="pdf-note" id="pdf-force-note" style="font-size:10.5px;margin-top:10px;">--</p>
   </div>
 
   <div class="pdf-section">
@@ -2863,7 +2871,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=paywall9-pdf-flags-csp"></script>
+<script defer src="app.js?v=paywall13-primeira-gratis"></script>
 <script>
 (function(){
   var EDICOES={
