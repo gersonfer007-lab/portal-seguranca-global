@@ -83,7 +83,13 @@ button.enviar:disabled{opacity:.6;cursor:wait}
 <script>
 var qp = new URLSearchParams(window.location.search);
 var plano = qp.get('plano');
+var intent = qp.get('intent');
 var NOMES = { avulsa: 'Consulta Avulsa (R$ 4,90)', pro_mensal: 'Pro Mensal (R$ 19,90/mês)', pro_anual: 'Pro Anual (R$ 149,90/ano)' };
+if (intent === 'consulta') {
+  document.getElementById('subtitulo').textContent = 'Crie sua conta grátis ou entre para fazer a consulta. Sua primeira consulta é grátis.';
+  mostrarAba('criar');
+  setTimeout(function () { document.getElementById('email-c').focus(); }, 60);
+}
 if (plano && NOMES[plano]) {
   var ip = document.getElementById('info-plano');
   ip.style.display = 'block';
@@ -170,6 +176,7 @@ async function criar(ev) {
   return false;
 }
 function finalizar() {
+  if (intent === 'consulta') { window.location.href = '/?retomar=consulta'; return; }
   window.location.href = plano ? '/?assinar=' + encodeURIComponent(plano) : '/';
 }
 // Ja logado? Vai direto
