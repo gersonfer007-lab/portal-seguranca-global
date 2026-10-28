@@ -4,9 +4,9 @@
    - Tiles de mapa (Esri) em cache: a rota vista continua
      visivel offline durante a navegacao
    - APIs (rotas, geocodificacao, mar): so online, sem cache
-   Versao: psg-sw-v3
+   Versao: psg-sw-v6
    ============================================================ */
-var CACHE_SHELL = 'psg-shell-v3';
+var CACHE_SHELL = 'psg-shell-v6';
 var CACHE_TILES = 'psg-tiles-v1';
 var SHELL_ASSETS = [
   '/',
@@ -79,7 +79,11 @@ self.addEventListener('fetch', function(e) {
   var url;
   try { url = new URL(req.url); } catch (err) { return; }
 
-  // 1) APIs de dados: apenas online, nunca cacheia
+  // Endpoints da aplicacao (inclui registro/verificacao): sempre rede,
+  // nunca use cache para status de pagamento ou autenticidade do relatorio.
+  if (url.origin === self.location.origin && url.pathname.indexOf('/api/') === 0) return;
+
+  // 1) APIs de dados externas: apenas online, nunca cacheia
   if (API_HOSTS.indexOf(url.hostname) !== -1) return;
 
   // Sondas de diagnostico do service worker (mesma origem e cross-origin)
@@ -132,6 +136,10 @@ self.addEventListener('fetch', function(e) {
           caches.open(CACHE_SHELL).then(function(c) { c.put(req, cp); });
           return r;
         }).catch(function() {
+          // Verificacao de protocolo exige internet (consulta o servidor)
+          if (url.pathname.indexOf('/verificar/') === 0) {
+            return new Response('<!DOCTYPE html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:sans-serif;background:#0a1128;color:#e8edf7;text-align:center;padding:40px 20px"><h2>Verifica&ccedil;&atilde;o indispon&iacute;vel offline</h2><p style="color:#93a4c8">Conecte-se &agrave; internet para consultar o protocolo.</p><p><a href="/" style="color:#f59e0b">Voltar ao portal</a></p></body>', { headers: { 'Content-Type': 'text/html' } });
+          }
           return caches.open(CACHE_SHELL).then(function(c) {
             return c.match(req).then(function(hit) {
               if (hit) return hit;
