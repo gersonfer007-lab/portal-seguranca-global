@@ -2051,7 +2051,22 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
   }
 }
 
+// Trava contra geracao concorrente: dois cliques (ou retomada + clique)
+// registravam dois protocolos e o segundo sobrescrevia o DOM antes da
+// captura da primeira — o arquivo saia com um protocolo e o documento
+// com outro. So e permitida UMA geracao por vez, por aba.
+var _psgPdfEmCurso = false;
 async function _doGeneratePDF() {
+  if (_psgPdfEmCurso) {
+    psgToast('O relat\u00f3rio j\u00e1 est\u00e1 sendo gerado. Aguarde a conclus\u00e3o.');
+    return;
+  }
+  _psgPdfEmCurso = true;
+  try { await _doGeneratePDFInner(); }
+  finally { _psgPdfEmCurso = false; }
+}
+
+async function _doGeneratePDFInner() {
   showLoading('Preparando gerador de PDF...');
   try {
     await ensurePdfLibs();
