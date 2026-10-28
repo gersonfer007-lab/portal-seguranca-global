@@ -526,11 +526,16 @@ async function handleSearch() {
     const geo = await geocodeAddress(addressData, query);
     if (!geo) { throw new Error('Endereco nao encontrado. Tente incluir a cidade e o pais (ex.: Av. Brasil, Maringa, PR, Brasil) ou o nome completo da rodovia (ex.: Rodovia Presidente Dutra, SP, Brasil).'); }
     let lat = geo.lat, lng = geo.lng;
-    if (geo.displayName) { addressData.fullAddress = geo.displayName; }
+    var isBrazilCepSource = cepClean.length === 8 && addressData.cep;
+    if (!addressData.street && geo.street) { addressData.street = geo.street; }
+    if (!isBrazilCepSource && geo.street) { addressData.street = geo.street; }
+    if (!addressData.neighborhood && geo.neighborhood) { addressData.neighborhood = geo.neighborhood; }
     if (!addressData.city && geo.city) { addressData.city = geo.city; }
     if (!addressData.state && geo.state) { addressData.state = geo.state; }
     if (!addressData.country && geo.country) { addressData.country = geo.country; }
     if (!addressData.country_code && geo.country_code) { addressData.country_code = geo.country_code; }
+    if (!isBrazilCepSource && geo.postcode) { addressData.cep = geo.postcode; }
+    addressData.fullAddress = [addressData.street, addressData.neighborhood, addressData.city, addressData.state, addressData.cep, addressData.country].filter(Boolean).join(', ') || geo.displayName;
     updateLoading('Analisando dados de criminalidade...'); await sleep(600);
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
@@ -848,11 +853,17 @@ async function geocodeQuery(q, wantRoad) {
       }
     }
     const a = pick.address || {};
+    var streetText = [a.road || a.pedestrian || a.residential || '', a.house_number || ''].filter(Boolean).join(' ');
+    var cityText = a.city || a.town || a.village || a.municipality || a.county || '';
+    var addressParts = [streetText || (a.highway || ''), a.suburb || a.neighbourhood || a.quarter || '', cityText, a.state || '', a.postcode || '', a.country || ''].filter(Boolean);
     return {
       lat: parseFloat(pick.lat),
       lng: parseFloat(pick.lon),
-      displayName: pick.display_name || q,
-      city: a.city || a.town || a.village || a.municipality || '',
+      displayName: addressParts.length ? addressParts.join(', ') : (pick.display_name || q),
+      postcode: a.postcode || '',
+      street: streetText,
+      neighborhood: a.suburb || a.neighbourhood || a.quarter || '',
+      city: cityText,
       state: a.state || '',
       country: a.country || '',
       country_code: a.country_code || ''
@@ -942,6 +953,8 @@ function psgAposConsulta(resp) {
   try {
     if (resp.acesso === 'visitante' || resp.acesso === 'bloqueado') {
       setTimeout(function () { psgAbrirPaywall(resp.acesso, resp.planos); }, 900);
+    } else if (resp.acesso === 'cortesia_anonima') {
+      psgToast('Sua primeira consulta \u00e9 gr\u00e1tis! A partir da pr\u00f3xima ser\u00e1 cobrada \u2014 consulta avulsa ou plano Pro, \u00e0 sua escolha.');
     } else if (resp.acesso === 'cortesia') {
       psgToast('Esta foi sua consulta gratuita de cortesia. Assine o Pro para consultas ilimitadas.');
     } else if (resp.acesso === 'avulsa') {
@@ -974,7 +987,7 @@ function psgAbrirPaywall(modo, planos) {
     if (modo === 'bloqueado') {
       msg.textContent = 'Sua consulta gratuita acabou. Escolha um plano para ver o relat\u00f3rio completo deste endere\u00e7o:';
     } else {
-      msg.textContent = 'Voc\u00ea est\u00e1 vendo o resumo gr\u00e1tis. Crie sua conta e escolha um plano para o relat\u00f3rio completo:';
+      msg.textContent = 'Sua primeira consulta gr\u00e1tis j\u00e1 foi usada. Escolha um plano para ver o relat\u00f3rio completo deste endere\u00e7o:';
     }
   }
   if (planos && planos.length) {
@@ -1831,6 +1844,161 @@ async function _psgReverseLabel(lat, lng) {
 function _psgMesAno(d) {
   return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 }
+function _psgHaversineKm(lat1, lon1, lat2, lon2) {
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+async function _psgOverpassPolice(lat, lng) {
+  var q = '[out:json][timeout:25];(node["amenity"="police"](around:5000,' + lat + ',' + lng + ');way["amenity"="police"](around:5000,' + lat + ',' + lng + '););out center tags 30;';
+  var endpoints = ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter'];
+  for (var i = 0; i < endpoints.length; i++) {
+    var ctl = new AbortController();
+    var tm = setTimeout(function () { ctl.abort(); }, 35000);
+    try {
+      var r = await fetch(endpoints[i], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(q),
+        signal: ctl.signal
+      });
+      clearTimeout(tm);
+      if (!r.ok) continue;
+      var j = await r.json();
+      if (j && j.elements && j.elements.length) return j.elements;
+    } catch (e) { clearTimeout(tm); }
+  }
+  return [];
+}
+// Busca unidades policiais no Nominatim (rapido, cobre o mundo todo,
+// traz nome e — quando cadastrado — o telefone via extratags).
+async function _psgNominatimPolice(lat, lng, city, stateName, countryName) {
+  var tentativas = [];
+  var onde = [city, stateName, countryName].filter(Boolean).join(', ');
+  if (onde) tentativas.push({ q: 'police in ' + onde, viewbox: false });
+  tentativas.push({ q: 'police', viewbox: true });
+  for (var i = 0; i < tentativas.length; i++) {
+    try {
+      var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=14&accept-language=pt&extratags=1&q=' + encodeURIComponent(tentativas[i].q);
+      if (tentativas[i].viewbox) {
+        var d = 0.06; // janela de ~6 km ao redor do ponto central
+        url += '&viewbox=' + (lng - d) + ',' + (lat + d) + ',' + (lng + d) + ',' + (lat - d) + '&bounded=1';
+      }
+      var ctl = new AbortController();
+      var timeout = setTimeout(function () { ctl.abort(); }, 6500);
+      var r = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctl.signal });
+      clearTimeout(timeout);
+      if (!r.ok) continue;
+      var j = await r.json();
+      var els = (j || []).filter(function (e) { return e.name && e.lat && e.lon; }).map(function (e) {
+        return {
+          lat: parseFloat(e.lat), lon: parseFloat(e.lon),
+          tags: { name: e.name, phone: (e.extratags && (e.extratags.phone || e.extratags['contact:phone'])) || '' }
+        };
+      });
+      if (els.length) return els;
+    } catch (e) {}
+  }
+  return [];
+}
+// Preenche a secao 4 do PDF com o batalhao da PM e a delegacia da PC
+// mais proximos do ponto central, com telefone (base OpenStreetMap).
+async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, countryCode, unidadesPromise) {
+  var local = [city, stateName].filter(Boolean).join(' - ') || countryName || '';
+  var pmNameEl = document.getElementById('pdf-pm-name');
+  var pmCityEl = document.getElementById('pdf-pm-city');
+  var pmDetEl = document.getElementById('pdf-pm-detail');
+  var pcNameEl = document.getElementById('pdf-pc-name');
+  var pcCityEl = document.getElementById('pdf-pc-city');
+  var pcDetEl = document.getElementById('pdf-pc-detail');
+  var noteEl = document.getElementById('pdf-force-note');
+  if (pmCityEl) pmCityEl.textContent = local;
+  if (pcCityEl) pcCityEl.textContent = local;
+
+  // Fonte primaria: Nominatim (responde em ~1s)
+  var unidades = await _psgNominatimPolice(lat, lng, city, stateName, countryName);
+  // Enriquecimento: Overpass pode acrescentar telefones, sem atrasar a emissao mais que 1,2s.
+  var over = [];
+  try {
+    over = await Promise.race([unidadesPromise, new Promise(function (res) { setTimeout(function () { res([]); }, 1200); })]);
+  } catch (e) { over = []; }
+  if (!over) over = [];
+  if (!unidades.length) unidades = over;
+
+  function normTxt(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  function distDe(u) {
+    var la = (u.lat != null) ? u.lat : (u.center && u.center.lat);
+    var lo = (u.lon != null) ? u.lon : (u.center && u.center.lon);
+    if (la == null || lo == null) return 999999;
+    return _psgHaversineKm(lat, lng, la, lo);
+  }
+  function telDe(u) {
+    if (!u || !u.tags) return '';
+    var t = u.tags.phone || u.tags['contact:phone'] || u.tags['contact:mobile'] || '';
+    return String(t).split(';')[0].trim();
+  }
+  function nomeDe(u) { return (u && u.tags && (u.tags.name || u.tags.operator)) || ''; }
+  function detalheDe(u) {
+    var dKm = (u._d || 0).toFixed(1).replace('.', ',');
+    var tel = telDe(u);
+    return 'A ' + dKm + ' km do ponto central' + (tel ? ' \u00b7 Tel.: ' + tel : ' \u00b7 telefone nao cadastrado na base colaborativa');
+  }
+
+  var lista = unidades.map(function (u) { u._d = distDe(u); return u; })
+    .filter(function (u) { return u._d < 999998 && nomeDe(u); })
+    .sort(function (a, b) { return a._d - b._d; });
+
+  var pm = null, pc = null;
+  var generica = lista.length ? lista[0] : null;
+  for (var i = 0; i < lista.length; i++) {
+    var n = normTxt(nomeDe(lista[i]) + ' ' + (lista[i].tags.operator || ''));
+    if (!pm && /militar|batalh|rocam|rotam|choque|patrulha/.test(n)) pm = lista[i];
+    if (!pc && /civil|delegacia|delegado|investigacao/.test(n)) pc = lista[i];
+  }
+  // Sem delegacia identificada: usa a unidade policial mais proxima
+  if (!pc && generica && generica !== pm) pc = generica;
+
+  // Telefones oficiais quando a unidade e uma das unidades listadas pelos
+  // respectivos orgaos estaduais (Maringa, PR); em outros locais usa OSM.
+  var cityNorm = normTxt(city), stateNorm = normTxt(stateName);
+  if (cityNorm.indexOf('maringa') !== -1 && stateNorm.indexOf('parana') !== -1) {
+    if (pm && /4.?batalhao|batalhao.*policia militar/.test(normTxt(nomeDe(pm)))) pm.tags.phone = pm.tags.phone || '(44) 3261-5100';
+    if (pc && /3.{0,2}distrito/.test(normTxt(nomeDe(pc)))) pc.tags.phone = pc.tags.phone || '(44) 3267-5224';
+  }
+  // Completa telefones faltantes com os dados do Overpass (unidade a menos de 250 m)
+  function enriquecerTel(u) {
+    if (!u || telDe(u) || !over.length) return;
+    var ula = (u.lat != null) ? u.lat : (u.center && u.center.lat);
+    var ulo = (u.lon != null) ? u.lon : (u.center && u.center.lon);
+    if (ula == null || ulo == null) return;
+    var melhor = null, melhorD = 0.25;
+    for (var k = 0; k < over.length; k++) {
+      var o = over[k];
+      if (!o.tags || !(o.tags.phone || o.tags['contact:phone'])) continue;
+      var ola = (o.lat != null) ? o.lat : (o.center && o.center.lat);
+      var olo = (o.lon != null) ? o.lon : (o.center && o.center.lon);
+      if (ola == null || olo == null) continue;
+      var dKm = _psgHaversineKm(ula, ulo, ola, olo);
+      if (dKm < melhorD) { melhorD = dKm; melhor = o; }
+    }
+    if (melhor) u.tags.phone = telDe(melhor);
+  }
+  if (pm) enriquecerTel(pm);
+  if (pc) enriquecerTel(pc);
+
+  var emergBr = (countryCode || '').toLowerCase() === 'br';
+  if (pm && pmNameEl) pmNameEl.textContent = nomeDe(pm);
+  if (pmDetEl) pmDetEl.textContent = pm ? detalheDe(pm) : ('Unidade nao localizada na base colaborativa' + (emergBr ? ' \u00b7 Emergencia: 190' : ''));
+  if (pc && pcNameEl) pcNameEl.textContent = nomeDe(pc);
+  if (pcDetEl) pcDetEl.textContent = pc ? detalheDe(pc) : ('Unidade nao localizada na base colaborativa' + (emergBr ? ' \u00b7 Emergencia: 190' : ''));
+  if (noteEl) {
+    noteEl.textContent = emergBr
+      ? 'Emergencias (Brasil): 190 Policia Militar \u00b7 192 SAMU \u00b7 193 Bombeiros \u00b7 180 Violencia contra a mulher \u00b7 181 Disque-Denuncia \u00b7 100 Direitos Humanos. Unidades identificadas por dados publicos do OpenStreetMap; telefones das unidades de Maringa conferidos nos sites oficiais da PMPR e PCPR (pmpr.pr.gov.br/4BPM e policiacivil.pr.gov.br/DPI). Nomes, distancias e telefones podem mudar; confirme antes de se deslocar.'
+      : 'Em emergencias, acione o numero de emergencia do seu pais (112 na Europa, 911 nos EUA, 190 no Brasil). Unidades identificadas por dados publicos do OpenStreetMap; telefones podem estar ausentes da base colaborativa. Confirme o atendimento presencial antes de se deslocar.';;
+  }
+}
 
 async function _doGeneratePDF() {
   showLoading('Preparando gerador de PDF...');
@@ -1849,12 +2017,15 @@ async function _doGeneratePDF() {
   var stateName = PSG_BR_STATE_NAMES[_psgNorm(stateRaw)] || stateRaw;
   var localLabel = [city, stateName].filter(Boolean).join(' - ') || countryName;
   var now = new Date();
-  var protocol = 'PSG-' + now.getFullYear() + '-' + Date.now().toString(36).toUpperCase().slice(-8);
+  var protocol = '';
 
   // ---- Perimetro da varredura (raio 1,5 km) ----
   showLoading('Mapeando perimetro da varredura...');
   var RAIO_KM = 1.5;
   var lat = currentData.lat, lng = currentData.lng;
+  // Overpass (forcas de seguranca) em paralelo: a consulta pode demorar
+  // dezenas de segundos, entao comeca agora e e aguardada na secao 4.
+  var forcasOverpassPromise = _psgOverpassPolice(lat, lng).catch(function () { return []; });
   var dLat = RAIO_KM / 111.32;
   var dLng = RAIO_KM / (111.32 * Math.cos(lat * Math.PI / 180) || 1);
   // Consulta o ponto central para identificar o bairro exato da pesquisa
@@ -1940,32 +2111,66 @@ async function _doGeneratePDF() {
       cityFlagImg.src = cityUrl;
   }
 
-  // ---- Identificacao, protocolo, periodo ----
-  document.getElementById('pdf-protocol').textContent = protocol;
+  // ---- Identificacao, emissao e local ----
   var emittedStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   document.getElementById('pdf-emitted').textContent = emittedStr;
-  document.getElementById('pdf-protocol-2').textContent = protocol;
   document.getElementById('pdf-emitted-2').textContent = emittedStr;
   var mesesExtenso = ['janeiro','fevereiro','mar\u00e7o','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   var cidadeData = city || stateName || countryName;
-  document.getElementById('pdf-dateline').textContent = cidadeData + ', ' + now.getDate() + ' de ' + mesesExtenso[now.getMonth()] + ' de ' + now.getFullYear() + '.';
-  var qrData = 'https://portalsegurancaglobal.com.br/verificar/' + protocol;
+  document.getElementById('pdf-dateline').textContent = cidadeData + ', ' + now.getDate() + ' de ' + mesesExtenso[now.getMonth()] + ' de ' + now.getFullYear();
+  // Microtexto recebe o protocolo oficial do servidor apos o registro.
+  // ---- CEP: endereco e ponto central usam a MESMA fonte (addr.cep) ----
+  // O nome devolvido pelo Nominatim pode embutir um CEP divergente do real;
+  // ele e removido e o CEP autoritativo (ViaCEP / ponto central) e usado.
+  var cepFinal = String(addr.cep || '').trim();
+  var addrText = String(addr.fullAddress || '');
+  var mCep = addrText.match(/\b\d{5}-?\d{3}\b/);
+  if (!cepFinal && mCep) cepFinal = mCep[0];
+  if (cepFinal && /^\d{8}$/.test(cepFinal)) cepFinal = cepFinal.slice(0, 5) + '-' + cepFinal.slice(5);
+  addrText = addrText.replace(/\s*[,\u2014-]?\s*\b\d{5}-?\d{3}\b/g, '').replace(/\s*,\s*,+/g, ', ').replace(/\s*,\s*$/, '').trim();
+  if (cepFinal) addrText += ' \u2014 CEP ' + cepFinal;
+  document.getElementById('pdf-address').textContent = addrText;
+  document.getElementById('pdf-coords').textContent = 'Ponto central: Lat ' + lat.toFixed(5) + ' | Lng ' + lng.toFixed(5) + (cepFinal ? ' | CEP ' + cepFinal : '');
+
+  // Registra o protocolo assinado no servidor e gera QR somente apos sucesso.
+  // Assim nao se emite PDF com identificador falso ou sem verificacao online.
+  showLoading('Registrando protocolo de autenticidade...');
+  var regResp = null;
+  var regJson = {};
+  try {
+    regResp = await fetch('/api/relatorios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ endereco: addrText, cidade: city, estado: stateName, pais: countryName })
+    });
+    regJson = await regResp.json();
+  } catch (e) {}
+  if (!regResp || !regResp.ok || !regJson.ok || !regJson.protocolo) {
+    document.getElementById('pdf-report').style.left = '-9999px';
+    hideLoading();
+    alert((regJson && regJson.error) || 'Nao foi possivel registrar o protocolo de verificacao. Confira sua conexao e entre na sua conta antes de gerar o PDF.');
+    return;
+  }
+  protocol = regJson.protocolo;
+  document.getElementById('pdf-protocol').textContent = protocol;
+  document.getElementById('pdf-protocol-2').textContent = protocol;
+  var qrData = 'https://portalsegurancaglobal.com.br' + regJson.url;
   document.getElementById('pdf-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=4&color=12-23-53&data=' + encodeURIComponent(qrData);
-  // Microtexto de seguranca (topo e base do documento)
   var microStr = 'PORTAL SEGURANCA GLOBAL \u2022 DOCUMENTO DE ANALISE DE SEGURANCA \u2022 ' + protocol + ' \u2022 EMISSAO ' + emittedStr + ' \u2022 ';
   document.getElementById('pdf-micro-top').textContent = microStr + microStr + microStr;
   document.getElementById('pdf-micro-bot').textContent = microStr + microStr + microStr;
-  var serial = 'SERIE B ' + (Math.floor(Math.random() * 899999999) + 100000000);
-  document.getElementById('pdf-address').textContent = addr.fullAddress;
-  document.getElementById('pdf-coords').textContent = 'Ponto central: Lat ' + lat.toFixed(5) + ' | Lng ' + lng.toFixed(5) + (addr.cep ? ' | CEP ' + addr.cep : '');
   var fim = new Date(now.getFullYear(), now.getMonth(), 1);
   var inicio = new Date(now.getFullYear(), now.getMonth() - 11, 1);
   document.getElementById('pdf-period').textContent = _psgMesAno(inicio) + ' a ' + _psgMesAno(fim);
 
-  document.getElementById('pdf-pm-city').textContent = [city, stateName].filter(Boolean).join(' - ') || countryName;
-  document.getElementById('pdf-pc-city').textContent = [city, stateName].filter(Boolean).join(' - ') || countryName;
+  // ---- Forcas de seguranca: delegacia e batalhao mais proximos ----
+  // A consulta ao Overpass comeca em paralelo logo no inicio do _doGeneratePDF
+  // (var forcasOverpassPromise) porque pode levar dezenas de segundos.
+  showLoading('Localizando forcas de seguranca proximas...');
+  await _psgForcasSeguranca(lat, lng, city, stateName, countryName, countryCode, forcasOverpassPromise);
   document.getElementById('pdf-score').textContent = currentData.safetyScore;
-  document.getElementById('pdf-score-label').textContent = 'Safety Score - ' + (currentData.safetyScore >= 70 ? 'SEGURO' : currentData.safetyScore >= 40 ? 'MODERADO' : 'CRITICO');
+  document.getElementById('pdf-score-label').textContent = 'Safety Score - ' + (currentData.safetyScore >= 70 ? 'ALTO' : currentData.safetyScore >= 40 ? 'MODERADO' : 'BAIXO');
   document.getElementById('pdf-crime').textContent = currentData.crimeScore + '/100';
   document.getElementById('pdf-infra').textContent = currentData.infraScore + '/100';
   document.getElementById('pdf-movement').textContent = currentData.movementScore + '/100';
