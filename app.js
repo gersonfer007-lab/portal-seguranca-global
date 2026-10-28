@@ -459,6 +459,7 @@ async function handleSearch() {
   if (SH_SECURITY.detectInjection(rawQuery)) { alert('Entrada invalida detectada.'); SH_SECURITY.logEvent('SEARCH_BLOCKED', rawQuery.substring(0, 50)); return; }
   const query = SH_SECURITY.sanitizeInput(rawQuery);
   if (!query) return;
+  if (!(await psgExigirConta({ kind: 'texto', query: query }))) return;
 
   // Server-side validation (segunda camada â€” segura)
   try {
@@ -718,18 +719,23 @@ function runMapselGps() {
 }
 
 // Botao "Onde estou agora" da tela inicial (sem abrir o modal)
-function searchByGps() {
+async function searchByGps() {
   if (!termsAccepted()) { window._pendingGpsSearch = true; showTermsModal(); return; }
   if (!navigator.geolocation) { alert('Seu navegador nao permite localizacao por GPS.'); return; }
+  if (!(await psgExigirConta({ kind: 'gps' }))) return;
   showLoading('Obtendo sua localizacao...');
-  navigator.geolocation.getCurrentPosition(function(pos) {
-    analyzeCoords(pos.coords.latitude, pos.coords.longitude, null);
-  }, function(err) {
-    hideLoading();
-    alert(err.code === 1
-      ? 'Permissao de localizacao negada. Autorize o acesso no navegador ou use "Pesquisar pelo Mapa".'
-      : 'Nao foi possivel obter sua localizacao. Use "Pesquisar pelo Mapa".');
-  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  return new Promise(function(resolve) {
+    navigator.geolocation.getCurrentPosition(async function(pos) {
+      try { await analyzeCoords(pos.coords.latitude, pos.coords.longitude, null); }
+      finally { resolve(); }
+    }, function(err) {
+      hideLoading();
+      alert(err.code === 1
+        ? 'Permissao de localizacao negada. Autorize o acesso no navegador ou use "Pesquisar pelo Mapa".'
+        : 'Nao foi possivel obter sua localizacao. Use "Pesquisar pelo Mapa".');
+      resolve();
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  });
 }
 
 function confirmMapSearch() {
@@ -743,6 +749,7 @@ function confirmMapSearch() {
 // ANALISE DIRETA POR COORDENADAS (usada pelo mapa e pelo GPS)
 // ============================================================
 async function analyzeCoords(lat, lng, addressData) {
+  if (!(await psgExigirConta({ kind: 'coords', lat: lat, lng: lng, addressData: addressData || null }))) return;
   if (!SH_SECURITY.checkRateLimit('search')) { hideLoading(); alert('Limite de buscas atingido. Aguarde um momento e tente novamente.'); return; }
   SH_SECURITY.logEvent('SEARCH_MAP', lat.toFixed(4) + ',' + lng.toFixed(4));
   showLoading('Consultando local...');
@@ -935,6 +942,21 @@ function psgToast(msg) {
   t._tm = setTimeout(function () { t.style.display = 'none'; }, 6500);
 }
 
+async function psgExigirConta(consultaPendente) {
+  try {
+    var r = await fetch('/api/auth/eu', { credentials: 'same-origin' });
+    var j = await r.json();
+    if (j && j.logado) return true;
+  } catch (e) {
+    psgToast('Nao foi possivel verificar sua conta. Confira a conexao e tente novamente.');
+    return false;
+  }
+  try { sessionStorage.setItem('psg_consulta_pendente', JSON.stringify(consultaPendente || {})); }
+  catch (e) { alert('Ative o armazenamento do navegador para guardar sua consulta durante o cadastro.'); return false; }
+  window.location.assign('/login.html?intent=consulta');
+  return false;
+}
+
 async function psgConsultar(lat, lng, addressData) {
   var r = await fetch('/api/consulta', {
     method: 'POST',
@@ -953,10 +975,8 @@ function psgAposConsulta(resp) {
   try {
     if (resp.acesso === 'visitante' || resp.acesso === 'bloqueado') {
       setTimeout(function () { psgAbrirPaywall(resp.acesso, resp.planos); }, 900);
-    } else if (resp.acesso === 'cortesia_anonima') {
-      psgToast('Sua primeira consulta \u00e9 gr\u00e1tis! A partir da pr\u00f3xima ser\u00e1 cobrada \u2014 consulta avulsa ou plano Pro, \u00e0 sua escolha.');
     } else if (resp.acesso === 'cortesia') {
-      psgToast('Esta foi sua consulta gratuita de cortesia. Assine o Pro para consultas ilimitadas.');
+      psgToast('Sua primeira consulta completa foi gratuita. Para a proxima, escolha uma consulta avulsa ou um plano Pro.');
     } else if (resp.acesso === 'avulsa') {
       psgToast('Consulta avulsa utilizada. Obrigado!');
     }
@@ -1102,6 +1122,37 @@ function psgAtualizarConta() {
 // RELOGIO MUNDIAL â€” horario e fuso horario de cada pais
 // Mostra a hora local do lugar analisado (painel de resultado)
 // e do pais selecionado nas bandeiras (cabecalho de noticias).
+(function () {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('retomar') !== 'consulta') return;
+    var raw = sessionStorage.getItem('psg_consulta_pendente');
+    if (!raw) return;
+    var pendente = JSON.parse(raw);
+    fetch('/api/auth/eu', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(async function (j) {
+      if (!j || !j.logado) {
+        window.location.assign('/login.html?intent=consulta');
+        return;
+      }
+      var tarefa;
+      if (pendente.kind === 'texto' && pendente.query) {
+        var input = document.getElementById('search-input');
+        if (input) input.value = pendente.query;
+        tarefa = handleSearch();
+      } else if (pendente.kind === 'coords' && isFinite(pendente.lat) && isFinite(pendente.lng)) {
+        tarefa = analyzeCoords(pendente.lat, pendente.lng, pendente.addressData || null);
+      } else if (pendente.kind === 'gps') {
+        tarefa = searchByGps();
+      }
+      if (tarefa) await tarefa;
+      sessionStorage.removeItem('psg_consulta_pendente');
+      if (pendente.makePdf && currentData && !currentData.teaser) await generatePDF();
+      else if (pendente.makePdf && currentData && currentData.teaser) psgToast('Para gerar o relatorio completo, use uma conta com consulta gratis disponivel ou escolha um plano.');
+      history.replaceState(null, '', window.location.pathname);
+    }).catch(function () { psgToast('Nao foi possivel retomar a consulta. Tente novamente.'); });
+  } catch (e) {}
+})();
+
 // ============================================================
 var WorldClock = (function() {
   // Fuso principal de cada pais (IANA) â€” cobertura mundial
@@ -2326,6 +2377,7 @@ async function _doGeneratePDF() {
 
 async function generatePDF() {
   if (!currentData) return alert('Faca uma pesquisa primeiro.');
+  if (!(await psgExigirConta({ kind: 'coords', lat: currentData.lat, lng: currentData.lng, addressData: currentData.address, makePdf: true }))) return;
   _doGeneratePDF();
 }
 
