@@ -958,17 +958,30 @@ async function psgExigirConta(consultaPendente) {
 }
 
 async function psgConsultar(lat, lng, addressData) {
-  var r = await fetch('/api/consulta', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'same-origin',
-    body: JSON.stringify({ lat: lat, lng: lng, address: addressData })
-  });
-  var j = null;
-  try { j = await r.json(); } catch (e) {}
-  if (r.ok && j && j.dados) { return j; }
-  if (r.status === 402 && j && j.dados) { j.acesso = 'bloqueado'; return j; }
-  throw new Error((j && j.error) || 'Nao foi possivel concluir a consulta agora. Tente novamente em instantes.');
+  // A coleta de dados pode falhar ou voltar vazia (fontes publicas lentas).
+  // Em vez de exibir pilares zerados, refaz a consulta ate 2 vezes antes
+  // de devolver o que veio — o aviso final fica por conta do dashboard/PDF.
+  var ultima = null;
+  for (var tentativa = 0; tentativa < 3; tentativa++) {
+    var r = await fetch('/api/consulta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ lat: lat, lng: lng, address: addressData })
+    });
+    var j = null;
+    try { j = await r.json(); } catch (e) {}
+    if (r.ok && j && j.dados) {
+      ultima = j;
+      if (_psgDadosCompletos(j.dados)) return j;
+      // dados incompletos: nova tentativa apos breve pausa
+      if (tentativa < 2) await new Promise(function (res) { setTimeout(res, 900); });
+      continue;
+    }
+    if (r.status === 402 && j && j.dados) { j.acesso = 'bloqueado'; return j; }
+    throw new Error((j && j.error) || 'Nao foi possivel concluir a consulta agora. Tente novamente em instantes.');
+  }
+  return ultima;
 }
 
 // Dados completos? O resumo gratuito (teaser) e qualquer resposta vazia
@@ -1932,8 +1945,9 @@ function _psgHaversineKm(lat1, lon1, lat2, lon2) {
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-async function _psgOverpassPolice(lat, lng) {
-  var q = '[out:json][timeout:25];(node["amenity"="police"](around:9000,' + lat + ',' + lng + ');way["amenity"="police"](around:9000,' + lat + ',' + lng + '););out center tags 40;';
+async function _psgOverpassPolice(lat, lng, raioM) {
+  var raio = raioM || 9000;
+  var q = '[out:json][timeout:25];(node["amenity"="police"](around:' + raio + ',' + lat + ',' + lng + ');way["amenity"="police"](around:' + raio + ',' + lat + ',' + lng + '););out center tags 40;';
   var endpoints = ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter'];
   for (var i = 0; i < endpoints.length; i++) {
     var ctl = new AbortController();
@@ -1955,16 +1969,18 @@ async function _psgOverpassPolice(lat, lng) {
 }
 // Busca unidades policiais no Nominatim (rapido, cobre o mundo todo,
 // traz nome e — quando cadastrado — o telefone via extratags).
-async function _psgNominatimPolice(lat, lng, city, stateName, countryName) {
+// wide=true usa janela de ~25 km (para achar batalhao/delegacia em
+// cidade vizinha quando falta unidade na consultada).
+async function _psgNominatimPolice(lat, lng, city, stateName, countryName, wide) {
   var tentativas = [];
   var onde = [city, stateName, countryName].filter(Boolean).join(', ');
-  if (onde) tentativas.push({ q: 'police in ' + onde, viewbox: false });
+  if (!wide && onde) tentativas.push({ q: 'police in ' + onde, viewbox: false });
   tentativas.push({ q: 'police', viewbox: true });
   for (var i = 0; i < tentativas.length; i++) {
     try {
-      var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=14&accept-language=pt&extratags=1&q=' + encodeURIComponent(tentativas[i].q);
+      var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=' + (wide ? 25 : 14) + '&accept-language=pt&extratags=1&q=' + encodeURIComponent(tentativas[i].q);
       if (tentativas[i].viewbox) {
-        var d = 0.06; // janela de ~6 km ao redor do ponto central
+        var d = wide ? 0.23 : 0.06; // janela de ~6 km (ou ~25 km no modo wide)
         url += '&viewbox=' + (lng - d) + ',' + (lat + d) + ',' + (lng + d) + ',' + (lat - d) + '&bounded=1';
       }
       var ctl = new AbortController();
@@ -2006,9 +2022,19 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
     over = await Promise.race([unidadesPromise, new Promise(function (res) { setTimeout(function () { res([]); }, 1200); })]);
   } catch (e) { over = []; }
   if (!over) over = [];
-  if (!unidades.length) unidades = over;
 
   function normTxt(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  // Soma as duas bases (Nominatim + Overpass), sem duplicar unidade.
+  function mesclar(novas) {
+    var vistos = {};
+    unidades.forEach(function (u) { vistos[normTxt(nomeDe(u))] = 1; });
+    novas.forEach(function (u) {
+      var k = normTxt(nomeDe(u));
+      if (!k || vistos[k]) return;
+      vistos[k] = 1;
+      unidades.push(u);
+    });
+  }
   function distDe(u) {
     var la = (u.lat != null) ? u.lat : (u.center && u.center.lat);
     var lo = (u.lon != null) ? u.lon : (u.center && u.center.lon);
@@ -2046,39 +2072,72 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
     return RE_ESPECIALIZADA.test(normTxt(nomeDe(u) + ' ' + ((u.tags && u.tags.operator) || '')));
   }
 
-  var lista = unidades.map(function (u) { u._d = distDe(u); return u; })
-    .filter(function (u) { return u._d < 999998 && nomeDe(u) && !ehEspecializada(u); })
-    .sort(function (a, b) { return a._d - b._d; });
+  function selecionar() {
+    var lista = unidades.map(function (u) { u._d = distDe(u); return u; })
+      .filter(function (u) { return u._d < 999998 && nomeDe(u) && !ehEspecializada(u); })
+      .sort(function (a, b) { return a._d - b._d; });
 
-  // Prioridade PM: batalhao (BPM) > unidade da Policia Militar > patrulha.
-  // Prioridade PC: unidade da Policia Civil > delegacia/distrito policial.
-  var gm = null, generica = lista.length ? lista[0] : null;
-  var pmBatalhao = null, pmMilitar = null, pmPatrulha = null;
-  var pcCivil = null, pcDelegacia = null;
-  for (var i = 0; i < lista.length; i++) {
-    var n = normTxt(nomeDe(lista[i]) + ' ' + (lista[i].tags.operator || ''));
-    if (!pmBatalhao && /batalhao|\bbpm\b/.test(n)) pmBatalhao = lista[i];
-    if (!pmMilitar && /policia militar/.test(n)) pmMilitar = lista[i];
-    if (!pmPatrulha && /rocam|rotam|patrulha/.test(n)) pmPatrulha = lista[i];
-    if (!pcCivil && /policia civil/.test(n)) pcCivil = lista[i];
-    if (!pcDelegacia && /delegacia|distrito policial/.test(n)) pcDelegacia = lista[i];
-    if (!gm && /guarda\s?-?municipal|\bgcm\b/.test(n)) gm = lista[i];
+    // Prioridade PM: batalhao (BPM) > unidade da Policia Militar > patrulha.
+    // Prioridade PC: unidade da Policia Civil > delegacia/distrito policial.
+    var gm = null, generica = lista.length ? lista[0] : null;
+    var pmBatalhao = null, pmMilitar = null, pmPatrulha = null;
+    var pcCivil = null, pcDelegacia = null;
+    for (var i = 0; i < lista.length; i++) {
+      var n = normTxt(nomeDe(lista[i]) + ' ' + (lista[i].tags.operator || ''));
+      if (!pmBatalhao && /batalhao|\bbpm\b/.test(n)) pmBatalhao = lista[i];
+      if (!pmMilitar && /policia militar/.test(n)) pmMilitar = lista[i];
+      if (!pmPatrulha && /rocam|rotam|patrulha/.test(n)) pmPatrulha = lista[i];
+      if (!pcCivil && /policia civil/.test(n)) pcCivil = lista[i];
+      if (!pcDelegacia && /delegacia|distrito policial/.test(n)) pcDelegacia = lista[i];
+      if (!gm && /guarda\s?-?municipal|\bgcm\b/.test(n)) gm = lista[i];
+    }
+    return {
+      pm: pmBatalhao || pmMilitar || pmPatrulha || null,
+      pc: pcCivil || pcDelegacia || null,
+      gm: gm,
+      generica: generica
+    };
   }
-  var pm = pmBatalhao || pmMilitar || pmPatrulha || null;
-  var pc = pcCivil || pcDelegacia || null;
+
+  // As duas bases somadas desde o inicio: Nominatim acha nomes; Overpass
+  // acha telefones e unidades que o Nominatim nao devolve.
+  if (over.length) mesclar(over);
+  var sel = selecionar();
+  // Faltando batalhao ou delegacia no raio padrao, amplia para ~25 km em
+  // duas fontes — Overpass e Nominatim (janela larga) — para cobrir
+  // cidades vizinhas, como Sarandi em relacao ao 4o BPM de Maringa.
+  if ((!sel.pm || !sel.pc)) {
+    try {
+      var over25 = await _psgOverpassPolice(lat, lng, 25000);
+      if (over25 && over25.length) { mesclar(over25); sel = selecionar(); }
+    } catch (e) {}
+  }
+  if ((!sel.pm || !sel.pc)) {
+    try {
+      var nomWide = await _psgNominatimPolice(lat, lng, null, null, null, true);
+      if (nomWide && nomWide.length) { mesclar(nomWide); sel = selecionar(); }
+    } catch (e) {}
+  }
+  var pm = sel.pm, pc = sel.pc, generica = sel.generica, gm = sel.gm;
   // Sem delegacia identificada: prefere a Guarda Municipal (rotulo proprio GM)
   // e, em ultimo caso, a unidade policial mais proxima.
   if (!pc && gm && gm !== pm) pc = gm;
   if (!pc && generica && generica !== pm) pc = generica;
-  // Rotulo do segundo cartao: GM quando a unidade exibida for Guarda Municipal
-  var pcBadgeEl = document.getElementById('pdf-pc-badge');
+  // Rotulos por pais: no Brasil PM/PC/GM; fora, POL/DEL/GM (o portal e
+  // mundial e "PM"/"PC" nao significam nada em outros paises).
+  var brPais = (countryCode || '').toLowerCase() === 'br';
   var pcEhGM = !!(pc && /guarda\s?-?municipal|\bgcm\b/.test(normTxt(nomeDe(pc) + ' ' + (pc.tags.operator || ''))));
-  if (pcBadgeEl) pcBadgeEl.textContent = pcEhGM ? 'GM' : 'PC';
+  var pmBadgeEl = document.getElementById('pdf-pm-badge');
+  var pcBadgeEl = document.getElementById('pdf-pc-badge');
+  if (pmBadgeEl) pmBadgeEl.textContent = brPais ? 'PM' : 'POL';
+  if (pcBadgeEl) pcBadgeEl.textContent = pcEhGM ? 'GM' : (brPais ? 'PC' : 'DEL');
 
-  // Telefones oficiais quando a unidade e uma das unidades listadas pelos
-  // respectivos orgaos estaduais (Maringa, PR); em outros locais usa OSM.
+  // Telefones oficiais das unidades listadas pelos orgaos estaduais (PR).
+  // Valem para a unidade em si: quem consulta Sarandi recebe o 4o BPM e o
+  // 3o DP, que ficam em Maringa e atendem a regiao — o telefone oficial
+  // acompanha a unidade, nao a cidade consultada.
   var cityNorm = normTxt(city), stateNorm = normTxt(stateName);
-  if (cityNorm.indexOf('maringa') !== -1 && stateNorm.indexOf('parana') !== -1) {
+  if (stateNorm.indexOf('parana') !== -1) {
     if (pm && /4.?batalhao|batalhao.*policia militar/.test(normTxt(nomeDe(pm)))) pm.tags.phone = pm.tags.phone || '(44) 3261-5100';
     if (pc && /3.{0,2}distrito/.test(normTxt(nomeDe(pc)))) pc.tags.phone = pc.tags.phone || '(44) 3267-5224';
   }
@@ -2116,9 +2175,14 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
   if (pc) enriquecerTel(pc);
 
   var emergBr = (countryCode || '').toLowerCase() === 'br';
-  if (pm && pmNameEl) pmNameEl.textContent = nomeDe(pm);
+  // Nome neutro quando a unidade nao existe: sem isso, o cartao exibia o
+  // texto da consulta anterior (ex.: "4o BPM" de Maringa num relatorio de
+  // Lisboa).
+  var nomePmPadrao = brPais ? 'Policia Militar' : 'Policia';
+  var nomePcPadrao = brPais ? 'Policia Civil' : 'Policia';
+  if (pmNameEl) pmNameEl.textContent = pm ? nomeDe(pm) : nomePmPadrao;
   if (pmDetEl) pmDetEl.textContent = pm ? detalheDe(pm) : ('Unidade nao localizada na base colaborativa' + (emergBr ? ' \u00b7 Emergencia: 190' : ''));
-  if (pc && pcNameEl) pcNameEl.textContent = nomeDe(pc);
+  if (pcNameEl) pcNameEl.textContent = pc ? nomeDe(pc) : nomePcPadrao;
   if (pcDetEl) pcDetEl.textContent = pc ? detalheDe(pc) : ('Unidade nao localizada na base colaborativa' + (emergBr ? ' \u00b7 Emergencia: 190' : ''));
   if (noteEl) {
     // A nota de telefones conferidos na PMPR/PCPR vale apenas para Maringa;
