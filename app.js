@@ -2350,6 +2350,8 @@ async function _doGeneratePDF() {
       pdf.text(microLine, pageW / 2, 4.2, { align: 'center' });
       pdf.text(microLine, pageW / 2, pageHmm - 2.6, { align: 'center' });
       // Numero de serie na lateral (vermelho, como em cedulas)
+      // Usa o protocolo oficial do servidor; nunca chama variavel inexistente.
+      var serial = protocol;
       pdf.setFont('courier', 'bold');
       pdf.setFontSize(8);
       pdf.setTextColor(138, 31, 31);
