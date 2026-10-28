@@ -34,7 +34,6 @@ const MP_WEBHOOK_SECRET = process.env.MP_WEBHOOK_SECRET || '';
 const PAYWALL_DEV = process.env.PAYWALL_DEV === '1';
 const DATABASE_URL = process.env.DATABASE_URL || '';
 const COOKIE = 'psg_sessao';
-const ANON_COOKIE = 'psg_anon';   // identifica o visitante sem conta (1a consulta gratis)
 const SESSAO_DIAS = 30;
 
 // ------------------------------------------------------------
@@ -299,16 +298,8 @@ module.exports = function montarPaywall(app) {
         if (String(e.message) === 'email_duplicado') return res.status(409).json({ error: 'Este e-mail ja tem conta. Faca login.' });
         throw e;
       }
-      // Se este visitante ja usou a consulta gratuita (sem conta), a conta
-      // nova nao ganha outra cortesia — a primeira consulta gratis ja foi.
-      let cortesiaInicial = 1;
-      const anonIdReg = parseCookies(req)[ANON_COOKIE];
-      if (anonIdReg && /^[a-f0-9]{32}$/.test(anonIdReg)) {
-        const jaUsouAnon = await store.contarUsos('anon:' + anonIdReg, 'cortesia_anon');
-        if (jaUsouAnon > 0) { await store.registrarUso(u.id, 'cortesia'); cortesiaInicial = 0; }
-      }
       await iniciarSessao(res, u.id);
-      res.json({ ok: true, email, cortesia: cortesiaInicial, aviso: cortesiaInicial === 1 ? 'Conta criada. Voce tem 1 consulta completa de cortesia.' : 'Conta criada. Sua consulta gratuita deste aparelho ja foi usada — escolha um plano para continuar.' });
+      res.json({ ok: true, email, cortesia: 1, aviso: 'Conta criada. Voce tem 1 consulta completa de cortesia.' });
     } catch (e) { console.error('[PAYWALL] registrar:', e.message); res.status(500).json({ error: 'Erro ao criar conta.' }); }
   });
 
@@ -319,12 +310,6 @@ module.exports = function montarPaywall(app) {
       const u = await store.usuarioPorEmail(email);
       if (!u || !senhasIguais(hashSenha(senha, u.salt), u.hash)) {
         return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
-      }
-      const anonIdLogin = parseCookies(req)[ANON_COOKIE];
-      if (anonIdLogin && /^[a-f0-9]{32}$/.test(anonIdLogin)) {
-        const jaUsouAnon = await store.contarUsos('anon:' + anonIdLogin, 'cortesia_anon');
-        const jaUsouConta = await store.contarUsos(u.id, 'cortesia');
-        if (jaUsouAnon > 0 && jaUsouConta === 0) { await store.registrarUso(u.id, 'cortesia'); }
       }
       await iniciarSessao(res, u.id);
       res.json({ ok: true, email });
@@ -391,30 +376,11 @@ module.exports = function montarPaywall(app) {
       };
 
       const u = await usuarioAtual(req);
+      if (!u) return res.status(401).json({ error: 'Crie sua conta grátis ou entre para fazer a consulta.', precisaLogin: true });
       const dados = generateIntelligence(lat, lng, address);
       const d = await direitoConsulta(u);
 
       if (d.acesso === 'gratis') { return res.json({ acesso: 'gratis', dados }); }
-      if (d.acesso === 'visitante') {
-        // A primeira consulta de quem chega sem conta e GRATUITA (1x por
-        // visitante), sem tela de pagamento — so o aviso de que a proxima
-        // sera cobrada. Controle por cookie anonimo + registro de uso.
-        let anonId = parseCookies(req)[ANON_COOKIE];
-        if (!anonId || !/^[a-f0-9]{32}$/.test(anonId)) { anonId = crypto.randomBytes(16).toString('hex'); }
-        const chaveAnon = 'anon:' + anonId;
-        const jaUsouGratis = await store.contarUsos(chaveAnon, 'cortesia_anon');
-        if (jaUsouGratis === 0) {
-          await store.registrarUso(chaveAnon, 'cortesia_anon');
-          res.cookie(ANON_COOKIE, anonId, { httpOnly: true, sameSite: 'lax', secure: cookieSeguro, maxAge: 365 * 86400000, path: '/' });
-          return res.json({
-            acesso: 'cortesia_anonima',
-            dados,
-            aviso: 'Sua primeira consulta e gratuita. A partir da proxima, escolha um plano (consulta avulsa ' + PLANOS.avulsa.precoTexto + ') para continuar.'
-          });
-        }
-        const r = resumoPublico(dados);
-        return res.json({ acesso: 'visitante', resumo: { faixa: r.faixa, scoreAproximado: r.scoreAproximado, aviso: r.aviso }, dados: r.dados, planos: listaPlanosPublica() });
-      }
       if (d.acesso === 'assinante') {
         await store.registrarUso(u.id, 'assinatura');
         return res.json({ acesso: 'assinante', plano: d.plano, dados });
