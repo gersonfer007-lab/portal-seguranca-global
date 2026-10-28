@@ -971,6 +971,17 @@ async function psgConsultar(lat, lng, addressData) {
   throw new Error((j && j.error) || 'Nao foi possivel concluir a consulta agora. Tente novamente em instantes.');
 }
 
+// Dados completos? O resumo gratuito (teaser) e qualquer resposta vazia
+// (falha de dados) nunca podem virar relatorio: o PDF sairia com zeros
+// em indice criminal, infraestrutura, movimentacao, ocorrencias, cameras
+// e comercios, como aconteceu no protocolo PSG-2026-B6F8E0C1EB72.
+function _psgDadosCompletos(d) {
+  if (!d || d.teaser) return false;
+  var tudoZero = (!d.crimeScore && !d.infraScore && !d.movementScore
+    && !(d.totalOccurrences > 0) && !(d.cameras > 0) && !(d.commerce > 0));
+  return !tudoZero;
+}
+
 function psgAposConsulta(resp) {
   try {
     if (resp.acesso === 'visitante' || resp.acesso === 'bloqueado') {
@@ -1692,6 +1703,13 @@ function renderDashboard(data) {
     document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
     return;
   }
+  // Dados completos, mas todos zerados: falha de dados, nao um resultado
+  // real. Nao renderiza zeros como se fossem analise.
+  if (!_psgDadosCompletos(data)) {
+    try { document.getElementById('score-number').textContent = '--'; } catch (e) {}
+    alert('A consulta nao retornou dados suficientes para este endereco.\n\nTente novamente em instantes; se o problema persistir, tente um endereco proximo.');
+    return;
+  }
   const circumference = 2 * Math.PI * 78;
   const offset = circumference - (data.safetyScore / 100) * circumference;
   const scoreColor = data.safetyScore >= 70 ? 'var(--green)' : data.safetyScore >= 40 ? 'var(--yellow)' : 'var(--red)';
@@ -1915,7 +1933,7 @@ function _psgHaversineKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 async function _psgOverpassPolice(lat, lng) {
-  var q = '[out:json][timeout:25];(node["amenity"="police"](around:5000,' + lat + ',' + lng + ');way["amenity"="police"](around:5000,' + lat + ',' + lng + '););out center tags 30;';
+  var q = '[out:json][timeout:25];(node["amenity"="police"](around:9000,' + lat + ',' + lng + ');way["amenity"="police"](around:9000,' + lat + ',' + lng + '););out center tags 40;';
   var endpoints = ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter'];
   for (var i = 0; i < endpoints.length; i++) {
     var ctl = new AbortController();
@@ -2009,18 +2027,45 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
     return 'A ' + dKm + ' km do ponto central' + (tel ? ' \u00b7 Tel.: ' + tel : ' \u00b7 telefone nao cadastrado na base colaborativa');
   }
 
+  // Unidades especializadas nao atendem o morador comum no dia a dia
+  // (DEMAFE/Delegacia da Mulher, DECCA, DECAT, homicidios, entorpecentes,
+  // Policia Federal, Rodoviaria, Bombeiros, institutos de pericia...).
+  // Elas ficam de fora da selecao: o relatorio mostra a delegacia e o
+  // batalhao comuns mais proximos, que atendem a populacao.
+  var RE_ESPECIALIZADA = new RegExp(
+    'demafe|\\bdeam\\b|decca|decat|defra|delcen|deprod|deccom|deloc|deab|' +
+    'mulher|crianca|adolescent|idoso|deficiente|transito|homicid|' +
+    'entorpecent|droga|fraude|estelionato|repressao|meio.?ambiente|' +
+    'ambiental|turismo|patrimonio|federal|rodoviaria|migratoria|' +
+    'policia tecnica|criminalistica|pericia|instituto|acadepol|academia|' +
+    'bombeiro|exercito|marinha|aeronautica|delegacia eletronica|' +
+    'delegacia virtual|delegacia do trabalho|tribunal|juizado|' +
+    'ministerio publico'
+  );
+  function ehEspecializada(u) {
+    return RE_ESPECIALIZADA.test(normTxt(nomeDe(u) + ' ' + ((u.tags && u.tags.operator) || '')));
+  }
+
   var lista = unidades.map(function (u) { u._d = distDe(u); return u; })
-    .filter(function (u) { return u._d < 999998 && nomeDe(u); })
+    .filter(function (u) { return u._d < 999998 && nomeDe(u) && !ehEspecializada(u); })
     .sort(function (a, b) { return a._d - b._d; });
 
-  var pm = null, pc = null, gm = null;
-  var generica = lista.length ? lista[0] : null;
+  // Prioridade PM: batalhao (BPM) > unidade da Policia Militar > patrulha.
+  // Prioridade PC: unidade da Policia Civil > delegacia/distrito policial.
+  var gm = null, generica = lista.length ? lista[0] : null;
+  var pmBatalhao = null, pmMilitar = null, pmPatrulha = null;
+  var pcCivil = null, pcDelegacia = null;
   for (var i = 0; i < lista.length; i++) {
     var n = normTxt(nomeDe(lista[i]) + ' ' + (lista[i].tags.operator || ''));
-    if (!pm && /militar|batalh|rocam|rotam|choque|patrulha/.test(n)) pm = lista[i];
-    if (!pc && /civil|delegacia|delegado|investigacao/.test(n)) pc = lista[i];
+    if (!pmBatalhao && /batalhao|\bbpm\b/.test(n)) pmBatalhao = lista[i];
+    if (!pmMilitar && /policia militar/.test(n)) pmMilitar = lista[i];
+    if (!pmPatrulha && /rocam|rotam|patrulha/.test(n)) pmPatrulha = lista[i];
+    if (!pcCivil && /policia civil/.test(n)) pcCivil = lista[i];
+    if (!pcDelegacia && /delegacia|distrito policial/.test(n)) pcDelegacia = lista[i];
     if (!gm && /guarda\s?-?municipal|\bgcm\b/.test(n)) gm = lista[i];
   }
+  var pm = pmBatalhao || pmMilitar || pmPatrulha || null;
+  var pc = pcCivil || pcDelegacia || null;
   // Sem delegacia identificada: prefere a Guarda Municipal (rotulo proprio GM)
   // e, em ultimo caso, a unidade policial mais proxima.
   if (!pc && gm && gm !== pm) pc = gm;
@@ -2037,21 +2082,33 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
     if (pm && /4.?batalhao|batalhao.*policia militar/.test(normTxt(nomeDe(pm)))) pm.tags.phone = pm.tags.phone || '(44) 3261-5100';
     if (pc && /3.{0,2}distrito/.test(normTxt(nomeDe(pc)))) pc.tags.phone = pc.tags.phone || '(44) 3267-5224';
   }
-  // Completa telefones faltantes com os dados do Overpass (unidade a menos de 250 m)
+  // Completa telefones faltantes com os dados do Overpass. Duas formas de
+  // casar a unidade: por proximidade (a menos de 250 m) ou pelo nome — a
+  // mesma unidade pode aparecer no Nominatim e no Overpass com coordenadas
+  // um pouco diferentes; os tokens com numero (9, 12, 3o...) evitam casar
+  // "9o DP" com "3o DP".
   function enriquecerTel(u) {
     if (!u || telDe(u) || !over.length) return;
     var ula = (u.lat != null) ? u.lat : (u.center && u.center.lat);
     var ulo = (u.lon != null) ? u.lon : (u.center && u.center.lon);
-    if (ula == null || ulo == null) return;
-    var melhor = null, melhorD = 0.25;
+    var nomeAlvo = normTxt(nomeDe(u));
+    var tokensAlvo = nomeAlvo.split(/[^a-z0-9]+/).filter(function (w) { return w.length > 2 || /\d/.test(w); });
+    var melhor = null, melhorD = 0.25, casouNome = false;
     for (var k = 0; k < over.length; k++) {
       var o = over[k];
       if (!o.tags || !(o.tags.phone || o.tags['contact:phone'])) continue;
       var ola = (o.lat != null) ? o.lat : (o.center && o.center.lat);
       var olo = (o.lon != null) ? o.lon : (o.center && o.center.lon);
-      if (ola == null || olo == null) continue;
-      var dKm = _psgHaversineKm(ula, ulo, ola, olo);
-      if (dKm < melhorD) { melhorD = dKm; melhor = o; }
+      var nomeCand = normTxt(nomeDe(o));
+      var mesmoNome = tokensAlvo.length >= 2 && tokensAlvo.every(function (w) { return nomeCand.indexOf(w) >= 0; });
+      if (mesmoNome) {
+        if (!casouNome) { melhor = o; casouNome = true; }
+        continue;
+      }
+      if (!casouNome && ula != null && ulo != null && ola != null && olo != null) {
+        var dKm = _psgHaversineKm(ula, ulo, ola, olo);
+        if (dKm < melhorD) { melhorD = dKm; melhor = o; }
+      }
     }
     if (melhor) u.tags.phone = telDe(melhor);
   }
@@ -2091,6 +2148,21 @@ async function _doGeneratePDF() {
 }
 
 async function _doGeneratePDFInner() {
+  // Nunca gerar relatorio com dados zerados: resumo gratuito (teaser) ou
+  // resposta vazia ganham aviso claro em vez de um PDF com zeros.
+  if (!currentData) {
+    psgToast('Faca uma consulta antes de gerar o relatorio.');
+    return;
+  }
+  if (currentData.teaser) {
+    psgToast('Este endereco esta no resumo gratuito. O relatorio em PDF exige os dados completos: use a consulta gratis da sua conta, a consulta avulsa ou um plano Pro.');
+    psgAbrirPaywall('bloqueado');
+    return;
+  }
+  if (!_psgDadosCompletos(currentData)) {
+    alert('Nao ha dados suficientes para gerar o relatorio deste endereco.\n\nFac a consulta novamente em instantes; se o problema persistir, tente um endereco proximo.');
+    return;
+  }
   showLoading('Preparando gerador de PDF...');
   try {
     await ensurePdfLibs();
