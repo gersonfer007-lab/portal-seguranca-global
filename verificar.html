@@ -108,7 +108,9 @@
   }).then(function (j) {
     if (j && j.valido) {
       var dt = j.emissao ? new Date(j.emissao) : null;
-      var dtStr = (dt && !isNaN(dt.getTime())) ? dt.toLocaleString('pt-BR') : (j.emissao || '--');
+      var dtStr = (dt && !isNaN(dt.getTime()))
+        ? dt.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (hor\u00e1rio de Bras\u00edlia)'
+        : (j.emissao || '--');
       var local = [j.cidade, j.estado, j.pais].filter(Boolean).join(' · ');
       showStatus(true, '✅ Protocolo válido', '', [
         { label: 'Emitido em', value: dtStr },
