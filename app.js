@@ -1831,7 +1831,12 @@ async function _psgSearchCommonsFlag(placeName, context, level) {
   var terms = [
     '"Bandeira de ' + placeName + '"',
     '"Flag of ' + placeName + '"',
-    placeName + ' ' + (context || '') + ' bandeira'
+    placeName + ' ' + (context || '') + ' bandeira',
+    // Termos sem contexto: muitos arquivos no Commons nao seguem o padrao
+    // "Bandeira de X" (ex.: "Bandeira Sarandi.jpg") e o contexto com estado
+    // funciona como filtro AND que exclui justamente esses arquivos.
+    placeName + ' bandeira',
+    'bandeira ' + placeName
   ];
   var stop = { 'the': 1, 'of': 1, 'and': 1, 'do': 1, 'da': 1, 'de': 1, 'dos': 1, 'das': 1, 'state': 1, 'province': 1, 'city': 1, 'municipality': 1 };
   var norm = function(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(); };
@@ -1841,7 +1846,7 @@ async function _psgSearchCommonsFlag(placeName, context, level) {
   for (var qi = 0; qi < terms.length; qi++) {
     try {
       var api = 'https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=' + encodeURIComponent(terms[qi])
-        + '&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*';
+        + '&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=320&format=json&origin=*';
       var ctrl = new AbortController();
       var timer = setTimeout(function(c) { return function() { c.abort(); }; }(ctrl), 5000);
       var r = await fetch(api, { signal: ctrl.signal });
@@ -1850,6 +1855,7 @@ async function _psgSearchCommonsFlag(placeName, context, level) {
       var d = await r.json();
       var pages = Object.keys((d.query && d.query.pages) || {}).map(function(k) { return d.query.pages[k]; });
       var candidates = [];
+      var contextWords = words(context);
       pages.forEach(function(page) {
         var info = page && page.imageinfo && page.imageinfo[0];
         var title = norm((page && page.title || '').replace(/^File:/i, ''));
@@ -1862,6 +1868,12 @@ async function _psgSearchCommonsFlag(placeName, context, level) {
         if (level === 'city' && titleWords.some(function(w) { return /^(municipal|municipality|municipio|city|commune|cidade)$/.test(w); })) score += 20;
         if (level === 'state' && titleWords.some(function(w) { return /^(state|province|region|federal|regional|estado|provincia|departamento)$/.test(w); })) score += 20;
         if (words(context).some(function(w) { return titleWords.indexOf(w) >= 0; })) score += 5;
+        // Desempate de cidades homonimas (ex.: Sarandi PR x Sarandi RS):
+        // as categorias e a descricao do arquivo no Commons indicam a qual
+        // municipio a bandeira pertence; casar com o contexto da consulta.
+        var meta = (info.extmetadata || {});
+        var metaText = norm([meta.Categories && meta.Categories.value, meta.ImageDescription && meta.ImageDescription.value].join(' '));
+        if (contextWords.some(function(w) { return metaText.indexOf(w) >= 0; })) score += 15;
         candidates.push({ score: score, url: info.thumburl });
       });
       candidates.sort(function(a, b) { return b.score - a.score; });
@@ -2001,15 +2013,22 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
     .filter(function (u) { return u._d < 999998 && nomeDe(u); })
     .sort(function (a, b) { return a._d - b._d; });
 
-  var pm = null, pc = null;
+  var pm = null, pc = null, gm = null;
   var generica = lista.length ? lista[0] : null;
   for (var i = 0; i < lista.length; i++) {
     var n = normTxt(nomeDe(lista[i]) + ' ' + (lista[i].tags.operator || ''));
     if (!pm && /militar|batalh|rocam|rotam|choque|patrulha/.test(n)) pm = lista[i];
     if (!pc && /civil|delegacia|delegado|investigacao/.test(n)) pc = lista[i];
+    if (!gm && /guarda\s?-?municipal|\bgcm\b/.test(n)) gm = lista[i];
   }
-  // Sem delegacia identificada: usa a unidade policial mais proxima
+  // Sem delegacia identificada: prefere a Guarda Municipal (rotulo proprio GM)
+  // e, em ultimo caso, a unidade policial mais proxima.
+  if (!pc && gm && gm !== pm) pc = gm;
   if (!pc && generica && generica !== pm) pc = generica;
+  // Rotulo do segundo cartao: GM quando a unidade exibida for Guarda Municipal
+  var pcBadgeEl = document.getElementById('pdf-pc-badge');
+  var pcEhGM = !!(pc && /guarda\s?-?municipal|\bgcm\b/.test(normTxt(nomeDe(pc) + ' ' + (pc.tags.operator || ''))));
+  if (pcBadgeEl) pcBadgeEl.textContent = pcEhGM ? 'GM' : 'PC';
 
   // Telefones oficiais quando a unidade e uma das unidades listadas pelos
   // respectivos orgaos estaduais (Maringa, PR); em outros locais usa OSM.
@@ -2045,9 +2064,14 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
   if (pc && pcNameEl) pcNameEl.textContent = nomeDe(pc);
   if (pcDetEl) pcDetEl.textContent = pc ? detalheDe(pc) : ('Unidade nao localizada na base colaborativa' + (emergBr ? ' \u00b7 Emergencia: 190' : ''));
   if (noteEl) {
+    // A nota de telefones conferidos na PMPR/PCPR vale apenas para Maringa;
+    // outras cidades mostram somente a nota generica do OpenStreetMap.
+    var notaMaringa = (cityNorm.indexOf('maringa') !== -1 && stateNorm.indexOf('parana') !== -1)
+      ? ' Telefones das unidades de Maringa conferidos nos sites oficiais da PMPR e PCPR (pmpr.pr.gov.br/4BPM e policiacivil.pr.gov.br/DPI).'
+      : '';
     noteEl.textContent = emergBr
-      ? 'Emergencias (Brasil): 190 Policia Militar \u00b7 192 SAMU \u00b7 193 Bombeiros \u00b7 180 Violencia contra a mulher \u00b7 181 Disque-Denuncia \u00b7 100 Direitos Humanos. Unidades identificadas por dados publicos do OpenStreetMap; telefones das unidades de Maringa conferidos nos sites oficiais da PMPR e PCPR (pmpr.pr.gov.br/4BPM e policiacivil.pr.gov.br/DPI). Nomes, distancias e telefones podem mudar; confirme antes de se deslocar.'
-      : 'Em emergencias, acione o numero de emergencia do seu pais (112 na Europa, 911 nos EUA, 190 no Brasil). Unidades identificadas por dados publicos do OpenStreetMap; telefones podem estar ausentes da base colaborativa. Confirme o atendimento presencial antes de se deslocar.';;
+      ? 'Emergencias (Brasil): 190 Policia Militar \u00b7 192 SAMU \u00b7 193 Bombeiros \u00b7 180 Violencia contra a mulher \u00b7 181 Disque-Denuncia \u00b7 100 Direitos Humanos. Unidades identificadas por dados publicos do OpenStreetMap.' + notaMaringa + ' Nomes, distancias e telefones podem mudar; confirme antes de se deslocar.'
+      : 'Em emergencias, acione o numero de emergencia do seu pais (112 na Europa, 911 nos EUA, 190 no Brasil). Unidades identificadas por dados publicos do OpenStreetMap; telefones podem estar ausentes da base colaborativa. Confirme o atendimento presencial antes de se deslocar.';
   }
 }
 
