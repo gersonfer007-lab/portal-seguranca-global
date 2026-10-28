@@ -90,19 +90,21 @@ module.exports = function (app) {
         pais: clean(b.pais, 80)
       };
       let protocolo = createProtocol();
+      const db = loadLocal();
+      db[protocolo] = reg;
+      saveLocal(db);
       if (DATABASE_URL) {
-        await getPool();
-        await pool.query(
-          'INSERT INTO psg_report_verifications (protocolo, emissao, endereco, cidade, estado, pais) VALUES ($1,$2,$3,$4,$5,$6)',
-          [protocolo, reg.emissao, reg.endereco, reg.cidade, reg.estado, reg.pais]
-        );
-      } else {
-        if (process.env.NODE_ENV === 'production') {
-          return res.status(503).json({ error: 'Verificacao temporariamente indisponivel: banco persistente nao configurado.' });
+        try {
+          await getPool();
+          await pool.query(
+            'INSERT INTO psg_report_verifications (protocolo, emissao, endereco, cidade, estado, pais) VALUES ($1,$2,$3,$4,$5,$6)',
+            [protocolo, reg.emissao, reg.endereco, reg.cidade, reg.estado, reg.pais]
+          );
+        } catch (e) {
+          console.error('[RELATORIOS] Postgres falhou, mas registro local gravado:', e.message);
         }
-        const db = loadLocal();
-        db[protocolo] = reg;
-        saveLocal(db);
+      } else if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({ error: 'Verificacao temporariamente indisponivel: banco persistente nao configurado.' });
       }
       return res.json({ ok: true, protocolo: protocolo, url: '/verificar/' + protocolo });
     } catch (e) {
