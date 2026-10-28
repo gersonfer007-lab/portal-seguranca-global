@@ -150,7 +150,8 @@ app.use(function(req, res, next) {
   // Arquivos exatos do servidor (inclui o store do paywall com dados de usuarios)
   if (['/server.js', '/paywall.js', '/validation.js', '/package.json',
        '/package-lock.json', '/psg-app-corrigido.zip', '/assinatura-gerson.png',
-       '/psg-paywall-dados.json', '/psg-paywall-dados.json.tmp', '/.gitignore'].indexOf(p) !== -1) {
+       '/psg-paywall-dados.json', '/psg-paywall-dados.json.tmp', '/relatorios.js',
+       '/psg-relatorios.json', '/psg-relatorios.json.tmp', '/.gitignore'].indexOf(p) !== -1) {
     negado = true;
   }
   // Diretorios internos e dotfiles (.git, .github, .env*)
@@ -252,6 +253,15 @@ try {
   require('./paywall')(app);
 } catch (paywallErr) {
   console.error('[PAYWALL] modulo nao carregou (portal segue em modo livre):', paywallErr.message);
+}
+
+// ============================================================
+// REGISTRO DE PROTOCOLOS — verificacao publica /verificar/PSG-...
+// ============================================================
+try {
+  require('./relatorios')(app);
+} catch (relErr) {
+  console.error('[RELATORIOS] modulo nao carregou (verificacao indisponivel):', relErr.message);
 }
 
 // ============================================================
