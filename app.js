@@ -2015,7 +2015,7 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
   if (pcCityEl) pcCityEl.textContent = local;
 
   // Fonte primaria: Nominatim (responde em ~1s)
-  var unidades = await _psgNominatimPolice(lat, lng, city, stateName, countryName);
+  var nomBase = await _psgNominatimPolice(lat, lng, city, stateName, countryName);
   // Enriquecimento: Overpass pode acrescentar telefones, sem atrasar a emissao mais que 1,2s.
   var over = [];
   try {
@@ -2025,11 +2025,17 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
 
   function normTxt(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
   // Soma as duas bases (Nominatim + Overpass), sem duplicar unidade.
+  function chaveUnidade(nome) {
+    // Compara nome sem acento, pontuacao nem espaco: a mesma unidade aparece
+    // como "Miami-Dade County Police Department" no Nominatim e
+    // "Miami - Dade County Police Department" no Overpass.
+    return normTxt(nome).replace(/[^a-z0-9]+/g, '');
+  }
   function mesclar(novas) {
     var vistos = {};
-    unidades.forEach(function (u) { vistos[normTxt(nomeDe(u))] = 1; });
+    unidades.forEach(function (u) { var k = chaveUnidade(nomeDe(u)); if (k) vistos[k] = 1; });
     novas.forEach(function (u) {
-      var k = normTxt(nomeDe(u));
+      var k = chaveUnidade(nomeDe(u));
       if (!k || vistos[k]) return;
       vistos[k] = 1;
       unidades.push(u);
@@ -2066,41 +2072,76 @@ async function _psgForcasSeguranca(lat, lng, city, stateName, countryName, count
     'policia tecnica|criminalistica|pericia|instituto|acadepol|academia|' +
     'bombeiro|exercito|marinha|aeronautica|delegacia eletronica|' +
     'delegacia virtual|delegacia do trabalho|tribunal|juizado|' +
-    'ministerio publico'
+    'ministerio publico|delegacia de protecao|' +
+    'explosiv|armas e municoes|municoes|gaeco|crime organizado|combate ao crime|' +
+    'posto fiscal|alfandega|aduaneir|receita federal|customs|tax office|' +
+    'touris|administra|sede administrativa'
   );
   function ehEspecializada(u) {
     return RE_ESPECIALIZADA.test(normTxt(nomeDe(u) + ' ' + ((u.tags && u.tags.operator) || '')));
   }
 
   function selecionar() {
+    // Lista limpa: sem unidades sem nome/coordenada e sem as especializadas,
+    // sempre ordenada pela distancia ao ponto central.
     var lista = unidades.map(function (u) { u._d = distDe(u); return u; })
       .filter(function (u) { return u._d < 999998 && nomeDe(u) && !ehEspecializada(u); })
       .sort(function (a, b) { return a._d - b._d; });
-
-    // Prioridade PM: batalhao (BPM) > unidade da Policia Militar > patrulha.
-    // Prioridade PC: unidade da Policia Civil > delegacia/distrito policial.
-    var gm = null, generica = lista.length ? lista[0] : null;
-    var pmBatalhao = null, pmMilitar = null, pmPatrulha = null;
-    var pcCivil = null, pcDelegacia = null;
-    for (var i = 0; i < lista.length; i++) {
-      var n = normTxt(nomeDe(lista[i]) + ' ' + (lista[i].tags.operator || ''));
-      if (!pmBatalhao && /batalhao|\bbpm\b/.test(n)) pmBatalhao = lista[i];
-      if (!pmMilitar && /policia militar/.test(n)) pmMilitar = lista[i];
-      if (!pmPatrulha && /rocam|rotam|patrulha/.test(n)) pmPatrulha = lista[i];
-      if (!pcCivil && /policia civil/.test(n)) pcCivil = lista[i];
-      if (!pcDelegacia && /delegacia|distrito policial/.test(n)) pcDelegacia = lista[i];
-      if (!gm && /guarda\s?-?municipal|\bgcm\b/.test(n)) gm = lista[i];
+    // Fora do Brasil nao existe PM/PC: cartao 1 = unidade policial mais
+    // proxima; cartao 2 = delegacia/posto mais proximo (ou a proxima
+    // unidade, se nenhuma for identificada como posto policial).
+    var brPais = (countryCode || '').toLowerCase() === 'br';
+    if (!brPais) {
+      var primeira = lista[0] || null;
+      var posto = null;
+      for (var q = 1; q < lista.length; q++) {
+        if (/station|commissariat|comisaria|esquadra|delegacia|department|poste|posto|sheriff|police office/.test(normTxt(nomeDe(lista[q])))) { posto = lista[q]; break; }
+      }
+      if (!posto && lista.length > 1) posto = lista[1];
+      return { pm: primeira, pc: posto, gm: null, generica: primeira };
     }
-    return {
-      pm: pmBatalhao || pmMilitar || pmPatrulha || null,
-      pc: pcCivil || pcDelegacia || null,
-      gm: gm,
-      generica: generica
-    };
+    // Brasil: escolhe por distancia entre as unidades que servem o morador,
+    // com dois desempates — unidade com telefone vence outra ate 0,8 km mais
+    // perto e batalhao vence outra unidade da PM ate 1,5 km mais longe.
+    // (Antes a escolha era por nome: qualquer "policia civil" ganhava de
+    // qualquer "delegacia", e Curitiba mostrava o 9o DP a 7,3 km sem
+    // telefone em vez do 1o DP a 5,9 km com telefone.)
+    function temTel(u) { return !!telDe(u); }
+    function melhorPor(testes, bonusBatalhao) {
+      var cand = [];
+      for (var i = 0; i < lista.length; i++) {
+        var n = normTxt(nomeDe(lista[i]) + ' ' + ((lista[i].tags && lista[i].tags.operator) || ''));
+        for (var t = 0; t < testes.length; t++) {
+          if (testes[t].test(n)) { cand.push(lista[i]); break; }
+        }
+      }
+      if (!cand.length) return null;
+      cand.sort(function (a, b) { return a._d - b._d; });
+      var escolhida = cand[0];
+      for (var k = 1; k < cand.length; k++) {
+        var c = cand[k];
+        var vantagemTel = temTel(c) && !temTel(escolhida) && (c._d - escolhida._d) <= 0.8;
+        var vantagemBat = bonusBatalhao && /batalhao|\bbpm\b/.test(normTxt(nomeDe(c))) &&
+          !/batalhao|\bbpm\b/.test(normTxt(nomeDe(escolhida))) && (c._d - escolhida._d) <= 1.5;
+        if (vantagemTel || vantagemBat) { escolhida = c; break; }
+      }
+      return escolhida;
+    }
+    var pm = melhorPor([/batalhao|\bbpm\b/, /policia militar/, /rocam|rotam|patrulha|cavalaria/], true);
+    var pc = melhorPor([/delegacia|distrito policial/, /policia civil/], false);
+    var gm = null;
+    for (var g = 0; g < lista.length; g++) {
+      if (/guarda\s?-?municipal|\bgcm\b/.test(normTxt(nomeDe(lista[g]) + ' ' + ((lista[g].tags && lista[g].tags.operator) || '')))) { gm = lista[g]; break; }
+    }
+    return { pm: pm, pc: pc, gm: gm, generica: lista.length ? lista[0] : null };
   }
 
   // As duas bases somadas desde o inicio: Nominatim acha nomes; Overpass
   // acha telefones e unidades que o Nominatim nao devolve.
+  // A lista final nasce vazia e recebe as duas fontes ja sem repeticao —
+  // inclusive repeticao dentro do proprio Nominatim.
+  var unidades = [];
+  mesclar(nomBase || []);
   if (over.length) mesclar(over);
   var sel = selecionar();
   // Faltando batalhao ou delegacia no raio padrao, amplia para ~25 km em

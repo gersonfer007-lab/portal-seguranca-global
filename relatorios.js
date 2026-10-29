@@ -40,9 +40,18 @@ function getPool() {
   return dbReady;
 }
 
+const PAYWALL_ARQ = path.join(__dirname, 'psg-paywall-dados.json');
 function loadLocal() {
   try { return JSON.parse(fs.readFileSync(ARQ, 'utf8')); }
   catch (e) { return {}; }
+}
+// Em desenvolvimento sem Postgres, as sessoes ficam no arquivo do paywall.
+// Sem isso a emissao de protocolo devolve 401 mesmo com o usuario logado.
+function loadSessoesDev() {
+  try {
+    const db = JSON.parse(fs.readFileSync(PAYWALL_ARQ, 'utf8'));
+    return Array.isArray(db.sessions) ? db.sessions : [];
+  } catch (e) { return []; }
 }
 function saveLocal(db) {
   fs.writeFileSync(ARQ + '.tmp', JSON.stringify(db));
@@ -67,7 +76,7 @@ async function validSession(req) {
     return r.rowCount > 0;
   }
   const db = loadLocal();
-  const sessions = db.sessions || [];
+  const sessions = (db.sessions || []).concat(loadSessoesDev());
   return sessions.some(function (s) {
     return s.token === token && new Date(s.expira_em) > new Date();
   });
