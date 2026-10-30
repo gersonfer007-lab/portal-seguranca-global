@@ -57,7 +57,7 @@ function gravarCache() {
   catch (e) { /* cache e otimizacao: se falhar, segue sem ele */ }
 }
 
-const CACHE_VERSAO = 'v2';
+const CACHE_VERSAO = 'v3';
 function chave(lat, lng) {
   return CACHE_VERSAO + '|' + lat.toFixed(3) + ',' + lng.toFixed(3);
 }
