@@ -1101,6 +1101,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 }
 #pdf-report .pdf-seal img { width: 56px; height: 56px; object-fit: contain; }
 #pdf-report .pdf-signature { margin-top: 20px; text-align: center; }
+#pdf-report .pdf-signature-img { display: block; width: 220px; max-width: 62%; height: auto; margin: 0 auto 1px; }
 #pdf-report .pdf-signature .line { width: 340px; margin: 0 auto 5px; border-top: 1.5px solid #0c1730; }
 #pdf-report .pdf-signature .handwritten { display: block; width: 340px; margin: 0 auto -6px; color: #0c1730; font-family: 'Segoe Script', 'Brush Script MT', cursive; font-size: 28px; font-style: italic; font-weight: 700; line-height: 1.25; }
 #pdf-report .pdf-signature .who { font-size: 11.5px; font-weight: 700; color: #0c1730; }
@@ -1522,7 +1523,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       </ul>
 
       <strong>3. O que NAO Fazemos</strong>
-      <p>O Portal Seguranca Global NAO consulta e NAO fornece dados de CPF, CNPJ, RG, identidade de pessoas ou identidade de empresas. Nao oferecemos antecedentes criminais oficiais. Nossos relatorios sao baseados em dados abertos, estatisticas publicas e modelos estatisticos.</p>
+      <p>O Portal Seguranca Global NAO consulta e NAO fornece dados de CPF, CNPJ, RG, identidade de pessoas ou identidade de empresas. Nao oferecemos antecedentes criminais oficiais. Nossos relatorios sao baseados em dados abertos do OpenStreetMap, com fonte e data de coleta em cada numero.</p>
 
       <strong>4. Uso Indevido</strong>
       <p>E expressamente proibido utilizar este sistema para:</p>
@@ -1608,8 +1609,8 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="emblem-tagline">Seguran&ccedil;a, estradas, rios e mares &mdash; tudo em um s&oacute; portal</div>
   <div class="emblem-subtitle">portalsegurancaglobal.com.br</div>
   <div class="emblem-features" aria-label="Recursos do portal">
-    <span>&#128737;&#65039; Safety Score por endere&ccedil;o</span>
-    <span>&#128506;&#65039; Mapa de ocorr&ecirc;ncias</span>
+    <span>&#128737;&#65039; &Iacute;ndice de Contexto Urbano por endere&ccedil;o</span>
+    <span>&#128506;&#65039; Mapa do entorno e unidades de seguran&ccedil;a</span>
     <span>&#128225; Not&iacute;cias por pa&iacute;s</span>
     <span>&#128666; Rodovias do mundo inteiro</span>
     <span>&#128176; Ped&aacute;gios e radares</span>
@@ -1754,7 +1755,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 <section class="agencies-banner" style="max-width:1200px;margin:0 auto 1.5rem;padding:0 1rem;">
   <div style="width:100%;border-radius:12px;border:1px solid rgba(59,130,246,.25);box-shadow:0 4px 24px rgba(0,0,0,.45);background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(99,102,241,.08));padding:1.1rem 1.4rem;text-align:center;">
     <div style="font-weight:800;font-size:1.05rem;letter-spacing:-.01em;">Portal Segurança Global &mdash; Inteligência Colaborativa de Segurança</div>
-    <div style="font-size:.8rem;color:var(--text-secondary);margin-top:.3rem;">Cobertura em 190+ pa&iacute;ses &bull; Dados de fontes p&uacute;blicas e modelos estat&iacute;sticos</div>
+    <div style="font-size:.8rem;color:var(--text-secondary);margin-top:.3rem;">Cobertura em 190+ pa&iacute;ses &bull; Dados de fontes p&uacute;blicas (OpenStreetMap), com fonte e data</div>
     <div style="font-size:.72rem;color:var(--text-muted);margin-top:.45rem;">Portal privado e independente &mdash; sem v&iacute;nculo com &oacute;rg&atilde;os governamentais, polícias ou entidades internacionais.</div>
   </div>
 </section>
@@ -1807,7 +1808,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="pdf-sample-card">
     <div class="pdf-sample-copy">
       <h2 id="pdf-sample-title">Veja como fica o relatório em PDF</h2>
-      <p>Esta pr&eacute;via mostra as tr&ecirc;s folhas do modelo impresso, com bras&atilde;o, marca-d'&aacute;gua e p&aacute;ginas especiais. Na &uacute;ltima folha, h&aacute; espa&ccedil;o para a empresa contratante preencher seus dados e colocar o carimbo. Endere&ccedil;o, coordenadas, data e protocolo da consulta foram ocultados por privacidade. No relat&oacute;rio da sua consulta, a bandeira do pa&iacute;s aparece conforme o local; as bandeiras oficiais da regi&atilde;o/estado e da cidade/munic&iacute;pio s&atilde;o inclu&iacute;das quando h&aacute; uma imagem correspondente dispon&iacute;vel para aquela localidade, em qualquer parte do mundo.</p>
+      <p>Esta pr&eacute;via mostra as tr&ecirc;s folhas do modelo impresso, com bras&atilde;o, marca-d'&aacute;gua e p&aacute;ginas especiais. Na &uacute;ltima folha ficam a autentica&ccedil;&atilde;o, o QR Code de verifica&ccedil;&atilde;o e a assinatura do respons&aacute;vel pelo relat&oacute;rio. Endere&ccedil;o, coordenadas, data e protocolo da consulta foram ocultados por privacidade. No relat&oacute;rio da sua consulta, a bandeira do pa&iacute;s aparece conforme o local; as bandeiras oficiais da regi&atilde;o/estado e da cidade/munic&iacute;pio s&atilde;o inclu&iacute;das quando h&aacute; uma imagem correspondente dispon&iacute;vel para aquela localidade, em qualquer parte do mundo.</p>
     </div>
     <div class="pdf-sample-image-wrap">
       <div class="pdf-sample-pages">
@@ -1823,7 +1824,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         </figure>
         <figure class="pdf-sample-page">
           <a href="amostra-pdf-pagina-3-publica.png" target="_blank" rel="noopener" aria-label="Abrir a folha 3 do modelo de relatório em tamanho original"><img src="amostra-pdf-pagina-3-publica.png" width="1800" height="2546" loading="lazy" decoding="async" alt="Folha 3 do modelo de relatório; protocolo e data omitidos"></a>
-          <figcaption>Folha 3 — Autenticação, encerramento e carimbo da empresa</figcaption>
+          <figcaption>Folha 3 — Autenticação, assinatura do responsável e encerramento</figcaption>
           <a class="pdf-sample-open" href="amostra-pdf-pagina-3-publica.png" target="_blank" rel="noopener">Abrir folha 3 em tamanho original</a>
         </figure>
       </div>
@@ -1870,15 +1871,14 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <!-- MAP -->
     <div class="card map-card">
       <div class="card-header">
-        <h3><span class="icon">&#127758;</span> Mapa de Ocorrencias</h3>
+        <h3><span class="icon">&#127758;</span> Mapa do Entorno e Unidades de Seguran&ccedil;a</h3>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
           <div class="map-view-toggle">
             <button id="btn-view-dark" class="active">Mapa</button>
             <button id="btn-view-satellite">Satelite</button>
             <button id="btn-view-3d">&#127760; 3D Globe</button>
           </div>
-          <button class="btn btn-outline" id="btn-heatmap" style="padding:4px 10px;font-size:.72rem;">Heatmap</button>
-          <button class="btn btn-outline" id="btn-markers" style="padding:4px 10px;font-size:.72rem;">Pontos</button>
+          <button class="btn btn-outline" id="btn-markers" style="padding:4px 10px;font-size:.72rem;">Unidades</button>
         </div>
       </div>
       <div id="map" class="lazy-map"></div>
@@ -1895,17 +1895,16 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <span class="globe-coords" id="globe-coords">Lat -- | Lng -- | Alt --km</span>
       </div>
       <div class="map-legend">
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#22c55e;"></div> Baixo Risco</div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#eab308;"></div> Medio Risco</div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ef4444;"></div> Alto Risco</div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#7c3aed;"></div> Ponto de Interesse</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#3b82f6;"></div> Unidade policial</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ef4444;"></div> Bombeiros</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#22c55e;"></div> Local pesquisado</div>
       </div>
     </div>
 
     <!-- SAFETY SCORE -->
     <div class="card score-card">
       <div class="card-header">
-        <h3><span class="icon">&#128170;</span> Safety Score</h3>
+        <h3><span class="icon">&#128170;</span> &Iacute;ndice de Contexto Urbano</h3>
         <span style="font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;" id="score-timestamp">--</span>
       </div>
       <div class="score-display">
@@ -1925,26 +1924,26 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
         <div class="pillar">
           <div class="pillar-icon" style="background:var(--red-glow);color:var(--red);">&#128680;</div>
           <div class="pillar-info">
-            <div class="name">Indice Criminal</div>
-            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-crime" style="width:0%;background:var(--red);"></div></div>
+            <div class="name">Servi&ccedil;os e com&eacute;rcio</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-servicos" style="width:0%;background:var(--red);"></div></div>
           </div>
-          <div class="pillar-score" id="pillar-crime-val">--</div>
+          <div class="pillar-score" id="pillar-servicos-val">--</div>
         </div>
         <div class="pillar">
           <div class="pillar-icon" style="background:var(--yellow-glow);color:var(--yellow);">&#128161;</div>
           <div class="pillar-info">
-            <div class="name">Infraestrutura</div>
-            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-infra" style="width:0%;background:var(--yellow);"></div></div>
+            <div class="name">Mobilidade e transporte</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-mobilidade" style="width:0%;background:var(--yellow);"></div></div>
           </div>
-          <div class="pillar-score" id="pillar-infra-val">--</div>
+          <div class="pillar-score" id="pillar-mobilidade-val">--</div>
         </div>
         <div class="pillar">
           <div class="pillar-icon" style="background:var(--green-glow);color:var(--green);">&#128694;</div>
           <div class="pillar-info">
-            <div class="name">Movimentacao Urbana</div>
-            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-movement" style="width:0%;background:var(--green);"></div></div>
+            <div class="name">Seguran&ccedil;a e emerg&ecirc;ncia</div>
+            <div class="pillar-bar"><div class="pillar-bar-fill" id="pillar-seguranca" style="width:0%;background:var(--green);"></div></div>
           </div>
-          <div class="pillar-score" id="pillar-movement-val">--</div>
+          <div class="pillar-score" id="pillar-seguranca-val">--</div>
         </div>
       </div>
     </div>
@@ -1952,26 +1951,27 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <!-- STATS -->
     <div class="card stats-card">
       <div class="card-header">
-        <h3><span class="icon">&#128202;</span> Estatisticas do Bairro</h3>
+        <h3><span class="icon">&#128202;</span> Invent&aacute;rio do entorno (raio de 1,5 km)</h3>
       </div>
       <div class="stats-grid">
         <div class="stat-item">
-          <div class="stat-value" id="stat-occurrences" style="color:var(--red);">--</div>
-          <div class="stat-label">Ocorrencias/mes</div>
+          <div class="stat-value" id="stat-escolas" style="color:var(--red);">--</div>
+          <div class="stat-label">Escolas e creches</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value" id="stat-cameras" style="color:var(--accent);">--</div>
-          <div class="stat-label">Cameras</div>
+          <div class="stat-value" id="stat-saude" style="color:var(--accent);">--</div>
+          <div class="stat-label">Sa&uacute;de</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value" id="stat-lights" style="color:var(--yellow);">--</div>
-          <div class="stat-label">Iluminacao</div>
+          <div class="stat-value" id="stat-policia" style="color:var(--yellow);">--</div>
+          <div class="stat-label">Unidades policiais</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value" id="stat-commerce" style="color:var(--green);">--</div>
-          <div class="stat-label">Comercios</div>
+          <div class="stat-value" id="stat-transporte" style="color:var(--green);">--</div>
+          <div class="stat-label">Pontos de &ocirc;nibus</div>
         </div>
       </div>
+      <div id="stat-fonte" style="padding:0 1.25rem 1rem;font-size:.68rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">Fonte: -- | Coleta: --</div>
       <!-- Ad Cards -->
       <div class="ad-sidebar" style="padding: 0 1.25rem 1.25rem;">
         <div class="ad-card">
@@ -1987,19 +1987,12 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
     <div class="charts-section">
       <div class="card">
         <div class="card-header">
-          <h3><span class="icon">&#128200;</span> Ocorrencias por Tipo</h3>
+          <h3><span class="icon">&#128200;</span> Equipamentos mapeados no raio</h3>
         </div>
         <div class="chart-container">
           <canvas id="chart-types"></canvas>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <h3><span class="icon">&#128197;</span> Evolucao Mensal</h3>
-        </div>
-        <div class="chart-container">
-          <canvas id="chart-monthly"></canvas>
-        </div>
+        <div id="chart-fonte" style="padding:0 0 1rem;font-size:.68rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">Fonte: -- | Coleta: --</div>
       </div>
     </div>
 
@@ -2087,19 +2080,19 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
   <div class="pdf-score-box">
     <div class="pdf-score-number" id="pdf-score">--</div>
-    <div class="pdf-score-label" id="pdf-score-label">Safety Score</div>
+    <div class="pdf-score-label" id="pdf-score-label">&Iacute;ndice de Contexto Urbano</div>
   </div>
 
   <div class="pdf-section">
     <h3>3. Indicadores Principais</h3>
-    <div class="pdf-period">Periodo de referencia dos dados: <b id="pdf-period">--</b> &mdash; estatisticas consolidadas dos ultimos 12 meses, combinadas com dados publicos de seguranca da regiao.</div>
+    <div class="pdf-period">Fonte dos dados: <b id="pdf-period">--</b>. Contagens reais de equipamentos e servi&ccedil;os mapeados no raio de 1,5 km, coletadas na data indicada. O documento n&atilde;o traz estat&iacute;stica de criminalidade por endere&ccedil;o &mdash; essa base n&atilde;o existe publicamente &mdash; e nenhum n&uacute;mero aqui &eacute; estimado ou projetado.</div>
     <div class="pdf-stat-grid">
-      <div class="pdf-stat"><div class="val" id="pdf-crime">--</div><div class="lbl">Indice Criminal</div></div>
-      <div class="pdf-stat"><div class="val" id="pdf-infra">--</div><div class="lbl">Infraestrutura</div></div>
-      <div class="pdf-stat"><div class="val" id="pdf-movement">--</div><div class="lbl">Movimentacao</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-serv">--</div><div class="lbl">Servi&ccedil;os e com&eacute;rcio</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-mob">--</div><div class="lbl">Mobilidade e transporte</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-seg">--</div><div class="lbl">Seguran&ccedil;a e emerg&ecirc;ncia</div></div>
     </div>
     <div class="pdf-score-legend">
-      <b>Como ler as notas:</b> o <b>Safety Score</b> vai de 0 a 100 e, quanto maior, maior a seguran&ccedil;a estimada. Classifica&ccedil;&atilde;o: <b>Alto (70 a 100)</b> = melhores indicadores estimados; <b>Moderado (40 a 69)</b> = aten&ccedil;&atilde;o e preven&ccedil;&atilde;o refor&ccedil;adas; <b>Baixo (0 a 39)</b> = indicadores menos favor&aacute;veis, redobre os cuidados. O <b>&Iacute;ndice Criminal</b> mais alto indica menos ocorr&ecirc;ncias registradas; <b>Infraestrutura</b> mais alta indica maior presen&ccedil;a de recursos e servi&ccedil;os; <b>Movimenta&ccedil;&atilde;o</b> estima o fluxo de pessoas e transporte, mas mais movimento n&atilde;o significa, por si s&oacute;, maior seguran&ccedil;a. As notas s&atilde;o estimativas informativas, n&atilde;o garantias nem estat&iacute;sticas oficiais.
+      <b>Como ler o &iacute;ndice:</b> o <b>&Iacute;ndice de Contexto Urbano</b> vai de 0 a 100 e mede a presen&ccedil;a de recursos urbanos no entorno &mdash; n&atilde;o criminalidade. Classifica&ccedil;&atilde;o: <b>Amplo (70 a 100)</b> = entorno com muitos servi&ccedil;os, transporte e presen&ccedil;a de seguran&ccedil;a; <b>Moderado (40 a 69)</b> = recursos parciais; <b>Restrito (0 a 39)</b> = poucos recursos mapeados no raio. <b>Servi&ccedil;os e com&eacute;rcio</b> soma escola, sa&uacute;de, farm&aacute;cia, banco e com&eacute;rcio; <b>Mobilidade</b> considera pontos de &ocirc;nibus e esta&ccedil;&otilde;es; <b>Seguran&ccedil;a e emerg&ecirc;ncia</b> considera unidades policiais e bombeiros. Onde a fonte p&uacute;blica n&atilde;o tem o dado, o campo informa <b>sem dado</b> &mdash; nunca zero.
     </div>
   </div>
 
@@ -2123,12 +2116,18 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   </div>
 
   <div class="pdf-section">
-    <h3>5. Estatisticas do Perimetro (raio de 1,5 km)</h3>
+    <h3>5. Invent&aacute;rio do Per&iacute;metro (raio de 1,5 km)</h3>
     <div class="pdf-stat-grid">
-      <div class="pdf-stat"><div class="val" id="pdf-occ">--</div><div class="lbl">Ocorrencias/mes</div></div>
-      <div class="pdf-stat"><div class="val" id="pdf-cam">--</div><div class="lbl">Cameras</div></div>
-      <div class="pdf-stat"><div class="val" id="pdf-com">--</div><div class="lbl">Comercios</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-inv-escolas">--</div><div class="lbl">Escolas e creches</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-inv-saude">--</div><div class="lbl">Sa&uacute;de</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-inv-policia">--</div><div class="lbl">Unidades policiais</div></div>
     </div>
+    <div class="pdf-stat-grid" style="margin-top:8px;">
+      <div class="pdf-stat"><div class="val" id="pdf-inv-transporte">--</div><div class="lbl">Pontos de &ocirc;nibus</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-inv-comercio">--</div><div class="lbl">Com&eacute;rcios</div></div>
+      <div class="pdf-stat"><div class="val" id="pdf-inv-cameras">--</div><div class="lbl">C&acirc;meras</div></div>
+    </div>
+    <p class="pdf-note" id="pdf-inv-fonte" style="font-size:10px;margin-top:8px;">--</p>
   </div>
 
   <div class="pdf-section" id="pdf-nautic-section">
@@ -2175,7 +2174,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <div class="pdf-section">
     <h3>8. Condicoes e Responsabilidades deste Documento</h3>
     <div class="pdf-clauses">
-      <p>Este documento e gerado eletronicamente pelo Portal Seguranca Global a partir de dados publicos, estatisticas abertas e modelos estatisticos do perimetro analisado, nao havendo consulta a dados pessoais, CPF, CNPJ, RG ou antecedentes criminais de qualquer pessoa ou empresa.</p>
+      <p>Este documento e gerado eletronicamente pelo Portal Seguranca Global a partir de contagens de dados abertos do OpenStreetMap no perimetro analisado, com fonte e data de coleta em cada numero, nao havendo consulta a dados pessoais, CPF, CNPJ, RG ou antecedentes criminais de qualquer pessoa ou empresa.</p>
       <p>As informacoes aqui contidas possuem finalidade exclusivamente informativa e preventiva, nao substituindo consultoria profissional de seguranca, boletins oficiais de ocorrencia ou documentos emitidos por orgaos publicos.</p>
       <p>E vedada a utilizacao deste documento para perseguicao, assedio, vigilancia ilegal de terceiros, discriminacao ou qualquer finalidade ilicita, respondendo o usuario civil e criminalmente pelo uso indevido.</p>
       <p>A autenticidade deste documento pode ser verificada a qualquer tempo por meio do QR Code e do numero de protocolo impressos na secao de autenticacao, junto ao site oficial do emissor.</p>
@@ -2199,10 +2198,10 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
       <div class="pdf-seal"><img src="brasao-sh.png" alt="Selo do emissor" crossorigin="anonymous"></div>
     </div>
     <div class="pdf-signature">
-      <div class="handwritten" aria-label="Assinatura visual do Portal Segurança Global">Portal Seguran&ccedil;a Global</div>
+      <img class="pdf-signature-img" src="assets/assinatura-portal.png" alt="Assinatura do respons&aacute;vel" crossorigin="anonymous">
       <div class="line"></div>
       <div class="who">Portal Seguran&ccedil;a Global</div>
-      <div class="what">Identifica&ccedil;&atilde;o eletr&ocirc;nica do emissor do relat&oacute;rio</div>
+      <div class="what">Assinatura do respons&aacute;vel pelo relat&oacute;rio</div>
     </div>
   </div>
   </div>
@@ -2211,20 +2210,9 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
 
   <div class="pdf-footer">
     <div class="verify">Verifique a autenticidade deste documento em portalsegurancaglobal.com.br</div>
-    Documento gerado eletronicamente pelo Portal Seguranca Global. Este relatorio e baseado em dados publicos e estimativas estatisticas do perimetro analisado. Nao substitui consultoria profissional nem boletins oficiais de ocorrencia.
+    Documento gerado eletronicamente pelo Portal Seguranca Global. Este relatorio e baseado em contagens de dados publicos (OpenStreetMap), com fonte e data de coleta. Nao substitui consultoria profissional nem boletins oficiais de ocorrencia.
     <div class="pdf-footer-symbols">Uso indevido de bras&otilde;es e s&iacute;mbolos oficiais de &oacute;rg&atilde;os policiais (PM/PC) &eacute; crime &mdash; Art. 296 do C&oacute;digo Penal (falsifica&ccedil;&atilde;o de selo ou sinal p&uacute;blico).</div>
     <div class="pdf-footer-tribute">&#127894;&#65039; Homenagem e reconhecimento &agrave;s Pol&iacute;cias e For&ccedil;as Armadas de todo o mundo, que mant&ecirc;m a ordem e protegem a sociedade.</div>
-  </div>
-  <div class="pdf-company-block">
-    <div class="pdf-company-title">Espa&ccedil;o reservado &agrave; empresa contratante</div>
-    <div class="pdf-company-fields">
-      <div class="pdf-company-lines">
-        <div>Empresa / raz&atilde;o social: ______________________________________________</div>
-        <div>Nome do respons&aacute;vel: _________________________________________________</div>
-        <div>Assinatura: _____________________________________ Data: ____ / ____ / ______</div>
-      </div>
-      <div class="pdf-company-stamp">Carimbo da empresa</div>
-    </div>
   </div>
 </div>
 
@@ -2871,7 +2859,7 @@ html, body { font-family: 'Inter', sans-serif; background: var(--bg-primary); co
   <span class="gps-fab-txt">GPS</span>
 </button>
 
-<script defer src="app.js?v=paywall20-forcas-2026-10-29"></script>
+<script defer src="app.js?v=contexto-2026-10-30"></script>
 <script>
 (function(){
   var EDICOES={

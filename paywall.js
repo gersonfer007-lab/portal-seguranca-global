@@ -27,6 +27,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+const dadosOSM = require('./dados');
 
 const APP_ORIGIN = (process.env.APP_ORIGIN || 'https://portalsegurancaglobal.com.br').replace(/\/+$/, '');
 const MP_TOKEN = process.env.MP_ACCESS_TOKEN || '';
@@ -54,58 +55,80 @@ function listaPlanosPublica() {
 }
 
 // ------------------------------------------------------------
-// GERACAO DA INTELIGENCIA — agora no SERVIDOR.
+// GERACAO DA INTELIGENCIA — agora no SERVIDOR, com dados REAIS.
 // (Antes vivia no app.js do navegador; para o paywall ser real,
 //  o calculo tem que ficar aqui e o cliente so recebe o que tem
 //  direito a ver.)
+//
+// Nada aqui e sorteado. O que o relatorio afirma vem do OpenStreetMap
+// (ver dados.js), com fonte, data de coleta e "sem dado" quando a fonte
+// nao responde — nunca zero no lugar de informacao ausente.
+// Nao existe base publica de crime por endereco no Brasil: o produto
+// entrega INVENTARIO do entorno, nao ocorrencias.
 // ------------------------------------------------------------
-function generateIntelligence(lat, lng, address) {
-  const dia = Math.floor(Date.now() / 86400000) % 30;
-  const seed = Math.abs(Math.sin(lat * 1000 + lng * 2000 + dia * 0.37)) * 10000;
-  const rng = (min, max) => min + ((seed * 9301 + 49297) % 233280) / 233280 * (max - min);
-  const rngI = (min, max) => Math.round(rng(min, max));
-  const crimeTypes = { 'Furto/Roubo': rngI(5, 45), 'Agressao': rngI(2, 18), 'Vandalismo': rngI(3, 22), 'Trafico': rngI(1, 15), 'Estelionato': rngI(2, 12), 'Outros': rngI(1, 8) };
-  const totalOccurrences = Object.values(crimeTypes).reduce((a, b) => a + b, 0);
-  const crimeScore = Math.max(5, Math.min(100, 100 - (totalOccurrences / 1.2)));
-  const cameras = rngI(2, 35), lightCoverage = rngI(40, 98), commerce = rngI(8, 120), policeStations = rngI(0, 4), hospitals = rngI(0, 3);
-  const infraScore = Math.min(100, Math.round((cameras / 35 * 25) + (lightCoverage / 100 * 35) + (commerce / 120 * 25) + ((policeStations + hospitals) / 7 * 15)));
-  const pedestrianFlow = rngI(30, 100), publicTransport = rngI(2, 20), nightActivity = rngI(10, 90);
-  const movementScore = Math.round((pedestrianFlow * .4) + (publicTransport / 20 * 100 * .3) + (nightActivity * .3));
-  const safetyScore = Math.round(crimeScore * 0.45 + infraScore * 0.30 + movementScore * 0.25);
-  const heatPoints = [], markerPoints = [];
-  const crimeLabels = ['Furto', 'Roubo', 'Agressao', 'Vandalismo', 'Estelionato'];
-  for (let i = 0; i < totalOccurrences; i++) {
-    const pLat = lat + (Math.random() - .5) * .025, pLng = lng + (Math.random() - .5) * .03, intensity = .3 + Math.random() * .7;
-    heatPoints.push([pLat, pLng, intensity]);
-    if (i < 30) { markerPoints.push({ lat: pLat, lng: pLng, type: crimeLabels[Math.floor(Math.random() * crimeLabels.length)], date: randomRecentDate() }); }
+async function generateContexto(lat, lng, address) {
+  let contexto;
+  try {
+    contexto = await dadosOSM.coletar(lat, lng);
+  } catch (e) {
+    console.error('[DADOS] falha inesperada:', e.message);
+    contexto = {
+      ok: false,
+      fonte: { nome: null, url: null, coletadoEm: null, raioKm: dadosOSM.RAIO_KM },
+      indice: { valor: null, faixa: 'Sem dado', dimensoes: { servicos: null, mobilidade: null, seguranca: null }, parcial: true },
+      inventario: null,
+      pontos: { policia: [], bombeiros: [] },
+      aviso: 'A fonte publica de dados nao respondeu agora. Tente novamente em alguns minutos.',
+      semDado: true
+    };
   }
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const monthlyData = months.map(() => rngI(Math.max(5, totalOccurrences - 20), totalOccurrences + 15));
-  const occurrences = heatPoints.map(function(hp) { return { lat: hp[0], lng: hp[1], intensity: hp[2] }; });
-  return { lat, lng, address, safetyScore, crimeScore: Math.round(crimeScore), infraScore, movementScore: Math.min(100, movementScore), crimeTypes, totalOccurrences, cameras, lightCoverage, commerce, policeStations, hospitals, pedestrianFlow, publicTransport, nightActivity, heatPoints, markerPoints, occurrences, monthlyData, months };
+
+  return {
+    lat: lat,
+    lng: lng,
+    address: address,
+    raioKm: contexto.raioKm || dadosOSM.RAIO_KM,
+    fonte: contexto.fonte,
+    indice: contexto.indice,
+    inventario: contexto.inventario,
+    pontos: contexto.pontos || { policia: [], bombeiros: [] },
+    elementos: contexto.elementos || 0,
+    coberturaBaixa: !!contexto.coberturaBaixa,
+    aviso: contexto.aviso || null,
+    semDado: !!contexto.semDado,
+    metodologia: 'Indice de Contexto Urbano: contagens reais de equipamentos e servicos no raio de 1,5 km, normalizadas (0 a 100) e agrupadas em tres dimensoes — servicos e comercio (40%), mobilidade e transporte (25%), presenca de seguranca e emergencia (35%). Quanto maior, mais recursos urbanos mapeados no entorno. Nao mede criminalidade.',
+    geradoEm: new Date().toISOString()
+  };
 }
 
-function randomRecentDate() {
-  const d = new Date(); d.setDate(d.getDate() - Math.floor(Math.random() * 90));
-  return d.toLocaleDateString('pt-BR');
-}
-
-// Resumo publico (isca): faixa + score APROXIMADO arredondado para BAIXO
-// (nunca superestima o valor real). Sem ocorrencias, sem mapa, sem exato.
+// Resumo publico (isca): faixa + indice APROXIMADO arredondado para BAIXO
+// (nunca superestima). Sem contagens, sem lista de equipamentos.
 function resumoPublico(dados) {
-  const apr = Math.floor(dados.safetyScore / 5) * 5;
-  const faixa = dados.safetyScore >= 70 ? 'Boa' : (dados.safetyScore >= 40 ? 'Media' : 'Ruim');
+  const ind = dados.indice || {};
+  if (ind.valor == null) {
+    return {
+      faixa: 'Sem dado',
+      scoreAproximado: null,
+      aviso: 'Resumo gratuito. Nao foi possivel obter os dados agora; tente novamente em alguns minutos.',
+      dados: { lat: dados.lat, lng: dados.lng, address: dados.address, teaser: true, semDado: true, indice: { valor: null, faixa: 'Sem dado' }, inventario: null, fonte: dados.fonte, raioKm: dados.raioKm }
+    };
+  }
+  const apr = Math.floor(ind.valor / 5) * 5;
+  const faixa = ind.valor >= 70 ? 'Ampla' : (ind.valor >= 40 ? 'Moderada' : 'Restrita');
   return {
     faixa: faixa,
     scoreAproximado: apr,
-    aviso: 'Resumo gratuito. O relatorio completo (score exato, ocorrencias, mapa de calor e historico) exige conta e plano.',
+    aviso: 'Resumo gratuito. O relatorio completo (indice exato, inventario do entorno com fonte e data) exige conta e plano.',
     dados: {
       lat: dados.lat, lng: dados.lng, address: dados.address,
-      teaser: true, faixa: faixa, scoreAproximado: apr, safetyScore: apr,
-      crimeScore: 0, infraScore: 0, movementScore: 0, crimeTypes: {},
-      totalOccurrences: 0, cameras: 0, lightCoverage: 0, commerce: 0,
-      policeStations: 0, hospitals: 0, pedestrianFlow: 0, publicTransport: 0, nightActivity: 0,
-      heatPoints: [], markerPoints: [], occurrences: [], monthlyData: [], months: []
+      teaser: true,
+      faixa: faixa,
+      scoreAproximado: apr,
+      indice: { valor: apr, faixa: faixa, aproximado: true },
+      inventario: null,
+      fonte: dados.fonte,
+      raioKm: dados.raioKm,
+      semDado: false
     }
   };
 }
@@ -377,7 +400,7 @@ module.exports = function montarPaywall(app) {
 
       const u = await usuarioAtual(req);
       if (!u) return res.status(401).json({ error: 'Crie sua conta grátis ou entre para fazer a consulta.', precisaLogin: true });
-      const dados = generateIntelligence(lat, lng, address);
+      const dados = await generateContexto(lat, lng, address);
       const d = await direitoConsulta(u);
 
       if (d.acesso === 'gratis') { return res.json({ acesso: 'gratis', dados }); }

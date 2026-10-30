@@ -212,9 +212,6 @@ function bindUI() {
   var btnView3d = document.getElementById('btn-view-3d');
   if (btnView3d) btnView3d.addEventListener('click', function() { switchMapView('3d'); });
 
-  var btnHeatmap = document.getElementById('btn-heatmap');
-  if (btnHeatmap) btnHeatmap.addEventListener('click', toggleHeatmap);
-
   var btnMarkers = document.getElementById('btn-markers');
   if (btnMarkers) btnMarkers.addEventListener('click', toggleMarkers);
 
@@ -315,8 +312,8 @@ function keepBackendAwake() {
 // ============================================================
 // STATE
 // ============================================================
-let map, heatLayer, markersLayer;
-let heatVisible = true, markersVisible = false;
+let map, markersLayer;
+let markersVisible = false;
 let currentData = null;
 let chartTypes = null, chartMonthly = null;
 let currentMapView = 'dark';
@@ -337,7 +334,6 @@ function initMap() {
   map = L.map('map', { center: [-23.55, -46.63], zoom: 13, zoomControl: false, attributionControl: false, scrollWheelZoom: false });
   L.control.zoom({ position: 'topright' }).addTo(map);
   darkTileLayer = L.tileLayer(TILES.dark, { maxZoom: 19 }).addTo(map);
-  heatLayer = L.heatLayer([], { radius: 30, blur: 20, maxZoom: 17, gradient: { 0.2: '#22c55e', 0.5: '#eab308', 0.8: '#f97316', 1: '#ef4444' } });
   markersLayer = L.layerGroup();
 }
 
@@ -501,7 +497,7 @@ async function handleSearch() {
         }
       } catch (revErr) { console.warn('Reverse geocode falhou, usando coordenadas diretas:', revErr.message); }
       updateLoading('Analisando dados de criminalidade...'); await sleep(500);
-      updateLoading('Compilando Safety Score...'); await sleep(300);
+      updateLoading('Calculando o Indice de Contexto Urbano...'); await sleep(300);
       var respCoord = await psgConsultar(coord.lat, coord.lng, addressData);
       currentData = respCoord.dados;
       renderDashboard(currentData);
@@ -540,7 +536,7 @@ async function handleSearch() {
     updateLoading('Analisando dados de criminalidade...'); await sleep(600);
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
-    updateLoading('Compilando Safety Score...'); await sleep(300);
+    updateLoading('Calculando o Indice de Contexto Urbano...'); await sleep(300);
     var respConsulta = await psgConsultar(lat, lng, addressData);
     currentData = respConsulta.dados;
     renderDashboard(currentData);
@@ -787,7 +783,7 @@ async function analyzeCoords(lat, lng, addressData) {
     updateLoading('Analisando dados de criminalidade...'); await sleep(600);
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
     updateLoading('Processando movimentacao de pedestres...'); await sleep(400);
-    updateLoading('Compilando Safety Score...'); await sleep(300);
+    updateLoading('Calculando o Indice de Contexto Urbano...'); await sleep(300);
 
     var respConsulta = await psgConsultar(lat, lng, addressData);
     currentData = respConsulta.dados;
@@ -984,15 +980,33 @@ async function psgConsultar(lat, lng, addressData) {
   return ultima;
 }
 
-// Dados completos? O resumo gratuito (teaser) e qualquer resposta vazia
-// (falha de dados) nunca podem virar relatorio: o PDF sairia com zeros
-// em indice criminal, infraestrutura, movimentacao, ocorrencias, cameras
-// e comercios, como aconteceu no protocolo PSG-2026-B6F8E0C1EB72.
+// Dados completos? O resumo gratuito (teaser) e qualquer resposta
+// marcada como "sem dado" nunca podem virar relatorio: o PDF sairia com
+// zeros no lugar de informacao ausente, como aconteceu no protocolo
+// PSG-2026-B6F8E0C1EB72.
 function _psgDadosCompletos(d) {
-  if (!d || d.teaser) return false;
-  var tudoZero = (!d.crimeScore && !d.infraScore && !d.movementScore
-    && !(d.totalOccurrences > 0) && !(d.cameras > 0) && !(d.commerce > 0));
-  return !tudoZero;
+  // Relatorio so existe com dado real: indice calculado a partir de
+  // contagens do OpenStreetMap. Fonte fora do ar ou raio sem cobertura
+  // vira "sem dado" — nunca zero nem numero estimado.
+  if (!d || d.teaser || d.semDado) return false;
+  if (!d.indice || d.indice.valor == null) return false;
+  return true;
+}
+
+function _psgFonteTexto(d) {
+  var f = (d && d.fonte) || {};
+  var partes = [];
+  partes.push('Fonte: ' + (f.nome || 'sem dado'));
+  if (f.coletadoEm) partes.push('Coleta: ' + f.coletadoEm);
+  if (d && d.raioKm) partes.push('Raio: ' + String(d.raioKm).replace('.', ',') + ' km');
+  return partes.join(' | ');
+}
+
+function _psgContagem(d, campo) {
+  var inv = (d && d.inventario) || {};
+  var item = inv[campo];
+  if (!item || item.n == null) return 'sem dado';
+  return item.n;
 }
 
 function psgAposConsulta(resp) {
@@ -1016,7 +1030,7 @@ function psgMostrarSeloPaywall() {
   var b = document.createElement('div');
   b.id = 'psg-teaser-banner';
   b.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:14px 0;padding:14px 18px;border:1px solid #f59e0b;border-radius:12px;background:linear-gradient(90deg,rgba(245,158,11,.12),rgba(30,58,138,.18));';
-  b.innerHTML = '<div style="font-size:.9rem;font-weight:600;flex:1;min-width:220px">Resumo gratuito &#8212; o relat&#243;rio completo (score exato, ocorr&#234;ncias, mapa de calor e hist&#243;rico) &#233; exclusivo dos planos.</div>' +
+  b.innerHTML = '<div style="font-size:.9rem;font-weight:600;flex:1;min-width:220px">Resumo gratuito &#8212; o relat&#243;rio completo (&#237;ndice exato, invent&#225;rio do entorno com fonte e data) &#233; exclusivo dos planos.</div>' +
     '<button type="button" id="psg-banner-btn" style="cursor:pointer;background:linear-gradient(90deg,#f59e0b,#f97316);color:#0a1128;border:0;font-weight:800;padding:10px 20px;border-radius:9px;font-size:.85rem;white-space:nowrap">Ver planos</button>';
   alvo.insertBefore(b, alvo.firstChild);
   var btn = document.getElementById('psg-banner-btn');
@@ -1674,80 +1688,119 @@ function renderDashboard(data) {
   mostrarPainelAmbiente(data.lat, data.lng, data.address);
   loadRoadAlerts(data.lat, data.lng);
   loadNauticAlerts(data.lat, data.lng);
+  // Mapa: o ponto pesquisado, o raio analisado e as unidades de
+  // seguranca mapeadas. Nao ha mais mapa de calor de ocorrencias —
+  // essa base nao existe publicamente por endereco.
   try {
-    if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
     map.setView([data.lat, data.lng], 15);
-    heatLayer.setLatLngs(data.heatPoints);
-    setTimeout(function() { try { map.addLayer(heatLayer); map.invalidateSize(); } catch(e) {} }, 800);
+    setTimeout(function() { try { map.invalidateSize(); } catch(e) {} }, 800);
   } catch(e) {}
   if (markersLayer) {
     markersLayer.clearLayers();
-    data.markerPoints.forEach(p => {
-      markersLayer.addLayer(L.circleMarker([p.lat, p.lng], { radius: 5, color: '#ef4444', fillColor: '#ef4444', fillOpacity: .7, weight: 1 }).bindPopup('<b>' + p.type + '</b><br>' + p.date));
+    var pontosReais = [];
+    var pts = data.pontos || {};
+    (pts.policia || []).forEach(function(p) { pontosReais.push({ lat: p.lat, lng: p.lng, cor: '#3b82f6', tipo: 'Unidade policial', nome: p.nome }); });
+    (pts.bombeiros || []).forEach(function(p) { pontosReais.push({ lat: p.lat, lng: p.lng, cor: '#ef4444', tipo: 'Corpo de bombeiros', nome: p.nome }); });
+    pontosReais.forEach(function(p) {
+      if (p.lat == null || p.lng == null) return;
+      markersLayer.addLayer(L.circleMarker([p.lat, p.lng], { radius: 7, color: p.cor, fillColor: p.cor, fillOpacity: .85, weight: 2 }).bindPopup('<b>' + p.tipo + '</b><br>' + p.nome));
     });
+    try {
+      L.circle([data.lat, data.lng], { radius: (data.raioKm || 1.5) * 1000, color: '#22c55e', fillColor: '#22c55e', fillOpacity: .05, weight: 1.5, dashArray: '6 6' }).addTo(markersLayer);
+    } catch (e) {}
     L.marker([data.lat, data.lng]).addTo(markersLayer).bindPopup('<b>Local pesquisado</b><br>' + data.address.fullAddress).openPopup();
+    markersVisible = true;
+    try { markersLayer.addTo(map); } catch (e) {}
   }
   if (data.teaser) {
-    // RESUMO PUBLICO (visitante / sem plano): so o score aproximado,
+    // RESUMO PUBLICO (visitante / sem plano): so o indice aproximado,
     // arredondado para baixo. Nenhum dado pago e renderizado.
-    const apr = (data.scoreAproximado != null) ? data.scoreAproximado : data.safetyScore;
-    const corFaixa = apr >= 70 ? 'var(--green)' : apr >= 40 ? 'var(--yellow)' : 'var(--red)';
-    const rotFaixa = apr >= 70 ? 'SEGURO' : apr >= 40 ? 'MODERADO' : 'CRITICO';
-    const circ = 2 * Math.PI * 78;
-    const off = circ - (apr / 100) * circ;
-    document.getElementById('score-circle').style.stroke = corFaixa;
-    document.getElementById('score-circle').style.strokeDashoffset = off;
-    const sn = document.getElementById('score-number');
-    sn.textContent = '\u2248 ' + apr;
-    sn.style.color = corFaixa;
-    document.getElementById('score-label').textContent = rotFaixa + ' \u2014 RESUMO';
-    document.getElementById('score-label').style.color = corFaixa;
-    document.getElementById('score-timestamp').textContent = new Date().toLocaleString('pt-BR');
-    animatePillar('pillar-crime', 'pillar-crime-val', 0); document.getElementById('pillar-crime-val').textContent = '\u2014';
-    animatePillar('pillar-infra', 'pillar-infra-val', 0); document.getElementById('pillar-infra-val').textContent = '\u2014';
-    animatePillar('pillar-movement', 'pillar-movement-val', 0); document.getElementById('pillar-movement-val').textContent = '\u2014';
-    document.getElementById('stat-occurrences').textContent = '\u2014';
-    document.getElementById('stat-cameras').textContent = '\u2014';
-    document.getElementById('stat-lights').textContent = '\u2014';
-    document.getElementById('stat-commerce').textContent = '\u2014';
+    var aprT = (data.indice && data.indice.valor != null) ? data.indice.valor : data.scoreAproximado;
+    var corT = aprT == null ? 'var(--text-muted)' : (aprT >= 70 ? 'var(--green)' : aprT >= 40 ? 'var(--yellow)' : 'var(--red)');
+    var rotT = aprT == null ? 'SEM DADO' : (aprT >= 70 ? 'AMPLO' : aprT >= 40 ? 'MODERADO' : 'RESTRITO');
+    var circT = 2 * Math.PI * 78;
+    document.getElementById('score-circle').style.stroke = corT;
+    document.getElementById('score-circle').style.strokeDashoffset = circT - ((aprT || 0) / 100) * circT;
+    var snT = document.getElementById('score-number');
+    snT.textContent = aprT == null ? '--' : '\u2248 ' + aprT;
+    snT.style.color = corT;
+    document.getElementById('score-label').textContent = rotT + ' \u2014 RESUMO';
+    document.getElementById('score-label').style.color = corT;
+    document.getElementById('score-timestamp').textContent = data.fonte && data.fonte.coletadoEm ? data.fonte.coletadoEm : '--';
+    animatePillar('pillar-servicos', 'pillar-servicos-val', null);
+    animatePillar('pillar-mobilidade', 'pillar-mobilidade-val', null);
+    animatePillar('pillar-seguranca', 'pillar-seguranca-val', null);
+    ['stat-escolas', 'stat-saude', 'stat-policia', 'stat-transporte'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.textContent = '\u2014';
+    });
+    var fonteT = document.getElementById('stat-fonte');
+    if (fonteT) fonteT.textContent = 'Resumo gratuito \u2014 o inventario com fonte e data e exclusivo dos planos.';
     try { if (chartTypes) { chartTypes.destroy(); chartTypes = null; } } catch (e) {}
-    try { if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; } } catch (e) {}
     psgMostrarSeloPaywall();
     document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
     return;
   }
-  // Dados completos, mas todos zerados: falha de dados, nao um resultado
-  // real. Nao renderiza zeros como se fossem analise.
-  if (!_psgDadosCompletos(data)) {
-    try { document.getElementById('score-number').textContent = '--'; } catch (e) {}
-    alert('A consulta nao retornou dados suficientes para este endereco.\n\nTente novamente em instantes; se o problema persistir, tente um endereco proximo.');
-    return;
+  var ind = data.indice || {};
+  var valorInd = ind.valor;
+  var fonteTexto = _psgFonteTexto(data);
+
+  // Faixa do indice
+  var circunferencia = 2 * Math.PI * 78;
+  var cor = valorInd == null ? 'var(--text-muted)' : (valorInd >= 70 ? 'var(--green)' : valorInd >= 40 ? 'var(--yellow)' : 'var(--red)');
+  var rotulo = valorInd == null ? 'SEM DADO' : String(ind.faixa || '').toUpperCase() + (ind.parcial ? ' (PARCIAL)' : '');
+  document.getElementById('score-circle').style.stroke = cor;
+  document.getElementById('score-circle').style.strokeDashoffset = circunferencia - ((valorInd || 0) / 100) * circunferencia;
+  var scoreNum = document.getElementById('score-number');
+  scoreNum.textContent = valorInd == null ? '--' : valorInd;
+  scoreNum.style.color = cor;
+  document.getElementById('score-label').textContent = rotulo;
+  document.getElementById('score-label').style.color = cor;
+  document.getElementById('score-timestamp').textContent = (data.fonte && data.fonte.coletadoEm) ? data.fonte.coletadoEm : '--';
+
+  var dims = ind.dimensoes || {};
+  animatePillar('pillar-servicos', 'pillar-servicos-val', dims.servicos);
+  animatePillar('pillar-mobilidade', 'pillar-mobilidade-val', dims.mobilidade);
+  animatePillar('pillar-seguranca', 'pillar-seguranca-val', dims.seguranca);
+
+  document.getElementById('stat-escolas').textContent = _psgContagem(data, 'escolas');
+  document.getElementById('stat-saude').textContent = _psgContagem(data, 'saude');
+  document.getElementById('stat-policia').textContent = _psgContagem(data, 'unidadesPoliciais');
+  document.getElementById('stat-transporte').textContent = _psgContagem(data, 'pontosOnibus');
+  var fonteStat = document.getElementById('stat-fonte');
+  if (fonteStat) fonteStat.textContent = fonteTexto;
+
+  // Aviso de cobertura: quando a fonte publica nao tem o dado (ou tem
+  // pouco), o usuario precisa saber que o campo esta vazio por isso —
+  // nao porque o numero e zero.
+  var avisoAntigo = document.getElementById('psg-aviso-dados');
+  if (avisoAntigo) avisoAntigo.remove();
+  if (data.aviso) {
+    var aviso = document.createElement('div');
+    aviso.id = 'psg-aviso-dados';
+    aviso.style.cssText = 'margin:12px 0;padding:10px 16px;border-radius:11px;font-size:.82rem;line-height:1.5;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.08);color:#fcd34d;';
+    aviso.textContent = '\u26a0\ufe0f ' + data.aviso;
+    var alvoAviso = document.querySelector('.dashboard-grid');
+    if (alvoAviso && alvoAviso.parentElement) alvoAviso.parentElement.insertBefore(aviso, alvoAviso);
   }
-  const circumference = 2 * Math.PI * 78;
-  const offset = circumference - (data.safetyScore / 100) * circumference;
-  const scoreColor = data.safetyScore >= 70 ? 'var(--green)' : data.safetyScore >= 40 ? 'var(--yellow)' : 'var(--red)';
-  const scoreLabel = data.safetyScore >= 70 ? 'SEGURO' : data.safetyScore >= 40 ? 'MODERADO' : 'CRITICO';
-  document.getElementById('score-circle').style.stroke = scoreColor;
-  document.getElementById('score-circle').style.strokeDashoffset = offset;
-  document.getElementById('score-number').textContent = data.safetyScore;
-  document.getElementById('score-number').style.color = scoreColor;
-  document.getElementById('score-label').textContent = scoreLabel;
-  document.getElementById('score-label').style.color = scoreColor;
-  document.getElementById('score-timestamp').textContent = new Date().toLocaleString('pt-BR');
-  animatePillar('pillar-crime', 'pillar-crime-val', data.crimeScore);
-  animatePillar('pillar-infra', 'pillar-infra-val', data.infraScore);
-  animatePillar('pillar-movement', 'pillar-movement-val', data.movementScore);
-  document.getElementById('stat-occurrences').textContent = data.totalOccurrences;
-  document.getElementById('stat-cameras').textContent = data.cameras;
-  document.getElementById('stat-lights').textContent = data.lightCoverage + '%';
-  document.getElementById('stat-commerce').textContent = data.commerce;
   renderCharts(data);
   document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
 }
 
 function animatePillar(barId, valId, value) {
-  document.getElementById(barId).style.width = value + '%';
-  document.getElementById(valId).textContent = value;
+  var bar = document.getElementById(barId);
+  var val = document.getElementById(valId);
+  if (!bar || !val) return;
+  if (value == null || !isFinite(value)) {
+    bar.style.width = '0%';
+    val.textContent = 'sem dado';
+    val.style.fontSize = '.62rem';
+    val.style.opacity = '.7';
+    return;
+  }
+  val.style.fontSize = '';
+  val.style.opacity = '';
+  bar.style.width = Math.max(0, Math.min(100, value)) + '%';
+  val.textContent = value;
 }
 
 // ============================================================
@@ -1757,15 +1810,37 @@ function renderCharts(data) {
   Chart.defaults.color = '#8b95a8';
   Chart.defaults.borderColor = '#2a3550';
   if (chartTypes) chartTypes.destroy();
-  chartTypes = new Chart(document.getElementById('chart-types'), { type: 'doughnut', data: { labels: Object.keys(data.crimeTypes), datasets: [{ data: Object.values(data.crimeTypes), backgroundColor: ['#ef4444','#f97316','#eab308','#a855f7','#3b82f6','#6b7280'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { padding: 12, font: { size: 11 } } } } } });
-  if (chartMonthly) chartMonthly.destroy();
-  chartMonthly = new Chart(document.getElementById('chart-monthly'), { type: 'line', data: { labels: data.months, datasets: [{ label: 'Ocorrencias', data: data.monthlyData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#3b82f6', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.04)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } } });
+  if (chartMonthly) { try { chartMonthly.destroy(); } catch (e) {} chartMonthly = null; }
+
+  var inv = data.inventario || {};
+  var ordem = [
+    ['escolas', 'Escolas'], ['saude', 'Saude'], ['farmacias', 'Farmacias'],
+    ['bancos', 'Bancos'], ['unidadesPoliciais', 'Policia'], ['bombeiros', 'Bombeiros'],
+    ['pontosOnibus', 'Onibus'], ['comercios', 'Comercio']
+  ];
+  var labels = [], valores = [];
+  ordem.forEach(function(par) {
+    var item = inv[par[0]];
+    if (item && item.n != null) { labels.push(par[1]); valores.push(item.n); }
+  });
+  if (!labels.length) { labels = ['Sem dado']; valores = [0]; }
+
+  chartTypes = new Chart(document.getElementById('chart-types'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ data: valores, backgroundColor: '#3b82f6', borderRadius: 6, borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return c.parsed.y + ' no raio de 1,5 km'; } } } },
+      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.04)' } }, x: { grid: { display: false } } }
+    }
+  });
+  var fonteEl = document.getElementById('chart-fonte');
+  if (fonteEl) fonteEl.textContent = _psgFonteTexto(data);
 }
 
 // ============================================================
 // MAP CONTROLS
 // ============================================================
-function toggleHeatmap() { heatVisible = !heatVisible; heatVisible ? map.addLayer(heatLayer) : map.removeLayer(heatLayer); }
 function toggleMarkers() { markersVisible = !markersVisible; markersVisible ? map.addLayer(markersLayer) : map.removeLayer(markersLayer); }
 
 // ============================================================
@@ -2427,23 +2502,36 @@ async function _doGeneratePDFInner() {
   var microStr = 'PORTAL SEGURANCA GLOBAL \u2022 DOCUMENTO DE ANALISE DE SEGURANCA \u2022 ' + protocol + ' \u2022 EMISSAO ' + emittedStr + ' \u2022 ';
   document.getElementById('pdf-micro-top').textContent = microStr + microStr + microStr;
   document.getElementById('pdf-micro-bot').textContent = microStr + microStr + microStr;
-  var fim = new Date(now.getFullYear(), now.getMonth(), 1);
-  var inicio = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-  document.getElementById('pdf-period').textContent = _psgMesAno(inicio) + ' a ' + _psgMesAno(fim);
+  document.getElementById('pdf-period').textContent = (currentData.fonte && currentData.fonte.nome ? currentData.fonte.nome : 'sem dado') +
+    (currentData.fonte && currentData.fonte.coletadoEm ? ' \u2014 coleta de ' + currentData.fonte.coletadoEm : '');
 
   // ---- Forcas de seguranca: delegacia e batalhao mais proximos ----
   // A consulta ao Overpass comeca em paralelo logo no inicio do _doGeneratePDF
   // (var forcasOverpassPromise) porque pode levar dezenas de segundos.
   showLoading('Localizando forcas de seguranca proximas...');
   await _psgForcasSeguranca(lat, lng, city, stateName, countryName, countryCode, forcasOverpassPromise);
-  document.getElementById('pdf-score').textContent = currentData.safetyScore;
-  document.getElementById('pdf-score-label').textContent = 'Safety Score - ' + (currentData.safetyScore >= 70 ? 'ALTO' : currentData.safetyScore >= 40 ? 'MODERADO' : 'BAIXO');
-  document.getElementById('pdf-crime').textContent = currentData.crimeScore + '/100';
-  document.getElementById('pdf-infra').textContent = currentData.infraScore + '/100';
-  document.getElementById('pdf-movement').textContent = currentData.movementScore + '/100';
-  document.getElementById('pdf-occ').textContent = currentData.totalOccurrences;
-  document.getElementById('pdf-cam').textContent = currentData.cameras;
-  document.getElementById('pdf-com').textContent = currentData.commerce;
+  var indPdf = currentData.indice || {};
+  var valorPdf = indPdf.valor;
+  document.getElementById('pdf-score').textContent = valorPdf == null ? 's/d' : valorPdf;
+  document.getElementById('pdf-score-label').textContent = 'Indice de Contexto Urbano - ' +
+    (valorPdf == null ? 'SEM DADO' : String(indPdf.faixa || '').toUpperCase() + (indPdf.parcial ? ' (PARCIAL)' : ''));
+  var dimsPdf = indPdf.dimensoes || {};
+  function notaPdf(v) { return v == null ? 'sem dado' : v + '/100'; }
+  document.getElementById('pdf-serv').textContent = notaPdf(dimsPdf.servicos);
+  document.getElementById('pdf-mob').textContent = notaPdf(dimsPdf.mobilidade);
+  document.getElementById('pdf-seg').textContent = notaPdf(dimsPdf.seguranca);
+  function invPdf(campo) { var it = (currentData.inventario || {})[campo]; return (it && it.n != null) ? it.n : 'sem dado'; }
+  document.getElementById('pdf-inv-escolas').textContent = invPdf('escolas');
+  document.getElementById('pdf-inv-saude').textContent = invPdf('saude');
+  document.getElementById('pdf-inv-policia').textContent = invPdf('unidadesPoliciais');
+  document.getElementById('pdf-inv-transporte').textContent = invPdf('pontosOnibus');
+  document.getElementById('pdf-inv-comercio').textContent = invPdf('comercios');
+  document.getElementById('pdf-inv-cameras').textContent = invPdf('cameras');
+  var invFonteEl = document.getElementById('pdf-inv-fonte');
+  if (invFonteEl) {
+    invFonteEl.textContent = _psgFonteTexto(currentData) +
+      '. Contagens de equipamentos mapeados; onde a fonte publica nao tem o dado o campo informa "sem dado". Nao ha estatistica de criminalidade por endereco.';
+  }
 
   // ---- Avisos nauticos (secao 6 do relatorio) ----
   var nautStatusEl = document.getElementById('pdf-nautic-status');
@@ -2606,30 +2694,32 @@ var SHARE_SITE_URL = 'https://portalsegurancaglobal.com.br';
 
 var shareI18n = {
   pt: { title: 'Compartilhar Resultado', sub: 'Envie esta analise de seguranca para quem precisa saber',
-    score: 'Safety Score', at: 'em', cta: 'Consulte a seguranca de qualquer endereco do mundo:',
+    score: 'Indice de Contexto Urbano', at: 'em', cta: 'Veja o contexto urbano de qualquer endereco do mundo:',
     copy: 'Copiar link', copyMsg: 'Copiar mensagem', copied: 'Copiado com sucesso!',
     native: 'Mais opcoes', email: 'E-mail', cancel: 'Fechar', preview: 'Previa da mensagem',
-    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analise de Seguranca \u2014 Portal Seguranca Global' },
+    safe: 'AMPLO', mod: 'MODERADO', crit: 'RESTRITO', subject: 'Contexto Urbano \u2014 Portal Seguranca Global' },
   en: { title: 'Share Result', sub: 'Send this safety analysis to those who need to know',
-    score: 'Safety Score', at: 'at', cta: 'Check the safety of any address in the world:',
+    score: 'Urban Context Index', at: 'at', cta: 'Check the urban context of any address in the world:',
     copy: 'Copy link', copyMsg: 'Copy message', copied: 'Copied successfully!',
     native: 'More options', email: 'Email', cancel: 'Close', preview: 'Message preview',
-    safe: 'SAFE', mod: 'MODERATE', crit: 'CRITICAL', subject: 'Safety Analysis \u2014 Global Security Portal' },
-  es: { title: 'Compartir Resultado', sub: 'Envie este analisis de seguridad a quien necesite saberlo',
-    score: 'Safety Score', at: 'en', cta: 'Consulte la seguridad de cualquier direccion del mundo:',
+    safe: 'BROAD', mod: 'MODERATE', crit: 'LIMITED', subject: 'Urban Context \u2014 Global Security Portal' },
+  es: { title: 'Compartir Resultado', sub: 'Envie este analisis de contexto urbano a quien necesite saberlo',
+    score: 'Indice de Contexto Urbano', at: 'en', cta: 'Consulte el contexto urbano de cualquier direccion del mundo:',
     copy: 'Copiar enlace', copyMsg: 'Copiar mensaje', copied: 'Copiado con exito!',
     native: 'Mas opciones', email: 'Correo', cancel: 'Cerrar', preview: 'Vista previa del mensaje',
-    safe: 'SEGURO', mod: 'MODERADO', crit: 'CRITICO', subject: 'Analisis de Seguridad \u2014 Portal Seguridad Global' }
+    safe: 'AMPLIO', mod: 'MODERADO', crit: 'RESTRINGIDO', subject: 'Contexto Urbano \u2014 Portal Seguridad Global' }
 };
 
 function openShare() {
   if (!currentData) return alert('Pesquise um local antes de compartilhar.');
   var lang = window.PSG_LANG || 'pt';
   var ui = shareI18n[lang] || shareI18n.pt;
-  var scoreText = (currentData.safetyScore >= 70 ? ui.safe : currentData.safetyScore >= 40 ? ui.mod : ui.crit);
+  var indShare = currentData.indice || {};
+  var vShare = indShare.valor;
+  var scoreText = vShare == null ? 'sem dado' : (vShare >= 70 ? ui.safe : vShare >= 40 ? ui.mod : ui.crit);
   var msg = "*" + ui.subject + "*\n\n"
     + "\uD83D\uDCCD " + currentData.address.fullAddress + "\n"
-    + "\uD83D\uDEE1\uFE0F " + ui.score + ": *" + currentData.safetyScore + "/100* (" + scoreText + ")\n\n"
+    + "\uD83C\uDFD9\uFE0F " + ui.score + ": *" + (vShare == null ? 'sem dado' : vShare + "/100") + "* (" + scoreText + ")\n\n"
     + ui.cta + "\n"
     + SHARE_SITE_URL + "?q=" + encodeURIComponent(currentData.address.fullAddress);
 
@@ -2775,7 +2865,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Digite um local', p: 'Use CEP, endereco completo, coordenadas GPS ou o nome de uma rodovia de qualquer pais do mundo.' },
         { h: 'Escolha no mapa (opcional)', p: 'Toque no botao do mapa para selecionar um ponto exato no globo.' },
-        { h: 'Veja o Safety Score', p: 'Nota de seguranca calculada com dados abertos, alem de mapa de ocorrencias, relogio mundial com fuso horario do local e noticias do pais selecionado nas bandeiras.' },
+        { h: 'Veja o Indice de Contexto Urbano', p: 'Nota calculada a partir de dados abertos do OpenStreetMap, com fonte e data em cada numero, alem de relogio mundial com fuso horario do local e noticias do pais selecionado nas bandeiras.' },
         { h: 'Rodovias: pedagios, radares e limite', p: 'Ao pesquisar uma rodovia, o portal mostra pedagios, radares e camaras num raio de 8 km e o limite de velocidade da via mais proxima.' },
         { h: 'GPS de Estradas', p: 'Traca a rota ate o seu destino com navegacao guiada por voz e avisos automaticos de camaras, radares e pedagios a frente. Funciona offline apos tracar a rota: a navegacao por voz e o mapa ficam salvos no seu aparelho.' },
         { h: 'Rios e mares: avisos nauticos', p: 'Perto da agua, o portal mostra os corpos d\u2019agua proximos, as condicoes do mar (ondas e temperatura) e as orientacoes da Marinha e das autoridades de navegacao. Tudo entra tambem no relatorio PDF.' },
@@ -2792,7 +2882,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Enter a location', p: 'Use a ZIP/postcode, full address, GPS coordinates, or a highway name from anywhere in the world.' },
         { h: 'Pick on the map (optional)', p: 'Tap the map button to select an exact point on the globe.' },
-        { h: 'See the Safety Score', p: 'A safety rating based on open data, plus an occurrence map, world clock with local timezone, and news for the country selected in the flags.' },
+        { h: 'See the Urban Context Index', p: 'A score built from open OpenStreetMap data, with source and date on every number, plus a world clock with local timezone, and news for the country selected in the flags.' },
         { h: 'Highways: tolls, radars and limits', p: 'When you search a highway, the portal shows tolls, radars and speed cameras within 8 km, plus the speed limit of the nearest road.' },
         { h: 'Road GPS', p: 'Trace your route with voice-guided navigation and automatic warnings of cameras, radars and tolls ahead. Works offline after tracing the route: voice navigation and the map are saved on your device.' },
         { h: 'Rivers and seas: nautical warnings', p: 'Near water, the portal shows nearby water bodies, sea conditions (waves and temperature) and guidance from navies and navigation authorities. Everything is also included in the PDF report.' },
@@ -2809,7 +2899,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Escriba un lugar', p: 'Use código postal, dirección completa, coordenadas GPS o el nombre de una carretera de cualquier país del mundo.' },
         { h: 'Elija en el mapa (opcional)', p: 'Toque el botón del mapa para seleccionar un punto exacto en el globo.' },
-        { h: 'Vea el Safety Score', p: 'Nota de seguridad calculada con datos abiertos, además de mapa de ocurrencias, reloj mundial con huso horario local y noticias del país seleccionado en las banderas.' },
+        { h: 'Vea el Indice de Contexto Urbano', p: 'Nota calculada a partir de datos abiertos de OpenStreetMap, con fuente y fecha en cada numero, ademas de reloj mundial con huso horario local y noticias del país seleccionado en las banderas.' },
         { h: 'Carreteras: peajes, radares y límites', p: 'Al buscar una carretera, el portal muestra peajes, radares y cámaras en un radio de 8 km y el límite de velocidad de la vía más cercana.' },
         { h: 'GPS de Carreteras', p: 'Trace su ruta con navegación guiada por voz y avisos automáticos de cámaras, radares y peajes más adelante. Funciona sin conexión tras trazar la ruta: la navegación por voz y el mapa quedan guardados en su dispositivo.' },
         { h: 'Ríos y mares: avisos náuticos', p: 'Cerca del agua, el portal muestra los cuerpos de agua cercanos, las condiciones del mar (olas y temperatura) y las orientaciones de la Marina y las autoridades de navegación. Todo también entra en el informe PDF.' },
@@ -2826,7 +2916,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Saisissez un lieu', p: 'Utilisez un code postal, une adresse complète, des coordonnées GPS ou le nom d\u2019une route de n\u2019importe quel pays du monde.' },
         { h: 'Choisissez sur la carte (facultatif)', p: 'Touchez le bouton carte pour sélectionner un point exact sur le globe.' },
-        { h: 'Consultez le Safety Score', p: 'Note de sécurité calculée avec des données ouvertes, plus une carte des occurrences, une horloge mondiale avec le fuseau horaire local et les actualités du pays choisi dans les drapeaux.' },
+        { h: 'Consultez l\u2019Indice de contexte urbain', p: 'Note calculée à partir des données ouvertes d’OpenStreetMap, avec source et date pour chaque chiffre, plus une horloge mondiale avec le fuseau horaire local et les actualités du pays choisi dans les drapeaux.' },
         { h: 'Routes : péages, radars et limites', p: 'Lors d\u2019une recherche de route, le portail affiche les péages, radars et caméras dans un rayon de 8 km, ainsi que la limite de vitesse de la route la plus proche.' },
         { h: 'GPS Routier', p: 'Tracez votre itinéraire avec une navigation vocale et des avertissements automatiques des caméras, radars et péages à venir. Fonctionne hors connexion après avoir tracé l\u2019itinéraire : la navigation vocale et la carte restent enregistrées sur votre appareil.' },
         { h: 'Rivières et mers : avis nautiques', p: 'Près de l\u2019eau, le portail affiche les plans d\u2019eau proches, les conditions de la mer (vagues et température) et les recommandations de la Marine et des autorités de navigation. Tout figure aussi dans le rapport PDF.' },
@@ -2843,7 +2933,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Or eingeben', p: 'Verwenden Sie Postleitzahl, vollständige Adresse, GPS-Koordinaten oder den Namen einer Straße aus der ganzen Welt.' },
         { h: 'Auf der Karte wählen (optional)', p: 'Tippen Sie auf die Karten-Schaltfläche, um einen genauen Punkt auf dem Globus auszuwählen.' },
-        { h: 'Safety Score ansehen', p: 'Sicherheitsnote auf Basis offener Daten, dazu Vorkommnis-Karte, Weltuhr mit lokaler Zeitzone und Nachrichten des in den Flaggen gewählten Landes.' },
+        { h: 'Stadtkontext-Index ansehen', p: 'Note aus offenen OpenStreetMap-Daten, mit Quelle und Datum bei jeder Zahl, dazu Weltuhr mit lokaler Zeitzone und Nachrichten des in den Flaggen gewählten Landes.' },
         { h: 'Straßen: Maut, Blitzer und Limits', p: 'Bei der Suche nach einer Straße zeigt das Portal Mautstellen, Blitzer und Kameras im Umkreis von 8 km sowie das Tempolimit der nächsten Straße.' },
         { h: 'Straßen-GPS', p: 'Route planen mit sprachgeführter Navigation und automatischen Warnungen vor Kameras, Blitzern und Mautstellen. Funktioniert offline, nachdem die Route geplant wurde: Sprachnavigation und Karte werden auf dem Gerät gespeichert.' },
         { h: 'Flüsse und Meere: nautische Warnungen', p: 'In Wassernähe zeigt das Portal nahegelegene Gewässer, Meeresbedingungen (Wellen und Temperatur) sowie Hinweise der Marine und der Schifffahrtsbehörden. Alles steht auch im PDF-Bericht.' },
@@ -2860,7 +2950,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Digita un luogo', p: 'Usa CAP, indirizzo completo, coordinate GPS o il nome di una strada di qualsiasi paese del mondo.' },
         { h: 'Scegli sulla mappa (facoltativo)', p: 'Tocca il pulsante mappa per selezionare un punto esatto sul globo.' },
-        { h: 'Guarda il Safety Score', p: 'Voto di sicurezza calcolato con dati aperti, oltre a mappa degli eventi, orologio mondiale con fuso orario locale e notizie del paese scelto nelle bandiere.' },
+        { h: 'Guarda l\u2019Indice di contesto urbano', p: 'Punteggio calcolato dai dati aperti di OpenStreetMap, con fonte e data per ogni numero, oltre a orologio mondiale con fuso orario locale e notizie del paese scelto nelle bandiere.' },
         { h: 'Strade: pedaggi, autovelox e limiti', p: 'Cercando una strada, il portale mostra pedaggi, autovelox e telecamere in un raggio di 8 km e il limite di velocità della strada più vicina.' },
         { h: 'GPS Stradale', p: 'Traccia il percorso con navigazione vocale e avvisi automatici di telecamere, autovelox e pedaggi davanti a te. Funziona offline dopo aver tracciato il percorso: la navigazione vocale e la mappa restano salvate sul tuo dispositivo.' },
         { h: 'Fiumi e mari: avvisi nautici', p: 'Vicino all\u2019acqua, il portale mostra i corpi idrici vicini, le condizioni del mare (onde e temperatura) e le indicazioni della Marina e delle autorità di navigazione. Tutto entra anche nel rapporto PDF.' },
@@ -2928,7 +3018,7 @@ function showTermsModal() { var el = document.getElementById('terms-overlay'); e
       steps: [
         { h: 'Введите место', p: 'Введите почтовый индекс, полный адрес, GPS-координаты или название шоссе из любой страны мира.' },
         { h: 'Выберите на карте (необязательно)', p: 'Нажмите кнопку карты, чтобы выбрать точную точку на глобусе.' },
-        { h: 'Посмотрите Safety Score', p: 'Оценка безопасности на основе открытых данных, а также карта происшествий, мировые часы с местным часовым поясом и новости страны, выбранной во флажках.' },
+        { h: 'Индекс городского контекста', p: 'Оценка на основе открытых данных OpenStreetMap, с источником и датой для каждого числа, мировые часы с местным часовым поясом и новости страны, выбранной во флажках.' },
         { h: 'Шоссе: платные дороги, радары и лимиты', p: 'При поиске шоссе портал показывает платные пункты, радары и камеры в радиусе 8 км, а также ограничение скорости ближайшей дороги.' },
         { h: 'Дорожный GPS', p: 'Проложите маршрут с голосовой навигацией и автоматическими предупреждениями о камерах, радарах и платных пунктах впереди. Работает офлайн после прокладки маршрута: голосовая навигация и карта сохраняются на устройстве.' },
         { h: 'Реки и моря: морские предупреждения', p: 'Рядом с водой портал показывает ближайшие водоёмы, состояние моря (волны и температура) и рекомендации ВМФ и навигационных властей. Всё это также входит в PDF-отчёт.' },

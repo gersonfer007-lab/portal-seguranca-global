@@ -4,15 +4,16 @@
    - Tiles de mapa (Esri) em cache: a rota vista continua
      visivel offline durante a navegacao
    - APIs (rotas, geocodificacao, mar): so online, sem cache
-   Versao: psg-sw-v9
+   Versao: psg-sw-v10
    ============================================================ */
-var CACHE_SHELL = 'psg-shell-v9';
+var CACHE_SHELL = 'psg-shell-v10';
 var CACHE_TILES = 'psg-tiles-v1';
 var SHELL_ASSETS = [
   '/',
   '/index.html',
   '/app.js',
   '/brasao-sh.png',
+  '/assets/assinatura-portal.png',
   '/caminhada-segura.html',
   '/noticias.html',
   '/zona-rural.html',
