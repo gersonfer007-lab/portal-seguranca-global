@@ -110,7 +110,11 @@ module.exports = function (app) {
             [protocolo, reg.emissao, reg.endereco, reg.cidade, reg.estado, reg.pais]
           );
         } catch (e) {
-          console.error('[RELATORIOS] Postgres falhou, mas registro local gravado:', e.message);
+          // Sem o registro no banco o QR cairia em "protocolo invalido".
+          // Melhor recusar a emissao do que entregar PDF sem verificacao.
+          console.error('[RELATORIOS] Postgres falhou ao gravar protocolo:', e.message);
+          try { const d = loadLocal(); delete d[protocolo]; saveLocal(d); } catch (e2) {}
+          return res.status(503).json({ error: 'Nao foi possivel registrar o protocolo agora. Tente novamente em instantes.' });
         }
       } else if (process.env.NODE_ENV === 'production') {
         return res.status(503).json({ error: 'Verificacao temporariamente indisponivel: banco persistente nao configurado.' });

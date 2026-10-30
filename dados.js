@@ -412,7 +412,7 @@ function calcularIndice(c) {
   const valor = Math.round(soma / somaPeso);
   return {
     valor: valor,
-    faixa: valor >= 70 ? 'Amplo' : (valor >= 40 ? 'Moderado' : 'Restrito'),
+    faixa: valor >= 70 ? 'Amplo' : (valor >= 40 ? 'Moderado' : 'Poucos recursos mapeados'),
     dimensoes: dims,
     parcial: faltando > 0
   };

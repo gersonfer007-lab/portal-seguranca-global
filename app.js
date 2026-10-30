@@ -531,7 +531,13 @@ async function handleSearch() {
     if (!addressData.state && geo.state) { addressData.state = geo.state; }
     if (!addressData.country && geo.country) { addressData.country = geo.country; }
     if (!addressData.country_code && geo.country_code) { addressData.country_code = geo.country_code; }
-    if (!isBrazilCepSource && geo.postcode) { addressData.cep = geo.postcode; }
+    // CEP do trecho: reverso no ponto resolvido. Sem resposta, cai no
+    // CEP que o proprio geocodificador devolveu para o endereco.
+    if (!isBrazilCepSource) {
+      var cepPonto = await cepDoEndereco(addressData, lat, lng);
+      if (cepPonto) { addressData.cep = cepPonto; isBrazilCepSource = true; }
+      else if (geo.postcode) { addressData.cep = geo.postcode; }
+    }
     addressData.fullAddress = [addressData.street, addressData.neighborhood, addressData.city, addressData.state, addressData.cep, addressData.country].filter(Boolean).join(', ') || geo.displayName;
     updateLoading('Analisando dados de criminalidade...'); await sleep(600);
     updateLoading('Calculando infraestrutura urbana...'); await sleep(500);
@@ -871,6 +877,78 @@ async function geocodeQuery(q, wantRoad) {
       country: a.country || '',
       country_code: a.country_code || ''
     };
+  } catch (e) { return null; }
+}
+
+// CEP do TRECHO exato: geocodificacao reversa no ponto que a busca
+// resolveu. O CEP do centro da rua muda de quadra para quadra e ja saiu
+// divergente no relatorio.
+var _cepPontoCache = {};
+
+// UF por extenso -> sigla (o Nominatim devolve "Paraná", o ViaCEP quer "PR")
+var UF_SIGLAS = {
+  'acre':'AC','alagoas':'AL','amapa':'AP','amazonas':'AM','bahia':'BA','ceara':'CE',
+  'distrito federal':'DF','espirito santo':'ES','goias':'GO','maranhao':'MA','mato grosso':'MT',
+  'mato grosso do sul':'MS','minas gerais':'MG','para':'PA','paraiba':'PB','parana':'PR',
+  'pernambuco':'PE','piaui':'PI','rio de janeiro':'RJ','rio grande do norte':'RN',
+  'rio grande do sul':'RS','rondonia':'RO','roraima':'RR','santa catarina':'SC','sao paulo':'SP',
+  'sergipe':'SE','tocantins':'TO'
+};
+function _semAcento(t) {
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function _normRua(t) {
+  return _semAcento(t)
+    .replace(/\b(rua|r|avenida|av|travessa|tv|alameda|al|rodovia|rod|estrada|est)\b\.?/g, ' ')
+    .replace(/[0-9]+/g, ' ')
+    .replace(/[^a-z ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// CEP pelo Correios (ViaCEP) usando a MESMA rua/bairro/cidade do endereco
+// resolvido. E a fonte oficial do CEP; o Nominatim as vezes traz um CEP
+// antigo para o trecho. Sem resposta, cai no reverso do ponto.
+async function cepDoEndereco(dados, lat, lng) {
+  var d = dados || {};
+  var br = String(d.country_code || '').toLowerCase() === 'br' || /brasil/i.test(String(d.country || ''));
+  var rua = String(d.street || '').replace(/\s+\d+\s*$/, '').trim();
+  var cidade = String(d.city || '').trim();
+  var uf = UF_SIGLAS[_semAcento(d.state).trim()] || String(d.state || '').trim().toUpperCase();
+  if (br && rua && cidade && /^[A-Z]{2}$/.test(uf)) {
+    try {
+      var ctl = new AbortController();
+      var tm = setTimeout(function () { ctl.abort(); }, 6000);
+      var url = 'https://viacep.com.br/ws/' + encodeURIComponent(uf) + '/' +
+        encodeURIComponent(cidade) + '/' + encodeURIComponent(rua) + '/json/';
+      var r = await fetch(url, { signal: ctl.signal });
+      clearTimeout(tm);
+      if (r.ok) {
+        var lista = await r.json();
+        if (Array.isArray(lista) && lista.length) {
+          var alvo = _normRua(rua);
+          var iguais = lista.filter(function (x) { return _normRua(x.logradouro) === alvo; });
+          var escolha = (iguais.length ? iguais : lista)[0];
+          if (escolha && escolha.cep) return String(escolha.cep).trim();
+        }
+      }
+    } catch (e) { /* cai no reverso */ }
+  }
+  return await cepDoPonto(lat, lng);
+}
+async function cepDoPonto(lat, lng) {
+  var chave = lat.toFixed(5) + ',' + lng.toFixed(5);
+  if (Object.prototype.hasOwnProperty.call(_cepPontoCache, chave)) return _cepPontoCache[chave];
+  try {
+    var ctl = new AbortController();
+    var tm = setTimeout(function () { ctl.abort(); }, 6000);
+    var r = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&accept-language=pt-BR&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng), { signal: ctl.signal });
+    clearTimeout(tm);
+    if (!r.ok) return null;
+    var j = await r.json();
+    var cep = (j && j.address && j.address.postcode) ? String(j.address.postcode).trim() : '';
+    if (cep) { _cepPontoCache[chave] = cep; return cep; }
+    return null;
   } catch (e) { return null; }
 }
 
@@ -2697,7 +2775,7 @@ var shareI18n = {
     score: 'Indice de Contexto Urbano', at: 'em', cta: 'Veja o contexto urbano de qualquer endereco do mundo:',
     copy: 'Copiar link', copyMsg: 'Copiar mensagem', copied: 'Copiado com sucesso!',
     native: 'Mais opcoes', email: 'E-mail', cancel: 'Fechar', preview: 'Previa da mensagem',
-    safe: 'AMPLO', mod: 'MODERADO', crit: 'RESTRITO', subject: 'Contexto Urbano \u2014 Portal Seguranca Global' },
+    safe: 'AMPLO', mod: 'MODERADO', crit: 'POUCOS RECURSOS', subject: 'Contexto Urbano \u2014 Portal Seguranca Global' },
   en: { title: 'Share Result', sub: 'Send this safety analysis to those who need to know',
     score: 'Urban Context Index', at: 'at', cta: 'Check the urban context of any address in the world:',
     copy: 'Copy link', copyMsg: 'Copy message', copied: 'Copied successfully!',
@@ -2707,7 +2785,7 @@ var shareI18n = {
     score: 'Indice de Contexto Urbano', at: 'en', cta: 'Consulte el contexto urbano de cualquier direccion del mundo:',
     copy: 'Copiar enlace', copyMsg: 'Copiar mensaje', copied: 'Copiado con exito!',
     native: 'Mas opciones', email: 'Correo', cancel: 'Cerrar', preview: 'Vista previa del mensaje',
-    safe: 'AMPLIO', mod: 'MODERADO', crit: 'RESTRINGIDO', subject: 'Contexto Urbano \u2014 Portal Seguridad Global' }
+    safe: 'AMPLIO', mod: 'MODERADO', crit: 'POCOS RECURSOS', subject: 'Contexto Urbano \u2014 Portal Seguridad Global' }
 };
 
 function openShare() {
